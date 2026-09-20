@@ -576,7 +576,7 @@ var UI = {
     var b = artWrap('cover.png', 'art-cover') +
       '<p style="font-family:var(--song);text-indent:2em">' +
       '周维安是上个月到的云州。到任第三天，他在办公室叫住你，问了你三个问题，' +
-      '最后一个是你爱人做什么的。第二天办公室的名单上，你的名字后面多了四个字。</p>' +
+      '最后一个是你爱人做什么的。第二天办公室的分工表上，你名字后面添了四个字：书记秘书。</p>' +
       '<p style="font-family:var(--song);text-indent:2em">你二十九，副科，第一年挂副主任。' +
       '他这一届，五年。</p>' +
       '<div class="lab">在 这 之 前</div><div class="opts">' +

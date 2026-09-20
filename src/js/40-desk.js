@@ -185,14 +185,16 @@ var Desk = {
     UI.render();
   },
 
-  /* 月末：没办的怎么处理 */
+  /* 月末：没办的怎么处理。真没办成的，那句话月末才说 */
   rollover: function(){
     var keep = [];
+    G.missed = [];
     G.queue.forEach(function(q){
       if (q.done) return;
       var e = EV(q.id);
       if (e.noRoll){
         applyFx(e.neglect);
+        if (e.nt) G.missed.push({ on: e.title, t: e.nt });
         logAdd(e.title + ' → 这个月过去了');
         return;
       }
@@ -200,6 +202,7 @@ var Desk = {
         /* 逾期再没办 → 按不办的后果结算 */
         applyFx(e.neglect);
         faultAdd(e.title + '：没办', null);
+        if (e.nt) G.missed.push({ on: e.title, t: e.nt });
         logAdd(e.title + ' → 没办，按后果结算');
         if (e.overdue_to && EV(e.overdue_to)){
           var n = Desk.push(e.overdue_to, 'month');
@@ -268,6 +271,7 @@ var Desk = {
     Pool.mszRule(G.done.length, c.k === 'msz');
     var remarks = Remark.build();
     Desk.rollover();
+    var missed = G.missed || [];
 
     G.done = [];
     G.month += 1;
@@ -288,6 +292,6 @@ var Desk = {
       Events.fill();
     }
     save();
-    return remarks;
+    return { remarks: remarks, missed: missed };
   }
 };

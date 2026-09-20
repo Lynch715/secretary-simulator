@@ -49,3 +49,12 @@ function npcName(id){
   return id;
 }
 var BOSS_NAME = { steady:'稳健型', strong:'强势型', shrewd:'精明型' };
+
+/* 底线议题写成一句人话，不写「底线议题：旧改」这种术语 */
+function bottomLine(b){
+  if (!b) return '';
+  if (b === '全部') return '这个人身上，谁的面子都不好使';
+  if (b === '前任秘书') return '崔延平那件事上，谁说也没用';
+  if (b === '青川旧账') return '青川那笔旧账上，谁说也没用';
+  return b + '上他不认人情';
+}

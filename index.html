@@ -106,8 +106,6 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 .opt.gray{border-left:3px solid var(--red)}
 .opt.gray .rule{font-size:12px;color:var(--red);margin-top:3px}
 .opt[disabled]{opacity:.45;cursor:not-allowed}
-.neglect{font-size:13px;color:var(--ink3);margin-top:12px;padding-top:10px;
-  border-top:1px solid var(--line2)}
 
 /* 结果 */
 .result{border:1px solid var(--line);background:var(--paper2);padding:12px 14px;margin-top:12px}
@@ -183,7 +181,6 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 /* 没批的批示 */
 .remark.none{color:var(--ink3);font-size:15px;border-left-color:var(--line);font-style:normal}
 .opt.gray{border-left:3px solid var(--red)}
-.neglect{font-family:var(--song)}
 
 /* 这些人之间 */
 .pair{display:grid;grid-template-columns:1fr 150px 1fr;align-items:center;gap:10px;margin-top:13px}
@@ -282,7 +279,7 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 <body>
 <div id="app"></div>
 <script>
-/* 大秘 build 2026-09-20 08:39 */
+/* 大秘 build 2026-09-20 08:42 */
 "use strict";
 /* === data/arcs.js === */
 /* 链条登记处。每条线自己一个文件，写完调 defArc 挂上来 */
@@ -5708,6 +5705,15 @@ function npcName(id){
 }
 var BOSS_NAME = { steady:'稳健型', strong:'强势型', shrewd:'精明型' };
 
+/* 底线议题写成一句人话，不写「底线议题：旧改」这种术语 */
+function bottomLine(b){
+  if (!b) return '';
+  if (b === '全部') return '这个人身上，谁的面子都不好使';
+  if (b === '前任秘书') return '崔延平那件事上，谁说也没用';
+  if (b === '青川旧账') return '青川那笔旧账上，谁说也没用';
+  return b + '上他不认人情';
+}
+
 /* === js/21-pool.js === */
 /* ── 21-pool：干部池、冲突对热度、露面 ───────────────────── */
 var Pool = {
@@ -6400,7 +6406,7 @@ var UI = {
       var unknown = VOTERS.filter(function(id){ return !Meeting.known(q, e, id); }).length;
       h += '<div class="bar-note" style="padding:6px 0 0">' +
         (unknown ? '还有 ' + unknown + ' 个人的态度你不知道' :
-          '数下来 ' + tl.yes + ' 比 ' + tl.no + '，过半要 ' + (e.need || 5) + ' 票') + '</div>';
+          '数下来 ' + tl.yes + ' 比 ' + tl.no) + '</div>';
       if (!q.done){
         h += '<div class="lab" style="margin-top:12px">做 工 作</div><div class="opts">';
         e.acts.forEach(function(a, i){
@@ -6434,7 +6440,6 @@ var UI = {
         (note ? '<div class="n">' + esc(note) + '</div>' : '') + '</button>';
     });
     h += '</div>';
-    if (e.nt) h += '<div class="neglect">放着不办：' + esc(e.nt) + '</div>';
     return h + '</div>';
   },
 
@@ -6452,7 +6457,7 @@ var UI = {
           '<div class="mini"><i style="width:' + G.stats.prestige + '%"></i></div>' :
           '<div class="kv"><i>对你</i><span>' + UI.favWord(s.fav) + '</span></div>' +
           '<div class="mini"><i style="width:' + s.fav + '%"></i></div>' +
-          (d.bottom ? '<div class="kv"><i>底线议题</i><span>' + d.bottom + '</span></div>' : '')) +
+          (d.bottom ? '<div class="l" style="margin-top:6px">' + bottomLine(d.bottom) + '</div>' : '')) +
         '</div>';
     });
     h += '</div></div>';
@@ -6555,7 +6560,7 @@ var UI = {
       }).join('') + '</div>';
     }
     var h = '<div class="panel"><h3>履历 · 功</h3>' + lines(a.merit) + '</div>';
-    h += '<div class="panel" style="margin-top:12px"><h3>履历 · 过（不能用功抵）</h3>' +
+    h += '<div class="panel" style="margin-top:12px"><h3>履历 · 过</h3>' +
          lines(a.fault) + '</div>';
     h += '<div class="panel" style="margin-top:12px"><h3>留存材料</h3>' +
          lines(a.mats) + '</div>';
@@ -6670,8 +6675,7 @@ var UI = {
     if (undone.length){
       b += '<div class="lab">这 个 月 没 办 完 的</div><div style="margin-bottom:14px">';
       undone.forEach(function(q){
-        b += '<div class="kv"><i>' + DUE_TAG[q.due] + '</i><span>' + esc(q.title) +
-             (q.due === 'over' ? '　再不办就按后果算' : '') + '</span></div>';
+        b += '<div class="kv"><i>' + DUE_TAG[q.due] + '</i><span>' + esc(q.title) + '</span></div>';
       });
       b += '</div>';
     }
@@ -6694,9 +6698,18 @@ var UI = {
     });
   },
 
-  showRemarks: function(rs){
-    if (G.ending || !rs || !rs.length){ G.sel = null; UI.render(); return; }
-    var b = '<div class="lab">书 记 批 示</div>';
+  showRemarks: function(res){
+    var rs = (res && res.remarks) || [], ms = (res && res.missed) || [];
+    if (G.ending || (!rs.length && !ms.length)){ G.sel = null; UI.render(); return; }
+    var b = '';
+    if (ms.length){
+      b += '<div class="lab">没 办 的 那 几 件</div>';
+      ms.forEach(function(m){
+        b += '<div class="kv"><i>' + esc(m.on) + '</i><span>' + esc(m.t) + '</span></div>';
+      });
+      b += '<div style="height:14px"></div>';
+    }
+    if (rs.length) b += '<div class="lab">书 记 批 示</div>';
     rs.forEach(function(r){ b += UI.remarkHTML(r.t, r.on); });
     var d = UI.open(ymText(G.month - 1) + ' 呈阅件', b,
       '<button class="btn pri" data-x>进入 ' + ymText(G.month) + '</button>');
@@ -6737,7 +6750,7 @@ var UI = {
 
     h += block('履历 · 功', a.merit.slice(-8).map(function(x){
       return [ymText(x.m), esc(x.t)]; }), '这五年你什么也没留下');
-    h += block('履历 · 过（不能用功抵）', a.fault.map(function(x){
+    h += block('履历 · 过', a.fault.map(function(x){
       var r = x.rule && RULES[x.rule];
       return [ymText(x.m), esc(x.t) + (r ? '　<b style="color:' +
         (r.red ? 'var(--red)' : 'var(--ink3)') + '">' + r.n + '</b>' : '')]; }), '干净');
@@ -7016,14 +7029,16 @@ var Desk = {
     UI.render();
   },
 
-  /* 月末：没办的怎么处理 */
+  /* 月末：没办的怎么处理。真没办成的，那句话月末才说 */
   rollover: function(){
     var keep = [];
+    G.missed = [];
     G.queue.forEach(function(q){
       if (q.done) return;
       var e = EV(q.id);
       if (e.noRoll){
         applyFx(e.neglect);
+        if (e.nt) G.missed.push({ on: e.title, t: e.nt });
         logAdd(e.title + ' → 这个月过去了');
         return;
       }
@@ -7031,6 +7046,7 @@ var Desk = {
         /* 逾期再没办 → 按不办的后果结算 */
         applyFx(e.neglect);
         faultAdd(e.title + '：没办', null);
+        if (e.nt) G.missed.push({ on: e.title, t: e.nt });
         logAdd(e.title + ' → 没办，按后果结算');
         if (e.overdue_to && EV(e.overdue_to)){
           var n = Desk.push(e.overdue_to, 'month');
@@ -7099,6 +7115,7 @@ var Desk = {
     Pool.mszRule(G.done.length, c.k === 'msz');
     var remarks = Remark.build();
     Desk.rollover();
+    var missed = G.missed || [];
 
     G.done = [];
     G.month += 1;
@@ -7119,7 +7136,7 @@ var Desk = {
       Events.fill();
     }
     save();
-    return remarks;
+    return { remarks: remarks, missed: missed };
   }
 };
 

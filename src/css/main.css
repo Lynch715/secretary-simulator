@@ -90,8 +90,6 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 .opt.gray{border-left:3px solid var(--red)}
 .opt.gray .rule{font-size:12px;color:var(--red);margin-top:3px}
 .opt[disabled]{opacity:.45;cursor:not-allowed}
-.neglect{font-size:13px;color:var(--ink3);margin-top:12px;padding-top:10px;
-  border-top:1px solid var(--line2)}
 
 /* 结果 */
 .result{border:1px solid var(--line);background:var(--paper2);padding:12px 14px;margin-top:12px}
@@ -167,7 +165,6 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 /* 没批的批示 */
 .remark.none{color:var(--ink3);font-size:15px;border-left-color:var(--line);font-style:normal}
 .opt.gray{border-left:3px solid var(--red)}
-.neglect{font-family:var(--song)}
 
 /* 这些人之间 */
 .pair{display:grid;grid-template-columns:1fr 150px 1fr;align-items:center;gap:10px;margin-top:13px}

@@ -182,7 +182,7 @@ var UI = {
       var unknown = VOTERS.filter(function(id){ return !Meeting.known(q, e, id); }).length;
       h += '<div class="bar-note" style="padding:6px 0 0">' +
         (unknown ? '还有 ' + unknown + ' 个人的态度你不知道' :
-          '数下来 ' + tl.yes + ' 比 ' + tl.no + '，过半要 ' + (e.need || 5) + ' 票') + '</div>';
+          '数下来 ' + tl.yes + ' 比 ' + tl.no) + '</div>';
       if (!q.done){
         h += '<div class="lab" style="margin-top:12px">做 工 作</div><div class="opts">';
         e.acts.forEach(function(a, i){
@@ -216,7 +216,6 @@ var UI = {
         (note ? '<div class="n">' + esc(note) + '</div>' : '') + '</button>';
     });
     h += '</div>';
-    if (e.nt) h += '<div class="neglect">放着不办：' + esc(e.nt) + '</div>';
     return h + '</div>';
   },
 
@@ -234,7 +233,7 @@ var UI = {
           '<div class="mini"><i style="width:' + G.stats.prestige + '%"></i></div>' :
           '<div class="kv"><i>对你</i><span>' + UI.favWord(s.fav) + '</span></div>' +
           '<div class="mini"><i style="width:' + s.fav + '%"></i></div>' +
-          (d.bottom ? '<div class="kv"><i>底线议题</i><span>' + d.bottom + '</span></div>' : '')) +
+          (d.bottom ? '<div class="l" style="margin-top:6px">' + bottomLine(d.bottom) + '</div>' : '')) +
         '</div>';
     });
     h += '</div></div>';
@@ -337,7 +336,7 @@ var UI = {
       }).join('') + '</div>';
     }
     var h = '<div class="panel"><h3>履历 · 功</h3>' + lines(a.merit) + '</div>';
-    h += '<div class="panel" style="margin-top:12px"><h3>履历 · 过（不能用功抵）</h3>' +
+    h += '<div class="panel" style="margin-top:12px"><h3>履历 · 过</h3>' +
          lines(a.fault) + '</div>';
     h += '<div class="panel" style="margin-top:12px"><h3>留存材料</h3>' +
          lines(a.mats) + '</div>';
@@ -452,8 +451,7 @@ var UI = {
     if (undone.length){
       b += '<div class="lab">这 个 月 没 办 完 的</div><div style="margin-bottom:14px">';
       undone.forEach(function(q){
-        b += '<div class="kv"><i>' + DUE_TAG[q.due] + '</i><span>' + esc(q.title) +
-             (q.due === 'over' ? '　再不办就按后果算' : '') + '</span></div>';
+        b += '<div class="kv"><i>' + DUE_TAG[q.due] + '</i><span>' + esc(q.title) + '</span></div>';
       });
       b += '</div>';
     }
@@ -476,9 +474,18 @@ var UI = {
     });
   },
 
-  showRemarks: function(rs){
-    if (G.ending || !rs || !rs.length){ G.sel = null; UI.render(); return; }
-    var b = '<div class="lab">书 记 批 示</div>';
+  showRemarks: function(res){
+    var rs = (res && res.remarks) || [], ms = (res && res.missed) || [];
+    if (G.ending || (!rs.length && !ms.length)){ G.sel = null; UI.render(); return; }
+    var b = '';
+    if (ms.length){
+      b += '<div class="lab">没 办 的 那 几 件</div>';
+      ms.forEach(function(m){
+        b += '<div class="kv"><i>' + esc(m.on) + '</i><span>' + esc(m.t) + '</span></div>';
+      });
+      b += '<div style="height:14px"></div>';
+    }
+    if (rs.length) b += '<div class="lab">书 记 批 示</div>';
     rs.forEach(function(r){ b += UI.remarkHTML(r.t, r.on); });
     var d = UI.open(ymText(G.month - 1) + ' 呈阅件', b,
       '<button class="btn pri" data-x>进入 ' + ymText(G.month) + '</button>');
@@ -519,7 +526,7 @@ var UI = {
 
     h += block('履历 · 功', a.merit.slice(-8).map(function(x){
       return [ymText(x.m), esc(x.t)]; }), '这五年你什么也没留下');
-    h += block('履历 · 过（不能用功抵）', a.fault.map(function(x){
+    h += block('履历 · 过', a.fault.map(function(x){
       var r = x.rule && RULES[x.rule];
       return [ymText(x.m), esc(x.t) + (r ? '　<b style="color:' +
         (r.red ? 'var(--red)' : 'var(--ink3)') + '">' + r.n + '</b>' : '')]; }), '干净');

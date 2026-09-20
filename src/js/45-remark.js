@@ -10,17 +10,34 @@ var Remark = {
     return remarkOf(tier);
   },
 
-  build: function(){
+  /* 家里的事不进呈阅件。书记不会对你爱人过生日批示——
+     他只在这件事碰到工作的时候才开口，而那句话是写在选项上的。
+     选项没写，这个月他就没提过这件事，批示栏里也不该有它 */
+  isFam: function(id){
+    var e = EV(id);
+    return !!(e && (e.fam || e.src === '家里'));
+  },
+  famWord: function(rk){
+    if (rk == null) return '';
+    if (typeof rk === 'string') return rk;
+    return rk[G.bossType] || '';
+  },
+
+  build: function(missed){
     var out = [];
     G.done.forEach(function(d){
       if (d.tier === 'none') return;
+      if (Remark.isFam(d.id)){
+        var w = Remark.famWord(d.rk);
+        if (w) out.push({ on: d.title, t: w });
+        return;
+      }
       out.push({ on: d.title, t: Remark.textOf(d.rk, d.tier || 'good') });
     });
-    var missed = G.queue.filter(function(q){
-      return !q.done && (q.due === 'month' || q.due === 'over');
-    });
-    if (missed.length){
-      out.push({ on: missed[0].title, t: remarkOf('none') });
+    /* 真没办成的挑一件，他问一句。家里的事不算 */
+    var late = (missed || []).filter(function(m){ return !Remark.isFam(m.id); });
+    if (late.length){
+      out.push({ on: late[0].on, t: remarkOf('none') });
     }
     out = out.slice(0, 6);
     out.forEach(function(r){ G.archive.remarks.push({ m: G.month, on: r.on, t: r.t }); });

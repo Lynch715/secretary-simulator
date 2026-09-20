@@ -194,7 +194,7 @@ var Desk = {
       var e = EV(q.id);
       if (e.noRoll){
         applyFx(e.neglect);
-        if (e.nt) G.missed.push({ on: e.title, t: e.nt });
+        if (e.nt) G.missed.push({ id: e.id, on: e.title, t: e.nt });
         logAdd(e.title + ' → 这个月过去了');
         return;
       }
@@ -202,7 +202,7 @@ var Desk = {
         /* 逾期再没办 → 按不办的后果结算 */
         applyFx(e.neglect);
         faultAdd(e.title + '：没办', null);
-        if (e.nt) G.missed.push({ on: e.title, t: e.nt });
+        if (e.nt) G.missed.push({ id: e.id, on: e.title, t: e.nt });
         logAdd(e.title + ' → 没办，按后果结算');
         if (e.overdue_to && EV(e.overdue_to)){
           var n = Desk.push(e.overdue_to, 'month');
@@ -269,9 +269,9 @@ var Desk = {
     }
 
     Pool.mszRule(G.done.length, c.k === 'msz');
-    var remarks = Remark.build();
     Desk.rollover();
     var missed = G.missed || [];
+    var remarks = Remark.build(missed);
 
     G.done = [];
     G.month += 1;

@@ -23,6 +23,9 @@ var Private = {
   /* 欠账 */
   addOwe: function(who, what, back){
     Private.init();
+    /* 他本来就记着你一次。这回开口，两清，不欠 */
+    var fc = Cards.has('favor', who);
+    if (fc){ Cards.drop(fc.id); G._even = who; return; }
     G.owe.push({ who: who, what: what, back: back || '',
       m: G.month, due: G.month + 3 + ri(4), done: 0 });
   },
@@ -38,7 +41,7 @@ var Private = {
   /* 每月跑一遍 */
   tick: function(){
     Private.init();
-    Private.earn(0.25);                     /* 两份工资，还着房贷，一年攒三万 */
+    Private.earn(Rank.save());                     /* 两份工资，还着房贷，一年攒三万 */
     Private.schedule();
     Private.her();
     Private.collect();

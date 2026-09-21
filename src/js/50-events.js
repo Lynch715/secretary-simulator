@@ -11,6 +11,7 @@ var Events = {
     if (Desk.has(e.id)) return false;
     if (e.fam && G.hidden.famBroken) return false;
     if (e.orig && e.orig !== G.origin) return false;
+    if (e.rankMin && (G.rank || 0) < e.rankMin) return false;
     return true;
   },
 
@@ -51,5 +52,7 @@ var Events = {
       Desk.push(e.id, rnd() < 0.62 ? 'month' : 'next');
     }
     if (Desk.hasFam()) G.flags.famLastMo = G.month;
+    Echo.gen();
+    Own.gen();
   }
 };

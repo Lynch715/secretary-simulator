@@ -26,7 +26,12 @@ var EVENTS_PRIVATE = [
       nlow:'这种话你在他面前张不开嘴',
       n:'他听完没说话。两天后组织部长在走廊上问起你妹妹。事办成了，书记也记住了你在城关区有个妹妹',
       fx:{trust:-4, fam:-3, clean:-6, dark:'sis_promo'},
-      rk:{ steady:'', strong:'知道了。', shrewd:'你妹妹在城关区？' } }
+      rk:{ steady:'', strong:'知道了。', shrewd:'你妹妹在城关区？' } },
+    { t:'让她按你们周末过的那几套题去考', d:0, tier:'good', req:{flag:'pave_sis'},
+      nlow:'这条路得提前几个月陪她准备，现在来不及了',
+      n:'笔试第一，面试第二，总分第一。公示那天她发来一张照片，一个字没打',
+      fx:{fam:-3, rep:+1},
+      rk:{} }
   ],
   neglect:{ fam:+3 } },
 
@@ -54,6 +59,11 @@ var EVENTS_PRIVATE = [
     { t:'让他接着排', d:0, tier:'tail',
       n:'你跟周雪说医院有医院的规矩。她说我知道，然后去厨房了',
       fx:{fam:+5, clean:+1},
+      rk:{} },
+    { t:'半年前那次检查就挂了号，现在排到第六位', d:0.5, tier:'good', req:{flag:'pave_law'},
+      nlow:'要是半年前带他查过一次、把号先挂上，现在不至于',
+      n:'第三周做的手术。周雪说，幸亏那回你非要带他去',
+      fx:{fam:-4, money:-1.2},
       rk:{} }
   ],
   neglect:{ fam:+4 } },
@@ -75,6 +85,11 @@ var EVENTS_PRIVATE = [
       n:'走的是下属事业单位公开招聘。小伟笔试考了五十八分，进了',
       fx:{clean:-8, fam:-3, npc:{zhujian:+6}, dark:'cousin_job',
           owe:{who:'zhujian', what:'小伟那个编制', back:'小伟说单位让他写辞职报告'}},
+      rk:{} },
+    { t:'让他去考，培训班已经上了一年多', d:0, tier:'good', req:{flag:'pave_cousin'},
+      nlow:'他要是早一年开始准备，你还能说这句话',
+      n:'考了两回。第二回进了梅岭一个乡的农技站，有编。姑妈嫌远，小伟自己愿意去',
+      fx:{fam:-2, rep:+1},
       rk:{} }
   ],
   neglect:{ fam:+3 } },
@@ -103,7 +118,12 @@ var EVENTS_PRIVATE = [
       n:'她只说了句知道了。八月底条子下来，孩子进了实验一小',
       fx:{gx:-4, fam:-4, npc:{xuanchuan:+8},
           owe:{who:'xuanchuan', what:'刘念上实验一小', back:'学校那边说学籍还差一样手续'}},
-      rk:{ shrewd:'孩子上哪个学校？' } }
+      rk:{ shrewd:'孩子上哪个学校？' } },
+    { t:'交周雪那份材料：三年的夜班记录，医院的推荐', d:1, tier:'good', req:{flag:'pave_son'},
+      nlow:'一线医护子女有名额，可是要三年的记录，得从他上幼儿园那年就开始攒',
+      n:'六个名额，报了十一家，刘念排第四。通知下来那天周雪在护士站哭了一场，回家没跟你说',
+      fx:{fam:-5},
+      rk:{} }
   ],
   neglect:{ fam:+5 } },
 
@@ -124,6 +144,11 @@ var EVENTS_PRIVATE = [
     { t:'先在县里治着，等这阵子忙完', d:0, tier:'tail',
       n:'这阵子一直没完。你妈后来不在电话里说病情了，只说都挺好',
       fx:{fam:+5},
+      rk:{} },
+    { t:'病历早就在市一院，直接走转诊', d:0.5, tier:'good', req:{flag:'pave_father'},
+      nlow:'要是早两年带他来建过病历，现在一张转诊单就够了',
+      n:'县医院开了转诊单，市一院按老病人收，第四天住进去的。你爸说，那年你非拉我来，我还骂你乱花钱',
+      fx:{money:-2, fam:-3},
       rk:{} }
   ],
   neglect:{ fam:+5 } },

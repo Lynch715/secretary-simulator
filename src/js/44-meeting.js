@@ -22,6 +22,7 @@ var Meeting = {
 
   /* 这个人的态度你看过没有 */
   known: function(it, e, id){
+    if (it.peek && it.peek[id]) return true;
     if (!e.mats) return true;
     for (var i = 0; i < e.mats.length; i++)
       if (e.mats[i].who === id) return Dossier.hasRead(it, e.mats[i].id);

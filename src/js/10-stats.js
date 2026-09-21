@@ -110,7 +110,8 @@ function statDrift(){
   var s = G.stats;
   s.guanxi = clamp(Math.round((s.guanxi - 1.1) * 10) / 10, 0, 100);
   if (s.rep > 50) s.rep = clamp(Math.round((s.rep - 0.9) * 10) / 10, 0, 100);
-  var t = s.trust > 52 ? -0.35 : (s.trust < 48 ? 0.35 : 0);
+  /* 过了七十再往上，是另一种难：他用你用得越顺手，越容不得你出一点岔子 */
+  var t = s.trust > 72 ? -0.8 : s.trust > 52 ? -0.35 : (s.trust < 48 ? 0.35 : 0);
   s.trust = clamp(Math.round((s.trust + t) * 10) / 10, 0, 100);
 }
 

@@ -15,6 +15,7 @@ if (typeof EVENTS_END     !== 'undefined') EVENTS = EVENTS.concat(EVENTS_END);
 if (typeof EVENTS_CUT     !== 'undefined') EVENTS = EVENTS.concat(EVENTS_CUT);
 if (typeof EVENTS_SJ      !== 'undefined') EVENTS = EVENTS.concat(EVENTS_SJ);
 if (typeof EVENTS_TF      !== 'undefined') EVENTS = EVENTS.concat(EVENTS_TF);
+if (typeof EVENTS_SONG    !== 'undefined') EVENTS = EVENTS.concat(EVENTS_SONG);
 
 var EV_BY_ID = {};
 EVENTS.forEach(function(e){ EV_BY_ID[e.id] = e; });

@@ -20,7 +20,7 @@ var Desk = {
       used += d; txt.push(r.t + ' ' + d + ' 天');
     }
     G.routine = txt.join('，');
-    return WORKDAYS - used;
+    return WORKDAYS - used + Rank.days();
   },
 
   push: function(id, due, plan){
@@ -45,6 +45,7 @@ var Desk = {
     if (!req) return true;
     for (var k in req){
       if (k === 'money'){ if (!Private.can(req[k])) return false; continue; }
+      if (k === 'flag'){ if (!G.flags[req[k]]) return false; continue; }
       if (k === 'keep'){
         var want = req[k], got = false;
         G.archive.mats.forEach(function(m){ if (m.t.indexOf(want) >= 0) got = true; });
@@ -129,41 +130,74 @@ var Desk = {
     return G.days;
   },
 
+  /* 这件事眼下有哪几条路。手里的人情对得上，就多一条 */
+  optsOf: function(it, e){
+    var call = Cards.callOpt(e);
+    return call ? e.opts.concat([call]) : e.opts;
+  },
+  /* 这条路要花几天。交给小周跑的不占你的天数，见不得人的事他跑不了 */
+  costFor: function(it, e, o){
+    if (e.free) return 0;
+    if (it.deleg && !o.rule) return 0;
+    return costOf(dayOf(o)) + (it.held ? 1 : 0);
+  },
+  canDeleg: function(it, e){
+    return Rank.canDeleg() && Cards.plain(e) && !it.done;
+  },
+  deleg: function(u){
+    var it = Desk.find(u); if (!it || it.done) return;
+    var e = EV(it.id);
+    if (G.flags.delegMo !== G.month){ G.flags.delegMo = G.month; G.flags.delegN = 0; }
+    if (it.deleg){ it.deleg = 0; G.flags.delegN = Math.max(0, (G.flags.delegN || 0) - 1); }
+    else { if (!Desk.canDeleg(it, e)) return; it.deleg = 1; G.flags.delegN = (G.flags.delegN || 0) + 1; }
+    save(); UI.render();
+  },
+
   /* 选了一条拟办意见 */
   choose: function(u, idx){
     var it = Desk.find(u); if (!it || it.done) return;
-    var e = EV(it.id); var o = e.opts[idx]; if (!o) return;
+    var e = EV(it.id); var o = Desk.optsOf(it, e)[idx]; if (!o) return;
     if (o.req && !Desk.meet(o.req)) return;
     if (o.reqFind && !Dossier.lit(it, e, o.reqFind)) return;
     if (e.slot && !it.slotDone){ UI.toast('先把这四个空排了'); return; }
-    var cost = costOf(dayOf(o)) + (it.held ? 1 : 0);
+    var cost = Desk.costFor(it, e, o);
     if (cost > G.days + 0.001 && !e.force){
       UI.toast('这个月剩下的天数不够了');
       return;
     }
     spendDays(cost);
+    G._even = null;
     applyFx(o.fx);
+    var got = Cards.gain(e, o);
+    var usedCard = null;
+    if (o.card){ usedCard = Cards.find(o.card); Cards.drop(o.card); }
     if (o.rule){
       var r = ruleOf(o.rule);
       applyFx({ lead: leadOf(o.rule) });
       faultAdd(e.title + '：' + o.t, o.rule);
       if (r && r.red){ G.flags.redline = 1; applyFx({ risk:+2 }); }
-    } else {
-      meritAdd(e.title + '：' + o.t);
+    } else if (!e.free){
+      meritAdd((e.own ? '' : e.title + '：') + o.t);
     }
     if (o.coop) G.archive.coop += o.coop;
     if (o.setf) for (var fk in o.setf) G.flags[fk] = o.setf[fk];
     if (o.rest) Slots.rest(it, o.rest);
+    if (G._heard){ got.push(G._heard); G._heard = null; }
     if (o.grudge) Private.addGrudge(o.grudge);
     if (o.clear && o.oweIdx != null) Private.settle(o.oweIdx);
     if (o.renege && o.oweIdx != null) Private.renege(o.oweIdx);
+    if (o.days) G.days = Math.round((G.days + o.days) * 10) / 10;
     if (o.keep) keepAdd(o.keep, o.keyk);
     if (o.dropk) dropKey(o.dropk);
     /* 人情是消耗品：一个电话打出去就少一个 */
     if (o.req && o.req.gx && !(o.fx && o.fx.gx < 0)) applyFx({ gx: -(2 + Math.round(o.req.gx / 12)) });
     it.done = true;
     it.tier = o.tier || (o.rule ? 'gray' : 'good');
-    it.res = { t: o.t, n: o.n || '', keep: o.keep || '', rule: o.rule || null };
+    it.res = { t: o.t, n: (o.call ? o.resN : o.n) || '', keep: o.keep || '', rule: o.rule || null,
+               got: got.map(function(c){ return c.type === 'info' ? c.t : Cards.label(c); }),
+               used: usedCard ? Cards.label(usedCard) : (G._even ? Pool.side(G._even).n + ' 记着你一次' : ''),
+               even: G._even ? 1 : 0, deleg: it.deleg ? 1 : 0 };
+    UI._fresh = it.uid;
     G.done.push({ id: it.id, title: e.title, tier: it.tier, opt: o.t, rk: o.rk });
     logAdd(e.title + ' → ' + o.t);
     if (e.acts){
@@ -176,6 +210,11 @@ var Desk = {
       it.res.t = it.res.t + '　——　' + tl.yes + ' 比 ' + tl.no + '，' + (tl.pass ? '过了' : '没过');
       logAdd(e.title + '：' + tl.yes + ' 比 ' + tl.no);
     }
+    if (!G.chose) G.chose = {};
+    if (!e.own && !e.echo && !o.call) G.chose[e.arc ? e.arc + '.' + e.stage : e.id] = { i: idx, m: G.month };
+    G._projUp = null;
+    Proj.onChoose(e, o, it);
+    if (G._projUp){ for (var pi = 0; pi < PROJ.length; pi++) if (PROJ[pi].k === G._projUp) it.res.proj = PROJ[pi].n; }
     checkLead();
     if (e.arc) Arcs.advance(e, idx, it);
     if (o.end) Endings.trigger(o.end);
@@ -195,12 +234,13 @@ var Desk = {
       if (e.noRoll){
         applyFx(e.neglect);
         if (e.nt) G.missed.push({ id: e.id, on: e.title, t: e.nt });
-        logAdd(e.title + ' → 这个月过去了');
+        if (!e.own && !e.echo) logAdd(e.title + ' → 这个月过去了');
         return;
       }
       if (q.due === 'over'){
         /* 逾期再没办 → 按不办的后果结算 */
         applyFx(e.neglect);
+        Proj.onNeglect(e);
         faultAdd(e.title + '：没办', null);
         if (e.nt) G.missed.push({ id: e.id, on: e.title, t: e.nt });
         logAdd(e.title + ' → 没办，按后果结算');
@@ -268,6 +308,27 @@ var Desk = {
       G.flags.famMiss = 0;
     }
 
+    /* 桌上不过夜：本月和逾期的全办了，而且不是闲月 */
+    var left = G.queue.filter(function(q){ var qe = EV(q.id); return !q.done && q.due !== 'plan' && !(qe && qe.own); }).length;
+    var clean = null;
+    if (!left && G.done.length >= 5){
+      G.flags.cleanRun = (G.flags.cleanRun || 0) + 1;
+      G.flags.cleanAll = (G.flags.cleanAll || 0) + 1;
+      applyFx({ en:+4 });
+      /* 头一回说一句整话，往后只记个数，不然月月都是那两句 */
+      clean = { t: G.flags.cleanRun === 1 ? pick(CLEAN_DESK[G.bossType] || CLEAN_DESK.steady)
+                  : '桌上不过夜，连着第 ' + G.flags.cleanRun + ' 个月', run: G.flags.cleanRun };
+      if (G.flags.cleanRun === 3){ applyFx({ rep:+3 }); clean.word = CLEAN_RUN3; }
+    } else {
+      G.flags.cleanRun = 0;
+    }
+    /* 秘书长讲十年前的人和事，总有一两句是有用的 */
+    var tea = null;
+    if (c.k === 'msz'){
+      var ks = VOTERS.filter(function(v){ return v !== 'mishuzhang'; });
+      tea = Cards.add('info', ks[ri(ks.length)], '秘书长办公室那两壶茶');
+    }
+
     Pool.mszRule(G.done.length, c.k === 'msz');
     Desk.rollover();
     var missed = G.missed || [];
@@ -283,6 +344,9 @@ var Desk = {
     Pool.drift();
     Msz.tick();
     Private.tick();
+    Proj.tick();
+    var year = (G.month > 1 && (G.month - 1) % 12 === 0) ? Proj.yearEnd() : null;
+    Rank.tick();
     checkLead();
     Endings.tick();
 
@@ -292,6 +356,7 @@ var Desk = {
       Events.fill();
     }
     save();
-    return { remarks: remarks, missed: missed };
+    return { remarks: remarks, missed: missed, clean: clean, year: year,
+             tea: tea ? tea.t : '' };
   }
 };

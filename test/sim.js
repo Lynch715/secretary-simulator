@@ -31,6 +31,10 @@ function mkCtx(){
 /* 四种打法：clean 从不伸手 / rare 偶尔伸手（一成）/ mid 随机 / greedy 有灰的就选灰的。
    rare 最接近一个真人：五年里伸过七八回手 */
 function chooseIdx(ctx, e, style, it){
+  const opts = ctx.Desk.optsOf(it, e);
+  /* 手里的人情对得上，多半会打这个电话 */
+  const ci = opts.findIndex(o => o.call);
+  if (ci >= 0 && Math.random() < 0.7){ STAT.calls++; return ci; }
   const ok = e.opts.map((o,i)=>
     (ctx.Desk.meet(o.req) && (!o.reqFind || ctx.Dossier.lit(it, e, o.reqFind))) ? i : -1
   ).filter(i=>i>=0);
@@ -75,6 +79,7 @@ function playOne(ctx, seed, style){
       const it = live[Math.floor(Math.random() * live.length)];
       const e = ctx.EV(it.id);
       if (e.mats) e.mats.forEach(m => ctx.Dossier.read(it.uid, m.id));
+      if (e.acts) ctx.Cards.forMeeting(it, e).filter(c => c.type === 'info' || Math.random() < 0.3).forEach(c => { ctx.Cards.play(it.uid, c.id); STAT.mplay++; });
       if (e.slot && !it.slotDone){
         pickSlots(ctx, it, e, style);
         ctx.Slots.confirm(it.uid);
@@ -89,21 +94,35 @@ function playOne(ctx, seed, style){
     if (G().ending) break;
     doneTotal += G().done.length;
     overCount += G().queue.filter(q => !q.done && q.due !== 'plan').length;
+    const infos = ctx.Cards.all().filter(c => c.type === 'info');
+    if (infos.length && Math.random() < 0.35 && ctx.Cards.tell(infos[0].id)) STAT.tell++;
+    if (G().promo != null){ STAT.promo.push(G().promo + '@' + G().month); G().promo = null; }
     const nights = ['rest','fam','ot','msz'];
     ctx.Desk.endMonth(nights[Math.floor(Math.random() * 4)]);
     if (G().days < 0) throw new Error('天数变负：第' + G().month + '月');
     if (G().month > 61) throw new Error('月份没停：' + G().month);
   }
   if (!G().ending) throw new Error('打到 ' + G().month + ' 月还没有结局');
+  (G().rankLog||[]).forEach((x,i)=>{ (STAT.city[i]=STAT.city[i]||[]).push(x.r); });
+  STAT.echo += Object.keys(G().echoed||{}).length; STAT.pave += Object.keys(G().flags).filter(k=>k.indexOf('pave_')===0).length;
+  STAT.proj += (G().proj.oldtown+G().proj.invest+G().proj.qingchuan)/3;
+  STAT.rank[G().rank] = (STAT.rank[G().rank] || 0) + 1;
+  STAT.got += G().cardGot || 0; STAT.used += G().cardUsed || 0;
+  STAT.praise += G().flags.praised || 0; STAT.clean += G().flags.cleanAll || 0;
+  STAT.trust += G().stats.trust; STAT.even += G().owe.length; STAT.n++;
   return { end: G().ending, month: G().month, over: overCount / Math.max(1, months),
            doneAvg: doneTotal / Math.max(1, months), merit: G().archive.merit.length,
            fault: G().archive.fault.length, lead: G().hidden.lead,
            dark: G().hidden.dark.length, remarks: G().archive.remarks.length };
 }
 
+let STAT;
+function resetStat(){ STAT = { calls:0, mplay:0, tell:0, promo:[], rank:{}, city:[], echo:0, pave:0, proj:0, got:0, used:0, praise:0, clean:0, trust:0, even:0, n:0 }; }
+resetStat();
 const N = parseInt(process.argv[2] || '200', 10);
 const ctx = mkCtx();
-['clean','rare','mid','greedy'].forEach(style => {
+(process.argv[3] ? [process.argv[3]] : ['clean','rare','mid','greedy']).forEach(style => {
+  resetStat();
   const tally = {}; let leadHit = 0, sumRemark = 0, sumFault = 0, sumOver = 0, sumDone = 0;
   for (let i = 0; i < N; i++){
     const r = playOne(ctx, 1000 + i, style);
@@ -111,6 +130,13 @@ const ctx = mkCtx();
     if (r.lead >= 35) leadHit++;
     sumRemark += r.remarks; sumFault += r.fault; sumOver += r.over; sumDone += r.doneAvg;
   }
+  const n = STAT.n, f = x => (x / n).toFixed(1);
+  const pm = {}; STAT.promo.forEach(x => { const [k, m] = x.split('@'); (pm[k] = pm[k] || []).push(+m); });
+  const pmS = Object.keys(pm).map(k => k + '级:' + pm[k].length + '局/均第' + (pm[k].reduce((a,b)=>a+b,0)/pm[k].length).toFixed(0) + '月').join('  ');
+  var extra = '   牌：到手 ' + f(STAT.got) + ' 用掉 ' + f(STAT.used) + '（电话 ' + f(STAT.calls) + ' 会上 ' + f(STAT.mplay) + ' 提一句 ' + f(STAT.tell) + '）\n' +
+    '   被夸 ' + f(STAT.praise) + ' 回　桌面清空 ' + f(STAT.clean) + ' 个月　局末信任 ' + f(STAT.trust) + '\n' +
+    '   省里排名（逐年均值）' + STAT.city.map(a => (a.reduce((x,y)=>x+y,0)/a.length).toFixed(1)).join(' → ') + '　局末三件事均值 ' + f(STAT.proj) + '　回响 ' + f(STAT.echo) + '　铺路 ' + f(STAT.pave) + '\n' +
+    '   职级分布 ' + JSON.stringify(STAT.rank) + '　' + pmS;
   const label = { clean:'从不伸手', rare:'偶尔伸手', mid:'随便点', greedy:'见灰就选' }[style];
   console.log('\n【' + label + '】' + N + ' 局，没有报错');
   Object.keys(tally).sort((a,b) => tally[b]-tally[a]).forEach(k => {
@@ -121,6 +147,7 @@ const ctx = mkCtx();
     (sumFault/N).toFixed(1) + ' 条');
   console.log('   每月办掉 ' + (sumDone/N).toFixed(1) + ' 件，月末还剩 ' +
     (sumOver/N).toFixed(1) + ' 件没办');
+  console.log(extra);
 });
 
 /* 十个结局都得判得出来 */

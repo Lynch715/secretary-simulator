@@ -93,6 +93,10 @@ var Slots = {
       else if (how === 'msz'){ npcFavor(c.who, -1); }
       else if (how === 'me'){ applyFx({ gx:+1 }); spendDays(0.5); }
     });
+    if (how === 'me'){
+      var heard = left.filter(function(c){ return c.who && INFO[c.who]; });
+      if (heard.length) G._heard = Cards.add('info', heard[ri(heard.length)].who, '中午见的那几个人');
+    }
     if (how === 'msz') Pool.addHeat('p_msz_me', 4);
   }
 };

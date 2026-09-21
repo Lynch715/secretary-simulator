@@ -5,7 +5,7 @@ var TABS = [
 ];
 
 /* 图都在 assets/ 里，按文件名找。没有就当没有，界面照常 */
-var SCENE_BY_SRC = { '书记交办':'office', '办文':'mishu', '突发':'petition',
+var SCENE_BY_SRC = { '自己':'night', '书记交办':'office', '办文':'mishu', '突发':'petition',
                      '有人找你':'door', '家里':'home', '常委会':'changwei' };
 function art(file, cls){
   return '<img class="art ' + (cls || '') + '" src="assets/' + file + '" alt="">';
@@ -38,7 +38,8 @@ var UI = {
       '<span>第 ' + G.month + ' / ' + TERM + ' 个月</span>' +
       '<span class="days">本月剩余 ' + G.days + ' 天</span>' +
       '<span>待办 ' + Desk.live() + '</span>' +
-      '<span style="margin-left:auto;color:var(--ink3)">周维安 书记' + boss + '</span></div>';
+      '<span class="me">' + esc(G.name || '') + ' · ' + Rank.cur().n + '</span>' +
+      '<span style="color:var(--ink3)">周维安 书记' + boss + '</span></div>';
   },
 
   stats: function(){
@@ -87,7 +88,49 @@ var UI = {
         '<div class="meta">' + esc(q.src) + ' · ' + when +
         (q.done ? ' · 已办' : '') + '</div></button></li>';
     });
-    return h + '</ul></div><div class="panel">' + UI.docPane() + '</div></div>';
+    h += '</ul>' + UI.hand() + '</div>';
+    return h + '<div class="panel">' + UI.docPane() + '</div></div>';
+  },
+
+  /* 手里的牌 */
+  hand: function(){
+    var cs = Cards.all();
+    if (!cs.length) return '';
+    var h = '<h3 class="hand-h">手 里</h3><div class="hand">';
+    cs.forEach(function(c){
+      h += '<button class="cardb ' + c.type + '" data-card="' + c.id + '">' +
+        '<span class="ct">' + (c.type === 'favor' ? '人情' : '消息') + '</span>' +
+        '<span class="cn">' + esc(Cards.label(c)) + '</span></button>';
+    });
+    return h + '</div>';
+  },
+
+  cardModal: function(cid){
+    var c = Cards.find(cid); if (!c) return;
+    var s = Pool.side(c.who);
+    var b = '<div class="kv"><i>' + esc(s.p) + '</i><span>' + ymText(c.m) + '</span></div>';
+    if (c.type === 'info'){
+      b += '<p style="font-family:var(--song);font-size:17px;margin:12px 0">' + esc(c.t) + '</p>';
+      b += '<div class="bar-note" style="padding:0">' + esc(c.from) + '</div>';
+    } else {
+      b += '<p style="font-family:var(--song);font-size:17px;margin:12px 0">' +
+        esc((CALL[c.who] && CALL[c.who].n) || '他记着你一次') + '</p>';
+      b += '<div class="bar-note" style="padding:0">' + esc(c.from) + '</div>';
+    }
+    var told = G.flags.toldMo === G.month;
+    var foot = '<button class="btn" data-x>放着</button>';
+    if (c.type === 'info')
+      foot += '<button class="btn pri" data-tell' + (told ? ' disabled' : '') + '>' +
+        (told ? '这个月已经提过一回了' : '找个没人的时候跟书记提一句') + '</button>';
+    var d = UI.open(esc(c.type === 'info' ? '关于' + s.n : Cards.label(c)), b, foot);
+    on($('[data-x]', d), 'click', UI.close);
+    on($('[data-tell]', d), 'click', function(){
+      var w = Cards.tell(cid); if (!w) return;
+      UI.close(); UI.render();
+      var d2 = UI.open('', '<p style="font-family:var(--song);text-indent:2em">' + esc(w) + '</p>',
+        '<button class="btn pri" data-x>嗯</button>');
+      on($('[data-x]', d2), 'click', UI.close);
+    });
   },
 
   docPane: function(){
@@ -101,19 +144,26 @@ var UI = {
     var n = (q.uid.replace(/\D/g, '') | 0);
     var scene = e.img || SCENE_BY_SRC[q.src] || '';
     var h = '<h3>送阅件</h3>' +
-      (scene ? artWrap('s_' + scene + '.png', 'art-banner') : '') +
+      (scene ? artWrap('s_' + scene + '.webp', 'art-banner') : '') +
       '<div class="doc">' +
       '<div class="no">云委办〔' + ymOf(G.month).y + '〕' + (100 + n * 7 % 800) + '号</div>' +
-      (e.who ? artWrap('p_' + e.who + '.png', 'art-face doc-face') : '') +
-      '<h2>' + esc(e.title) + '</h2>' +
+      (e.who ? artWrap('p_' + e.who + '.webp', 'art-face doc-face') : '') +
+      '<h2>' + esc(Rank.rename(e.title)) + '</h2>' +
       '<div class="sub">' + esc(q.src) + ' · ' + DUE_TAG[q.due] + ' · 剩 ' + Desk.daysLeft(q) +
       ' 天' + (q.bumped ? ' · 上月拖过来的' : '') +
       (q.held ? ' · 这件在秘书长那儿转了一圈' : '') + '</div>' +
-      '<p>' + esc(e.text) + '</p>';
+      '<p>' + esc(Rank.rename(e.text)) + '</p>';
     if (q.done){
-      return h + '<div class="result"><div class="r">你的处理：' + esc(q.res.t) + '</div>' +
-        (q.res.n ? '<div class="r" style="color:var(--ink2);font-size:14px">' + esc(q.res.n) + '</div>' : '') +
-        (q.res.keep ? '<div class="keep">留痕：' + esc(q.res.keep) + '</div>' : '') + '</div></div>';
+      var fresh = UI._fresh === q.uid; if (fresh) UI._fresh = null;
+      var r = q.res, extra = '';
+      if (r.proj) extra += '<div class="got">推了一把：' + esc(r.proj) + '</div>';
+      if (r.deleg) extra += '<div class="keep">小周跑的，没占你的天数</div>';
+      if (r.used) extra += '<div class="keep">用掉了：' + esc(r.used) + (r.even ? '。这回开口，两清，不欠他的' : '') + '</div>';
+      (r.got || []).forEach(function(g){ extra += '<div class="got">到手：' + esc(g) + '</div>'; });
+      return h + '<div class="result' + (fresh ? ' fresh' : '') + '"><span class="stamp">已办</span>' +
+        '<div class="r">你的处理：' + esc(r.t) + '</div>' +
+        (r.n ? '<div class="r" style="color:var(--ink2);font-size:14px">' + esc(Rank.rename(r.n)) + '</div>' : '') +
+        (r.keep ? '<div class="keep">留痕：' + esc(r.keep) + '</div>' : '') + extra + '</div></div>';
     }
     if (e.slot){
       var pk = Slots.picked(q);
@@ -199,21 +249,43 @@ var UI = {
         h += '</div>';
       }
     }
+    if (e.acts){
+      var mc = Cards.forMeeting(q, e);
+      if (mc.length){
+        h += '<div class="lab" style="margin-top:12px">手 里 能 打 的</div><div class="opts">';
+        mc.forEach(function(c){
+          var nm = Pool.side(c.who).n;
+          h += '<button class="opt cardopt" data-mc="' + c.id + '"><span class="d">当场</span>' +
+            '<span class="t">' + (c.type === 'favor' ? '让' + esc(nm) + '把上回那个人情还了'
+              : '你知道' + esc(nm) + '的一件事，先摸摸他的底') + '</span>' +
+            '<div class="n">' + (c.type === 'favor' ? '他这一票会往书记这边挪一大步。用掉就没了'
+              : esc(c.t) + '。不用看材料，他这一票你心里就有数了') + '</div></button>';
+        });
+        h += '</div>';
+      }
+    }
+    if (Desk.canDeleg(q, e) || q.deleg){
+      h += '<button class="deleg' + (q.deleg ? ' on' : '') + '" id="deleg"><span class="box">' +
+        (q.deleg ? '✓' : '') + '</span>这件交给小周去跑<i>不占你的天数。见不得人的事他跑不了</i></button>';
+    }
     h += '<div class="hr"></div><div class="lab">' +
       (e.acts ? '开 会 那 天' : '拟 办 意 见') + '</div><div class="opts">';
-    e.opts.forEach(function(o, i){
+    Desk.optsOf(q, e).forEach(function(o, i){
       var lackF = o.reqFind && !Dossier.lit(q, e, o.reqFind);
       var lack = lackF || (o.req && !Desk.meet(o.req));
-      var cost = costOf(dayOf(o)) + (q.held ? 1 : 0);
+      var cost = Desk.costFor(q, e, o);
       var noRoom = cost > G.days + 0.001 && !e.force;
       var nod = lack || noRoom;
       var note = lackF ? Dossier.lackWord(q, e, o.reqFind)
         : (lack ? (o.nlow || '') : (o.n || ''));
-      h += '<button class="opt' + (o.rule ? ' gray' : '') + '" data-o="' + i + '"' +
+      note = Rank.rename(note);
+      var even = (!lack && o.fx && o.fx.owe && Cards.has('favor', o.fx.owe.who))
+        ? '<div class="n even">' + esc(Pool.side(o.fx.owe.who).n) + '还记着你一次。这回开口，两清</div>' : '';
+      h += '<button class="opt' + (o.rule ? ' gray' : '') + (o.call ? ' cardopt' : '') + '" data-o="' + i + '"' +
         (nod ? ' disabled' : '') + '><span class="d">' +
         (lack ? '' : (noRoom ? '排不下' : (cost ? cost + ' 天' : '当场'))) + '</span>' +
         '<span class="t">' + esc(o.t) + '</span>' +
-        (note ? '<div class="n">' + esc(note) + '</div>' : '') + '</button>';
+        (note ? '<div class="n">' + esc(note) + '</div>' : '') + even + '</button>';
     });
     h += '</div>';
     return h + '</div>';
@@ -224,7 +296,7 @@ var UI = {
     var h = '<div class="panel"><h3>市委常委会</h3><div class="cards">';
     NPC_DEF.forEach(function(d){
       var s = G.npc[d.id] || { fav:40 };
-      h += '<div class="card">' + artWrap('p_' + d.id + '.png', 'art-face') +
+      h += '<div class="card">' + artWrap('p_' + d.id + '.webp', 'art-face') +
         '<div class="n">' + d.n + '</div>' +
         '<div class="p">' + d.p + ' · ' + d.f + '</div>' +
         '<div class="l">' + d.line + '</div>' +
@@ -239,6 +311,15 @@ var UI = {
     h += '</div></div>';
 
     var met = Pool.metList();
+    Proj.init();
+    h += '<div class="panel" style="margin-top:12px"><h3>他这一届要干成的三件事</h3><div style="padding:10px 14px">';
+    PROJ.forEach(function(p){
+      var v = Math.round(G.proj[p.k]);
+      h += '<div class="kv" style="font-size:14px"><i style="color:var(--ink)">' + p.n + '</i><span>' + PROJ_WORD(v) + '</span></div>' +
+        '<div class="mini red" style="margin-bottom:10px"><i style="width:' + v + '%"></i></div>';
+    });
+    h += '<div class="bar-note" style="padding:4px 0 0">去年全省十三个市，云州排第 ' + G.cityRank + '。' +
+      (G.rankLog.length ? '' : '那是他来之前的事') + '</div></div></div>';
     h += '<div class="panel" style="margin-top:12px"><h3>见过面的</h3>';
     if (!met.length){
       h += '<div class="empty">—</div>';
@@ -246,7 +327,7 @@ var UI = {
       h += '<div class="cards">';
       met.forEach(function(x){
         var s = G.pool[x.id];
-        h += '<div class="card">' + artWrap('p_' + x.id + '.png', 'art-face') +
+        h += '<div class="card">' + artWrap('p_' + x.id + '.webp', 'art-face') +
           '<div class="n">' + x.n + '</div>' +
           '<div class="p">' + Pool.postOf(x) + ' · ' + x.grp + ' · ' + x.age + ' 岁' +
           (G.pool[x.id].moved ? '　（' + ymText(G.pool[x.id].moved) + '调整）' : '') + '</div>' +
@@ -291,10 +372,10 @@ var UI = {
   qx: function(){
     npcInit();
     var h = '<div class="panel"><h3>云州市 三区三县</h3>' +
-      artWrap('s_city.png', 'art-banner') + '<div class="cards">';
+      artWrap('s_city.webp', 'art-banner') + '<div class="cards">';
     QX_DEF.forEach(function(d){
       var s = G.qx[d.id] || { fav:45 };
-      h += '<div class="card">' + artWrap('p_' + d.id + '.png', 'art-face') +
+      h += '<div class="card">' + artWrap('p_' + d.id + '.webp', 'art-face') +
         '<div class="n">' + d.n + '</div><div class="p">' + d.tag + '</div>' +
         '<div class="l">' + ((G.qxHead && G.qxHead[d.id]) || d.head) + '：' +
         ((G.qxHead && G.qxHead[d.id]) ? '新上任，还在摸情况' : d.hl) + '</div>' +
@@ -312,10 +393,10 @@ var UI = {
       : f >= 3 ? '她值夜班，你加班，一周能碰上两顿早饭'
       : '周末带孩子去了趟公园，你手机响了三次';
     Private.init();
-    var h = '<div class="panel"><h3>家里</h3>' + artWrap('s_home.png', 'art-banner') +
+    var h = '<div class="panel"><h3>家里</h3>' + artWrap('s_home.webp', 'art-banner') +
       '<div class="cards">';
     KIN.forEach(function(d){
-      h += '<div class="card">' + artWrap('p_' + d.id + '.png', 'art-face') +
+      h += '<div class="card">' + artWrap('p_' + d.id + '.webp', 'art-face') +
         '<div class="n">' + d.rel + (d.n ? '　' + d.n : '') + '</div>' +
         '<div class="l">' + d.line + '</div></div>';
     });
@@ -335,7 +416,15 @@ var UI = {
           '<span style="text-align:right;max-width:78%">' + esc(x.t) + '</span></div>';
       }).join('') + '</div>';
     }
-    var h = '<div class="panel"><h3>履历 · 功</h3>' + lines(a.merit) + '</div>';
+    var rk = Rank.cur();
+    var h = '<div class="panel"><h3>干部履历</h3><div class="card" style="border:0;position:relative;padding:10px 14px">' +
+      artWrap('p_me.webp', 'art-face') +
+      '<div class="kv"><i>姓名</i><span>' + esc(G.name) + '</span></div>' +
+      '<div class="kv"><i>现任</i><span>' + esc(rk.post) + '</span></div>' +
+      '<div class="kv"><i>职级</i><span>' + rk.n + '（' + ymText(G.rankAt[G.rank] || 1) + '起）</span></div>' +
+      '<div class="kv"><i>批示里被夸过</i><span>' + (G.flags.praised || 0) + ' 回</span></div>' +
+      '<div class="bar-note" style="padding:8px 0 0">' + esc(Rank.word()) + '</div></div></div>';
+    h += '<div class="panel" style="margin-top:12px"><h3>履历 · 功</h3>' + lines(a.merit) + '</div>';
     h += '<div class="panel" style="margin-top:12px"><h3>履历 · 过</h3>' +
          lines(a.fault) + '</div>';
     h += '<div class="panel" style="margin-top:12px"><h3>留存材料</h3>' +
@@ -382,10 +471,17 @@ var UI = {
       on(b, 'click', function(){ if (!b.disabled) Slots.toggle(G.sel, b.dataset.k); });
     });
     on($('#slotok'), 'click', function(){ Slots.confirm(G.sel); });
+    $$('[data-card]').forEach(function(b){
+      on(b, 'click', function(){ UI.cardModal(b.dataset.card); });
+    });
+    $$('[data-mc]').forEach(function(b){
+      on(b, 'click', function(){ Cards.play(G.sel, b.dataset.mc); });
+    });
+    on($('#deleg'), 'click', function(){ Desk.deleg(G.sel); });
     $$('.mat[data-m]').forEach(function(b){
       on(b, 'click', function(){ Dossier.read(G.sel, b.dataset.m); });
     });
-    $$('.opt').forEach(function(b){
+    $$('.opt[data-o]').forEach(function(b){
       on(b, 'click', function(){ if (!b.disabled) Desk.choose(G.sel, +b.dataset.o); });
     });
     on($('#exp'), 'click', exportSave);
@@ -476,8 +572,14 @@ var UI = {
 
   showRemarks: function(res){
     var rs = (res && res.remarks) || [], ms = (res && res.missed) || [];
-    if (G.ending || (!rs.length && !ms.length)){ G.sel = null; UI.render(); return; }
+    if (G.ending){ G.sel = null; UI.render(); return; }
+    UI._year = res && res.year;
+    if (!rs.length && !ms.length && !(res && (res.clean || res.tea))){ G.sel = null; UI.render(); UI.yearEnd(); return; }
     var b = '';
+    if (res.clean){
+      b += '<div class="cleandesk"><span class="seal">清</span><div>' + esc(res.clean.t) +
+        (res.clean.word ? '<div class="cw">' + esc(res.clean.word) + '</div>' : '') + '</div></div>';
+    }
     if (ms.length){
       b += '<div class="lab">没 办 的 那 几 件</div>';
       ms.forEach(function(m){
@@ -486,13 +588,63 @@ var UI = {
       b += '<div style="height:14px"></div>';
     }
     if (rs.length) b += '<div class="lab">书 记 批 示</div>';
-    rs.forEach(function(r){ b += UI.remarkHTML(r.t, r.on); });
+    rs.forEach(function(r){ b += UI.remarkHTML(r.t, r.on, r.praise); });
+    if (res.tea) b += '<div class="got" style="margin-top:12px">到手：' + esc(res.tea) + '</div>';
     var d = UI.open(ymText(G.month - 1) + ' 呈阅件', b,
       '<button class="btn pri" data-x>进入 ' + ymText(G.month) + '</button>');
-    on($('[data-x]', d), 'click', function(){ UI.close(); G.sel = null; UI.render(); });
+    on($('[data-x]', d), 'click', function(){ UI.close(); G.sel = null; UI.render(); UI.yearEnd(); });
   },
 
-  remarkHTML: function(txt, on){
+  /* 年底省里的通报。十三个市排一排 */
+  yearEnd: function(){
+    var y = UI._year; UI._year = null;
+    if (!y || G.ending){ UI.promo(); return; }
+    Proj.init();
+    var row = '';
+    for (var i = 1; i <= 13; i++)
+      row += '<span class="rk' + (i === y.r ? ' on' : '') + (i === y.last ? ' last' : '') + '">' + (i === y.r ? '云州' : i) + '</span>';
+    var pj = '';
+    PROJ.forEach(function(p){
+      var v = Math.round(G.proj[p.k]);
+      pj += '<div class="kv"><i>' + p.n + '</i><span>' + PROJ_WORD(v) + '</span></div>' +
+        '<div class="mini red"><i style="width:' + v + '%"></i></div>';
+    });
+    var b = '<div class="appoint yearp"><div class="ah">江东省委办公厅通报</div>' +
+      '<div class="ano">' + y.y + ' 年度全省地市综合考核结果</div><div class="aline"></div>' +
+      '<div class="bigr">第 <b>' + y.r + '</b> 名</div><div class="rks">' + row + '</div>' +
+      '<div class="ano" style="margin-top:8px">' + esc(y.d) + '</div></div>' +
+      '<p style="font-family:var(--song);text-indent:2em;margin-top:16px">' + esc(y.line) + '</p>' +
+      (y.bonus ? '<div class="got">' + esc(y.bonus) + '</div>' : '') +
+      '<div style="margin-top:14px">' + pj + '</div>';
+    var d = UI.open('', b, '<button class="btn pri" data-x>进入 ' + ymOf(G.month).y + ' 年</button>');
+    d.className += ' big';
+    on($('[data-x]', d), 'click', function(){ UI.close(); UI.render(); UI.promo(); });
+  },
+
+  /* 任命文件。整张纸，红头，盖章 */
+  promo: function(){
+    if (G.promo == null || G.ending) return;
+    var r = RANKS[G.promo]; G.promo = null; save();
+    if (!r) return;
+    var ym = ymOf(G.month);
+    var b = '<div class="appoint"><div class="ah">中共云州市委办公室文件</div>' +
+      '<div class="ano">云委办干〔' + ym.y + '〕' + (3 + r.k * 4) + '号</div><div class="aline"></div>' +
+      '<div class="at">关于' + esc(G.name) + '同志职级晋升的通知</div>' +
+      '<p>各科室：</p><p>经市委组织部批复同意，' + esc(G.name) + '同志晋升为' + r.n +
+      (r.k === 2 ? '，任市委办公室副主任，不再挂职' : '') + '。</p><p>特此通知。</p>' +
+      '<div class="asign">中共云州市委办公室<br>' + ym.y + '年' + ym.m + '月' +
+      '<span class="aseal"><i>★</i>中共云州市委办公室</span></div></div>' +
+      '<p style="font-family:var(--song);text-indent:2em;margin-top:16px">' + esc(r.story) + '</p>';
+    (r.got || []).forEach(function(g){ b += '<div class="got">' + esc(g) + '</div>'; });
+    var d = UI.open('', b, '<button class="btn pri" data-x>收好</button>');
+    d.className += ' big';
+    on($('[data-x]', d), 'click', function(){ UI.close(); UI.render(); });
+  },
+
+  remarkHTML: function(txt, on, praise){
+    if (praise) return '<div class="remark praise"><span class="ring">阅</span>' +
+      (txt ? esc(txt) + '　' : '') + '<b>' + esc(praise) + '</b>' +
+      '<span class="on">' + esc(on) + '</span></div>';
     if (!txt) return '<div class="remark none">（没批，右上角签了个名）' +
       '<span class="on">' + esc(on) + '</span></div>';
     return '<div class="remark">' + esc(txt) + '<span class="on">' + esc(on) + '</span></div>';
@@ -505,7 +657,7 @@ var UI = {
     var a = G.archive, mo = G.endAt || Math.min(G.month, TERM);
     var h = UI.head();
     h += '<div class="panel" style="margin-top:14px">' +
-      artWrap('e_' + G.ending + '.png', 'art-end') + '<div class="doc">';
+      artWrap('e_' + G.ending + '.webp', 'art-end') + '<div class="doc">';
     h += '<div class="no">云委办〔' + ymOf(mo).y + '〕结 字</div>';
     h += '<h2 style="font-size:24px">' + esc(e.n) + '</h2>';
     h += '<div class="sub">' + ymText(mo) + ' · 第 ' + mo + ' 个月</div>';
@@ -539,6 +691,7 @@ var UI = {
 
     /* 你自己的账和家里 */
     h += '<div class="panel" style="margin-top:12px"><h3>你自己</h3><div style="padding:10px 14px">' +
+      '<div class="kv"><i>走的时候</i><span>' + Rank.cur().n + '</span></div>' +
       '<div class="kv"><i>这五年</i><span>' + CLEAN_WORD(G.stats.clean) + '</span></div>' +
       '<div class="kv"><i>家里</i><span>' + (G.hidden.famBroken ? '她不问你几点回来了' :
         G.hidden.fam >= 8 ? '接送表上你的名字很少出现' : '还过得去') + '</span></div>' +
@@ -580,12 +733,14 @@ var UI = {
   },
 
   start: function(){
-    var b = artWrap('cover.png', 'art-cover') +
+    var b = artWrap('cover.webp', 'art-cover') +
       '<p style="font-family:var(--song);text-indent:2em">' +
       '周维安是上个月到的云州。到任第三天，他在办公室叫住你，问了你三个问题，' +
       '最后一个是你爱人做什么的。第二天办公室的分工表上，你名字后面添了四个字：书记秘书。</p>' +
-      '<p style="font-family:var(--song);text-indent:2em">你二十九，副科，第一年挂副主任。' +
+      '<p style="font-family:var(--song);text-indent:2em">你二十九，副科，挂的市委办副主任。' +
       '他这一届，五年。</p>' +
+      '<div class="lab">你 叫</div><div class="namerow"><span>刘</span>' +
+      '<input id="gname" maxlength="2" value="峥" autocomplete="off"></div>' +
       '<div class="lab">在 这 之 前</div><div class="opts">' +
       '<button class="opt" data-o="xds"><span class="t">选调生</span>' +
       '<div class="n">乡镇挂过两年，市委办三年。谁跟谁什么关系，你心里有本账</div></button>' +
@@ -598,8 +753,9 @@ var UI = {
     if (c) on(c, 'click', function(){ UI.close(); if (load()) UI.render(); });
     $$('.opt', d).forEach(function(btn){
       on(btn, 'click', function(){
+        var gn = $('#gname', d), nm = gn ? gn.value.replace(/[^\u4e00-\u9fa5]/g, '') : '';
         UI.close();
-        newGame({ origin: btn.dataset.o });
+        newGame({ origin: btn.dataset.o, name: '刘' + (nm || '峥') });
         npcInit();
         var o = btn.dataset.o;
         if (o === 'xds') applyFx({ gx:+10, rep:+3 });

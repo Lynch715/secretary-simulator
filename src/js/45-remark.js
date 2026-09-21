@@ -23,6 +23,21 @@ var Remark = {
     return rk[G.bossType] || '';
   },
 
+  /* 办得漂亮的那几件里挑一件，他多批一句。一个月最多一句 */
+  praise: function(out){
+    var P = PRAISE[G.bossType]; if (!P) return;
+    var good = out.filter(function(r){ return r.tier === 'good'; });
+    G.flags.dry = (G.flags.dry || 0) + 1;
+    if (!good.length || G.month < 3) return;
+    if (G.flags.dry < P.dry && rnd() >= P.p * Math.min(3, good.length)) return;
+    var r = good[ri(good.length)];
+    r.praise = pick(P.t);
+    G.flags.dry = 0;
+    G.flags.praised = (G.flags.praised || 0) + 1;
+    applyFx({ trust: P.trust });
+    meritAdd('书记在「' + r.on + '」上批了：' + r.praise);
+  },
+
   build: function(missed){
     var out = [];
     G.done.forEach(function(d){
@@ -32,15 +47,16 @@ var Remark = {
         if (w) out.push({ on: d.title, t: w });
         return;
       }
-      out.push({ on: d.title, t: Remark.textOf(d.rk, d.tier || 'good') });
+      out.push({ on: d.title, t: Remark.textOf(d.rk, d.tier || 'good'), tier: d.tier || 'good' });
     });
+    Remark.praise(out);
     /* 真没办成的挑一件，他问一句。家里的事不算 */
     var late = (missed || []).filter(function(m){ return !Remark.isFam(m.id); });
     if (late.length){
       out.push({ on: late[0].on, t: remarkOf('none') });
     }
     out = out.slice(0, 6);
-    out.forEach(function(r){ G.archive.remarks.push({ m: G.month, on: r.on, t: r.t }); });
+    out.forEach(function(r){ G.archive.remarks.push({ m: G.month, on: r.on, t: r.praise ? (r.t ? r.t + '　' : '') + r.praise : r.t, p: r.praise ? 1 : 0 }); });
     return out;
   }
 };

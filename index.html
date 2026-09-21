@@ -243,7 +243,7 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 /* ── 图。没有就整块不出现 ── */
 .artwrap{line-height:0}
 .art{display:block;max-width:100%}
-.art-banner{width:100%;height:150px;object-fit:cover;border-bottom:1px solid var(--line2);
+.art-banner{width:100%;height:96px;object-fit:cover;border-bottom:1px solid var(--line2);
   filter:saturate(.9)}
 .art-face{position:absolute;top:8px;right:8px;width:44px;height:58px;object-fit:cover;
   object-position:top center;border:1px solid var(--line);background:var(--paper)}
@@ -253,7 +253,7 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 .art-end{width:100%;height:280px;object-fit:cover;border-bottom:2px solid var(--red)}
 .art-cover{width:100%;height:160px;object-fit:cover;margin-bottom:12px}
 @media (max-width:760px){
-  .art-banner{height:110px}
+  .art-banner{height:64px}
   .art-end{height:180px}
   .art-face{width:38px;height:50px}
   .card.has-face{padding-right:52px}
@@ -274,12 +274,117 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 .inst-row .inst-yes{background:#8C1F1F;border-color:#8C1F1F;color:#F6F3EE}
 @media (max-width:760px){ .inst-row{justify-content:stretch} .inst-row button{flex:1} }
 
+/* ══ v1.4：手里的牌、红章、好批示、任命文件 ══════════════ */
+.datebar .me{margin-left:auto;font-family:var(--song);color:var(--ink);font-weight:700}
+
+/* 指标跳动要看得见 */
+.stat .delta{font-size:15px;font-family:var(--song);transform:translateY(6px);
+  transition:opacity .35s, transform .5s}
+.stat .delta.on{transform:translateY(0)}
+
+/* 手里 */
+.hand-h{border-top:1px solid var(--line)}
+.hand{padding:8px;display:flex;flex-direction:column;gap:6px}
+.cardb{display:flex;align-items:center;gap:8px;text-align:left;background:var(--paper);
+  border:1px solid var(--line);border-left:3px solid var(--gold);padding:8px 10px;cursor:pointer;min-height:40px}
+.cardb.favor{border-left-color:var(--red)}
+.cardb:hover{background:var(--paper2)}
+.cardb .ct{font-size:11px;color:var(--ink3);border:1px solid var(--line);padding:0 5px;flex:0 0 auto}
+.cardb.favor .ct{color:var(--red);border-color:var(--red)}
+.cardb .cn{font-size:13.5px;font-family:var(--song)}
+.opt.cardopt{border-left:3px solid var(--red);background:#F8F3EA}
+.opt .n.even{color:var(--red)}
+.got{font-family:var(--song);color:var(--red);font-size:15px;margin-top:6px;
+  padding-left:10px;border-left:3px solid var(--red)}
+
+/* 交给小周 */
+.deleg{display:flex;align-items:center;gap:8px;width:100%;margin-top:14px;text-align:left;
+  background:none;border:1px dashed var(--line);padding:8px 10px;cursor:pointer;font-size:14px;min-height:40px}
+.deleg .box{width:16px;height:16px;border:1px solid var(--ink2);display:inline-flex;
+  align-items:center;justify-content:center;font-size:12px;flex:0 0 auto}
+.deleg i{font-style:normal;color:var(--ink3);font-size:12px;margin-left:auto}
+.deleg.on{border-style:solid;border-color:var(--red);color:var(--red)}
+.deleg.on .box{border-color:var(--red)}
+
+/* 已办红章 */
+.result{position:relative;overflow:hidden}
+.result .stamp{position:absolute;right:14px;top:8px;border:2.5px solid var(--red);color:var(--red);
+  font-family:var(--song);font-weight:700;font-size:17px;letter-spacing:.2em;text-indent:.2em;
+  padding:2px 8px;transform:rotate(-9deg);opacity:.5;pointer-events:none}
+.result.fresh .stamp{animation:stampin .42s cubic-bezier(.2,1.4,.4,1) both}
+.result.fresh .got{animation:gotin .5s .35s both}
+@keyframes stampin{0%{transform:rotate(-9deg) scale(2.6);opacity:0}
+  60%{opacity:.9}100%{transform:rotate(-9deg) scale(1);opacity:.5}}
+@keyframes gotin{0%{opacity:0;transform:translateX(-8px)}100%{opacity:1;transform:none}}
+.result .r{padding-right:74px}
+.result .r + .r{padding-right:0}
+
+/* 好批示 */
+.remark.praise{font-size:21px;border-left-width:5px;background:var(--redbg);padding:10px 12px;
+  position:relative;animation:gotin .5s both}
+.remark.praise b{font-size:24px}
+.remark.praise .ring{float:right;width:40px;height:40px;border:2px solid var(--red);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:17px;transform:rotate(-12deg);margin-left:8px}
+.cleandesk{display:flex;gap:12px;align-items:center;border:1px solid var(--red);background:var(--redbg);
+  padding:10px 12px;margin-bottom:14px;font-family:var(--song);font-size:15.5px}
+.cleandesk .seal{flex:0 0 auto;width:38px;height:38px;border-radius:50%;padding:0;display:flex;
+  align-items:center;justify-content:center;font-size:18px;font-weight:700}
+.cleandesk .cw{font-size:13px;color:var(--red);margin-top:4px;font-family:var(--hei)}
+
+/* 任命文件 */
+.mask.big .modal{max-width:620px}
+.appoint{border:1px solid var(--line);background:#FBFAF6;padding:22px 26px 30px;font-family:var(--song);
+  animation:paperin .5s both}
+@keyframes paperin{0%{opacity:0;transform:translateY(14px)}100%{opacity:1;transform:none}}
+.appoint .ah{text-align:center;color:var(--red);font-size:25px;font-weight:700;letter-spacing:.12em}
+.appoint .ano{text-align:center;font-size:14px;margin-top:12px}
+.appoint .aline{border-top:2.5px solid var(--red);margin:8px 0 18px}
+.appoint .at{text-align:center;font-size:19px;font-weight:700;margin-bottom:14px}
+.appoint p{text-indent:2em;margin:6px 0;font-size:16px}
+.appoint p:first-of-type{text-indent:0}
+.appoint .asign{text-align:right;margin-top:26px;position:relative;font-size:15px;padding-right:8px}
+.appoint .aseal{position:absolute;right:-6px;top:-34px;width:104px;height:104px;border:3px solid var(--red2);
+  border-radius:50%;color:var(--red2);font-size:0;opacity:.78;transform:rotate(-8deg);
+  display:flex;align-items:center;justify-content:center;animation:stampin2 .5s .5s cubic-bezier(.2,1.4,.4,1) both}
+.appoint .aseal i{font-style:normal;font-size:34px}
+@keyframes stampin2{0%{transform:rotate(-8deg) scale(2.4);opacity:0}100%{transform:rotate(-8deg) scale(1);opacity:.78}}
+
+.namerow{display:flex;align-items:center;gap:6px;font-family:var(--song);font-size:20px;margin:4px 0 14px}
+.namerow input{font-family:var(--song);font-size:20px;width:4em;padding:4px 8px;border:0;
+  border-bottom:1px solid var(--ink2);background:none;color:var(--ink);outline:none}
+@media (max-width:760px){
+  .appoint{padding:16px 14px 26px}.appoint .ah{font-size:20px}
+  .appoint .aseal{width:84px;height:84px;top:-26px}
+  .deleg i{display:none}
+}
+
+.cardb{padding:6px 9px;min-height:36px}
+.cardb .cn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:760px){
+  .hand{flex-direction:row;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:8px}
+  .cardb{flex:0 0 auto;max-width:200px}
+}
+.main>.panel{min-width:0}
+.hand{max-width:100%}
+
+/* v1.4 第二批：三件事、年终通报 */
+.mini.red i{background:var(--red)}
+.yearp .bigr{text-align:center;font-size:20px;margin:6px 0 12px}
+.yearp .bigr b{font-size:54px;color:var(--red);font-weight:700;padding:0 6px;display:inline-block;
+  animation:stampin2b .6s .3s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes stampin2b{0%{transform:scale(2.4);opacity:0}100%{transform:scale(1);opacity:1}}
+.rks{display:flex;gap:3px;justify-content:center;flex-wrap:nowrap}
+.rks .rk{flex:1 1 0;min-width:0;text-align:center;font-size:12px;padding:5px 0;border:1px solid var(--line);
+  color:var(--ink3);font-family:var(--hei)}
+.rks .rk.last{border-style:dashed;border-color:var(--ink2)}
+.rks .rk.on{background:var(--red);border-color:var(--red);color:#fff;font-weight:700;flex:1.8 1 0}
+
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-/* 大秘 build 2026-09-20 09:03 */
+/* 大秘 build 2026-09-21 08:32 */
 "use strict";
 /* === data/arcs.js === */
 /* 链条登记处。每条线自己一个文件，写完调 defArc 挂上来 */
@@ -1480,6 +1585,195 @@ defArc(
     neglect:{ rep:-3 } }
 
 ]});
+
+/* === data/cards.js === */
+/* ── 手里的牌：人情和消息 ─────────────────────────────
+   人情：这个人记着你一次。等一件他说得上话的事，一个电话打过去，用掉就没了。
+   消息：你知道了一件别人不知道的事。可以在常委会前用来摸一个人的底，
+         也可以找个没人的时候跟书记提一句。
+
+   CALL 是那通电话怎么写。CALL_ON 是哪件事上谁说得上话——一件一件手标的，
+   不靠关键词去猜（试过，「港口」两个字能把不相干的事也对上）。
+   纪委书记不在这张表里：他身上谁的面子都不好使 */
+var CALL_ON = {
+  petition:['chengguan','zhengfa'],   plant_smoke:['qingchuan','zhengfa'],
+  num_gap:['gaoxin'],                 qc_request:['qingchuan'],
+  gz_qiye:['vice1','zhujian','caizheng'], gz_jiashu:['zhujian'],  gz_juzhang:['vice1'],
+  xin_baisha:['baisha'],              xin_renshi:['zuzhi'],
+  gao_diaoyan:['keshang'],            gao_shengli:['keshang','depsec'],
+  gao_shuming:['keshang'],            gao_zhuchi:['keshang'],     gao_hexin:['keshang'],
+  gao_qingshi:['depsec','keshang'],   sj_gaoshou:['keshang'],
+  ban_tuiwen:['meiling'],             ban_zhiban:['gongan','mishuzhang'],
+  ban_jiedai:['mishuzhang'],          ban_jiediao:['zuzhi'],      ban_yueji:['mayor'],
+  ban_jizhe:['xuanchuan'],            ban_huiyi:['mishuzhang'],   ban_che:['mishuzhang'],
+  chu_xds_laoshu:['fagai'],           chu_xz_xiangli:['mayor'],
+  sj_modi:['gangkou','guozi'],        sj_koujing:['depsec'],      sj_jiaoren:['gaoxin'],
+  tf_baoyu:['meiling','gongan'],      tf_shipin:['xuanchuan','chengguan'],
+  tf_anfang:['xuanchuan','qingchuan'],tf_qianxin:['gaoxin','caizheng','zhengfa','vice1'],
+  tf_gongche:['xuanchuan'],           tf_shitang:['chengguan','xuanchuan']
+};
+var CALL = {
+  mayor:     { t:'给市长的秘书打个电话',
+    n:'陈立群还记着你上回那件事。政府那头的事，他点个头就动了',
+    res:'下午政府办回了电话，说市长交代过了。两天办完，没有人问为什么这么顺' },
+  vice1:     { t:'去高振邦办公室坐五分钟',
+    n:'钱的事他说了算。上回那件事他还记着',
+    res:'他听完没表态，拿起电话拨给了财政局。你还没走出他那层楼，事情已经有人在办了' },
+  depsec:    { t:'请罗明川给省里递句话',
+    n:'他在省里待了十一年。上回那件事他还记着',
+    res:'电话打过去他只说了两句。第二天对方主动把材料要了过去' },
+  zuzhi:     { t:'找佟建民，提一句上回那件事',
+    n:'人事的闸门在他手里。他记着你一次',
+    res:'他笑了一下，说你倒是会挑时候。事情他应了，办得不声不响' },
+  zhengfa:   { t:'给韩树声打个电话',
+    n:'公安归他管。上回那件事他还记着',
+    res:'二十分钟以后现场就有人管了。他没提上回的事，你也没提。两清' },
+  xuanchuan: { t:'给方静仪打个电话',
+    n:'她最怕出舆情，也最会处理舆情。她记着你一次',
+    res:'她让网信办的人跟了一下午，该回应的回应了，该核实的核实了。第二天没人再提' },
+  mishuzhang:{ t:'请邱仲华出面',
+    n:'办公室那几个老人只听他的。他记着你一次',
+    res:'他出面比你出面好使，一句话就动了。事后他说，这回算我还你的' },
+  tongzhan:  { t:'请纪守望打个招呼',
+    n:'那个圈子的人都给他面子。他记着你一次',
+    res:'他一个电话打过去，对方第二天就上门了，话说得比你预想的客气得多' },
+  chengguan: { t:'给{N}打个电话',
+    n:'城关区的门对你是开的',
+    res:'电话里只说了一句：这事我来。下午城关区的人就到了，带队的是个副区长' },
+  gaoxin:    { t:'给{N}打个电话',
+    n:'高新区那边记着你一次',
+    res:'答应得很痛快。当晚东西就送到了你桌上，连格式都按市委办的要求排好了' },
+  gangkou:   { t:'给{N}打个电话',
+    n:'港口区那边记着你一次',
+    res:'他说这点事不用你跑。第三天港口区报上来一份东西，挑不出毛病' },
+  qingchuan: { t:'给{N}打个电话',
+    n:'青川那边记着你一次',
+    res:'县里连夜让人把材料补齐了，该盖的章一个没少。电话里他说，上回的事我记着' },
+  baisha:    { t:'给{N}打个电话',
+    n:'白沙那边记着你一次',
+    res:'他自己开车跑了一趟，回来写了一页纸发给你。数是到村里一户一户对过的' },
+  meiling:   { t:'给{N}打个电话',
+    n:'梅岭那边记着你一次',
+    res:'快退的人办事反倒不拖。他说包在他身上，三天以后果然办妥了' },
+  zhujian:   { t:'给卢志高打个电话',
+    n:'住建口的事他一句话。他记着你一次',
+    res:'卢志高说小事。第二天住建局来了两个人，带着图纸，当场就把问题说清楚了' },
+  caizheng:  { t:'给阮学文打个电话',
+    n:'账上有没有钱，他最清楚。他记着你一次',
+    res:'阮学文查了十分钟，回电话说有一笔结余可以先动。手续他那边补' },
+  gongan:    { t:'给童大勇打个电话',
+    n:'他记着你一次',
+    res:'童大勇没多问。四十分钟后他回电话，人找到了，事情也问清楚了' },
+  fagai:     { t:'给曹世昌打个电话',
+    n:'项目的事绕不开他。他记着你一次',
+    res:'曹世昌让人把卡着的那一环单独拎出来，当周就上了他们的主任办公会' },
+  guozi:     { t:'给尹立本打个电话',
+    n:'他记着你一次',
+    res:'尹立本快退了，话不多。第二天国资委把底数报了上来，比你要的还细' },
+  keshang:   { t:'让葛守业带着科里的人连夜弄',
+    n:'科里的人听他的。他记着你一次',
+    res:'他带两个人熬了一夜，早上八点稿子在你桌上，一个错字没有。他说，上回那件事科里都记着' }
+};
+
+/* 消息。每人两条，拿到哪条看运气 */
+var INFO = {
+  mayor:     ['陈立群上周去了两趟省里，没用市政府的车',
+              '陈立群的秘书在打听旧改那块地的评估是哪家做的'],
+  vice1:     ['高振邦把下半年的预备费压着没动，谁来要都说再等等',
+              '高振邦上个月单独请省财政厅的一个处长吃过饭'],
+  depsec:    ['罗明川在党校那期班上，跟省委组织部的人同桌吃了一个月饭',
+              '罗明川最近见区县的人都在晚上，在他宿舍'],
+  jiwei:     ['宋自强上个月调过港口区三年的招待费明细',
+              '纪委二室新借调了两个审计局的人'],
+  zuzhi:     ['佟建民抽屉里有一份名单，比报给书记的那份多两个人',
+              '佟建民今年没回老家过年，去了趟省里'],
+  zhengfa:   ['韩树声跟青川的一把手是党校同学，这层关系机关里没几个人知道',
+              '公安局上个月换了两个分局长，都是韩树声点的头'],
+  xuanchuan: ['方静仪压过一篇省报记者写青川的稿子，压稿的条子还在',
+              '方静仪想去省里，宣传部的人都看得出来'],
+  mishuzhang:['邱仲华每个月十五号下午都不在办公室，司机也不知道他去哪',
+              '老书记走之前单独见的最后一个人是邱仲华'],
+  tongzhan:  ['纪守望上次常委会前一天晚上接了市长一个电话，二十分钟',
+              '纪守望的儿子在高新区一家企业上班'],
+  chengguan: ['城关区信访办的台账有两本，报上来的是薄的那本',
+              '城关区的一把手每周四晚上都在市长家楼下那个茶馆'],
+  gaoxin:    ['高新区新签的那家企业，注册地址是一间还没交付的毛坯房',
+              '高新区跟高振邦为一笔配套资金拍过桌子'],
+  gangkou:   ['港口区的人每次来市委，都先去秘书长办公室',
+              '港口区那家改制的国企，评估报告中途换过一次评估所'],
+  qingchuan: ['青川县里最近开会，手机都收到门外',
+              '青川化工园二期的土方已经动了，批文还在路上'],
+  baisha:    ['白沙的一把手每周五回省城，周一早上五点再开回来',
+              '白沙报的搬迁户数，比民政那边的多四十一户'],
+  meiling:   ['梅岭的一把手在打听退下来以后能不能去人大',
+              '梅岭景区那条索道在红线图上压了线，没人提']
+};
+
+/* 跟书记提一句。三种人三种听法 */
+var TELL_BOSS = {
+  steady:['他听完点了下头，说知道了。过了一会儿又说：这种事，以后也跟我讲',
+          '他把笔放下听你说完，没问来源，只说了句：心里有数就行'],
+  strong:['他笔停了一下：「哪听来的？」你说了。他嗯了一声接着批文件。第二天他见那个人，话比平时少',
+          '他听完笑了一声，说我就知道。这话他是对着窗户说的'],
+  shrewd:['他没抬头，问：还有谁知道？你说应该没有。他说，好',
+          '他让你把门带上，再说一遍。听完他在台历上写了两个字，你没看清']
+};
+
+/* === data/echo.js === */
+/* ── 回响。报复不点破，好事要点破。
+   当初按规矩办、多花了那几天的事，过些日子会有人当着你的面提起来。
+   on：哪件事；opts：选了第几条才算；after：至少隔几个月；
+   不占天数，只有一条「收下」的路 ── */
+var ECHO = [
+  { on:'qc_request', opts:[1,2], after:8, src:'突发', img:'changwei',
+    title:'书记在会上提了一句',
+    text:'青川化工园的事省里下来倒查手续，查到二期用地那份请示。安评那一页，当时市委办是提过意见的，签批单上留着字。\n常委会上书记说：这个问题，办公室半年前就指出来过。散会的时候好几个人回头看了你一眼。',
+    ok:'把那张签批单的复印件收进抽屉', n:'马汉江后来见了你，先伸的手', fx:{ trust:+4, rep:+4 } },
+  { on:'num_gap', opts:[1,2], after:6, src:'办文', img:'office',
+    title:'省统计局下来核数',
+    text:'核了四个市的园区数据，高新区那个 11.4% 被单独拎出来问了一上午。\n书记那篇讲话里用的是你核过的数。核查组的人翻到那一页，没停。',
+    ok:'把讲话稿归档', n:'书记第二天让你把以后所有讲话里的数都过一遍。这活儿累，可是别人抢不走', fx:{ trust:+4 } },
+  { on:'gift_bag', opts:[0], after:10, src:'突发', img:'hotel',
+    title:'赵老板那家公司出事了',
+    text:'名单是从他公司的账上理出来的，机关里被叫去的人有七八个。\n你的名字后面跟着一行字：当日退还，有记录。机关纪委的人给你看了一眼那张表，说：你这个留得好。',
+    ok:'点点头，回去上班', n:'那几天走廊里很安静。有人路过你门口，脚步会慢一点', fx:{ rep:+5, trust:+2 } },
+  { on:'petition', opts:[2], after:7, src:'有人找你', img:'oldtown',
+    title:'传达室说有个老人找你',
+    text:'是那天堵门的人里的一个。补偿标准统一之后，他家多拿了四万一。\n他不进来，就在传达室门口站着，手里拎着一袋自家腌的咸菜。他说那天二十几个人，只有你坐下来听了两个钟头。',
+    ok:'咸菜收下，送他到门口', n:'咸菜很咸。你带回家，周雪说比超市的好', fx:{ rep:+3, en:+3 } },
+  { on:'gz_keyuan', opts:[0], after:9, src:'有人找你', img:'door',
+    title:'那个手抖的科员又来了',
+    text:'这回手不抖了。那个项目纪委查实了，验收报告是假的，局里处理了两个人，他没事。\n他站在你办公室门口说了声谢谢，说完就走，没进来。',
+    ok:'说了句好好干', n:'他后来考去了省里。走之前给你发过一条短信，很长，你看了两遍', fx:{ rep:+3 } },
+  { on:'ban_tuiwen', opts:[0,2], after:10, src:'有人找你', img:'county',
+    title:'贺兰生退之前来了一趟',
+    text:'手续办完了，下个月正式退。他说在梅岭干了三十一年，最后一件事是那笔文旅补助，钱到了，路修了一半。\n他给你带了两罐茶，说不值钱，自己家山上的。又说，机关里的事，他想起来一件，说给你听听。',
+    ok:'泡上茶，听他说', n:'他说了四十分钟。有一段你后来用上了', fx:{ rep:+2 }, info:'meiling' },
+  { on:'talk_young', opts:[0,2], after:10, src:'书记交办', img:'office',
+    title:'省里的现场会放在了白沙',
+    text:'就是那个半夜带人拆违建的年轻副县长，他管的那个搬迁点被省里选成了现场。\n书记看完方案，抬头问了一句：这个人当初的材料是谁看的。你说是我。他嗯了一声。',
+    ok:'把现场会的方案接过来', n:'会开得很顺。那个年轻人在会场外面远远朝你点了下头', fx:{ trust:+4, rep:+2 } },
+  { on:'xin_baisha', opts:[0], after:8, src:'办文', img:'county',
+    title:'省里来验收搬迁点',
+    text:'验收组在小区里站了一晚上，数灯。数出来的数，跟白沙报的对得上。\n组长跟书记说，别的县我们数出来都要打个七折，你们这个是实的。',
+    ok:'把那晚数灯的记录找出来，附在验收材料后面', n:'书记在验收材料上批了两个字，是你到云州以来见过他写得最大的两个字', fx:{ trust:+5 } },
+  { on:'gz_jiashu', opts:[0], after:6, src:'有人找你', img:'petition',
+    title:'她最后来了一次',
+    text:'赔偿到账了。她这回没坐在门口，托信访局的人带了句话，说以后周三不来了。\n信访局的人说，她来了八十多次，走的时候把门口那块地扫了一遍。',
+    ok:'知道了', n:'那个周三你路过信访局，往门口看了一眼', fx:{ rep:+3, en:+2 } },
+  { on:'gz_qiye', opts:[1], after:6, src:'有人找你', img:'door',
+    title:'那家做园林的企业又来了',
+    text:'这回是来送锦旗的。你没让挂，他就卷起来放在了你门后。\n他说钱到账那天，他给工人补发了三年的过节费。又说他们这个行当里都传开了，说云州的市委办是办事的。',
+    ok:'锦旗让他带回去', n:'第二个月高新区来了两家外地的园林企业，说是听同行讲的', fx:{ rep:+4 }, proj:{ invest:4 } },
+  { on:'chu_xz_xiangli', opts:[1], after:8, src:'办文', img:'mishu',
+    title:'两个部门的表格统一了',
+    text:'你当初报上去的那份建议转了三道手，最后是政府办发的文。全市十一个窗口换了新表。\n文件上没有你的名字。乡里的人打来电话，说这回一趟就办成了。',
+    ok:'把那份文件存一份', n:'秘书长有一回在会上举例子，说的就是这件事。他也没提你的名字，可是看了你一眼', fx:{ rep:+3, trust:+2 } },
+  { on:'tf_shitang', opts:[0], after:5, src:'突发', img:'hospital',
+    title:'十九个孩子都出院了',
+    text:'最后一个是周四出的院。教育局报来的处理结果里，食堂承包方换了，校长记了过。\n周雪那天晚上说，她们科里的人都在讲，这回市里动得快。她说这话的时候没看你。',
+    ok:'嗯了一声', n:'她给你夹了一筷子菜', fx:{ rep:+2, fam:-1 } }
+];
 
 /* === data/endings.js === */
 /* ── 十个结局。正文不写道理，只写那天发生了什么 ── */
@@ -3097,7 +3391,12 @@ var EVENTS_PRIVATE = [
       nlow:'这种话你在他面前张不开嘴',
       n:'他听完没说话。两天后组织部长在走廊上问起你妹妹。事办成了，书记也记住了你在城关区有个妹妹',
       fx:{trust:-4, fam:-3, clean:-6, dark:'sis_promo'},
-      rk:{ steady:'', strong:'知道了。', shrewd:'你妹妹在城关区？' } }
+      rk:{ steady:'', strong:'知道了。', shrewd:'你妹妹在城关区？' } },
+    { t:'让她按你们周末过的那几套题去考', d:0, tier:'good', req:{flag:'pave_sis'},
+      nlow:'这条路得提前几个月陪她准备，现在来不及了',
+      n:'笔试第一，面试第二，总分第一。公示那天她发来一张照片，一个字没打',
+      fx:{fam:-3, rep:+1},
+      rk:{} }
   ],
   neglect:{ fam:+3 } },
 
@@ -3125,6 +3424,11 @@ var EVENTS_PRIVATE = [
     { t:'让他接着排', d:0, tier:'tail',
       n:'你跟周雪说医院有医院的规矩。她说我知道，然后去厨房了',
       fx:{fam:+5, clean:+1},
+      rk:{} },
+    { t:'半年前那次检查就挂了号，现在排到第六位', d:0.5, tier:'good', req:{flag:'pave_law'},
+      nlow:'要是半年前带他查过一次、把号先挂上，现在不至于',
+      n:'第三周做的手术。周雪说，幸亏那回你非要带他去',
+      fx:{fam:-4, money:-1.2},
       rk:{} }
   ],
   neglect:{ fam:+4 } },
@@ -3146,6 +3450,11 @@ var EVENTS_PRIVATE = [
       n:'走的是下属事业单位公开招聘。小伟笔试考了五十八分，进了',
       fx:{clean:-8, fam:-3, npc:{zhujian:+6}, dark:'cousin_job',
           owe:{who:'zhujian', what:'小伟那个编制', back:'小伟说单位让他写辞职报告'}},
+      rk:{} },
+    { t:'让他去考，培训班已经上了一年多', d:0, tier:'good', req:{flag:'pave_cousin'},
+      nlow:'他要是早一年开始准备，你还能说这句话',
+      n:'考了两回。第二回进了梅岭一个乡的农技站，有编。姑妈嫌远，小伟自己愿意去',
+      fx:{fam:-2, rep:+1},
       rk:{} }
   ],
   neglect:{ fam:+3 } },
@@ -3174,7 +3483,12 @@ var EVENTS_PRIVATE = [
       n:'她只说了句知道了。八月底条子下来，孩子进了实验一小',
       fx:{gx:-4, fam:-4, npc:{xuanchuan:+8},
           owe:{who:'xuanchuan', what:'刘念上实验一小', back:'学校那边说学籍还差一样手续'}},
-      rk:{ shrewd:'孩子上哪个学校？' } }
+      rk:{ shrewd:'孩子上哪个学校？' } },
+    { t:'交周雪那份材料：三年的夜班记录，医院的推荐', d:1, tier:'good', req:{flag:'pave_son'},
+      nlow:'一线医护子女有名额，可是要三年的记录，得从他上幼儿园那年就开始攒',
+      n:'六个名额，报了十一家，刘念排第四。通知下来那天周雪在护士站哭了一场，回家没跟你说',
+      fx:{fam:-5},
+      rk:{} }
   ],
   neglect:{ fam:+5 } },
 
@@ -3195,6 +3509,11 @@ var EVENTS_PRIVATE = [
     { t:'先在县里治着，等这阵子忙完', d:0, tier:'tail',
       n:'这阵子一直没完。你妈后来不在电话里说病情了，只说都挺好',
       fx:{fam:+5},
+      rk:{} },
+    { t:'病历早就在市一院，直接走转诊', d:0.5, tier:'good', req:{flag:'pave_father'},
+      nlow:'要是早两年带他来建过病历，现在一张转诊单就够了',
+      n:'县医院开了转诊单，市一院按老病人收，第四天住进去的。你爸说，那年你非拉我来，我还骂你乱花钱',
+      fx:{money:-2, fam:-3},
       rk:{} }
   ],
   neglect:{ fam:+5 } },
@@ -3979,6 +4298,74 @@ var EVENTS_SJ = [
 
 ];
 
+/* === data/events_song.js === */
+/* ── 松的事。不是难题，没有代价，不占天数。
+   全是紧的拍子打到后面人会麻。这一类一年来两三件就够 ── */
+var EVENTS_SONG = [
+{ id:'song_shengbao', kind:'note', src:'办文', free:1, w:2, cd:40, mo:[6,58], img:'mishu',
+  title:'省报把那篇稿子全文转了',
+  text:'二版，通栏，三千一百字。署的是书记的名，每个字是你写的。\n宣传部的人把报纸送来，说省报很少全文转地市的稿子。',
+  opts:[{ t:'把报纸压在玻璃板底下', tier:'none', n:'书记路过你桌子的时候看见了，脚步停了半秒', fx:{ trust:+2, rep:+2 } },
+        { t:'给你爸寄一份', tier:'none', n:'他回电话说看不出哪句是你写的。过了一会儿又说，都挺好', fx:{ rep:+2, en:+4 } }] },
+{ id:'song_hua', kind:'note', src:'家里', free:1, w:2, once:true, mo:[3,40], who:'wife',
+  title:'孩子画了一张你',
+  text:'幼儿园让画「我的爸爸」。他画的是一个人坐在桌子前面，桌上有一盏灯，窗户外面是黑的。\n老师问他爸爸在干什么，他说在上班。',
+  opts:[{ t:'把画带到办公室', tier:'none', n:'贴在了文件柜侧面，坐下抬头就能看见', fx:{ en:+6 } }] },
+{ id:'song_duanxin', kind:'note', src:'有人找你', free:1, w:3, cd:24, cm:[1,2], mo:[14,60], img:'night',
+  title:'年三十晚上的一条短信',
+  text:'不是群发的。是前年你在材料首页写了「建议使用」的那个人，现在在下面一个乡当书记。\n短信很短：{ME}，过年好。乡里今年通了路，有空来看看。',
+  opts:[{ t:'回了四个字：一定，保重', tier:'none', n:'你想了一下他的样子，没想起来。可是那份材料你还记得', fx:{ en:+4, rep:+1 } }] },
+{ id:'song_san', kind:'note', src:'有人找你', free:1, w:2, cd:30, mo:[4,60], img:'door',
+  title:'传达室老张给你留了把伞',
+  text:'下了一天的雨。你九点多下楼，传达室的灯还亮着，窗台上靠着一把黑伞，把上贴了张纸条：刘。\n老张说，看你早上没带。',
+  opts:[{ t:'第二天给他带了包烟', tier:'none', n:'他推了两回才收。从那以后谁来找你、在门口等了多久，他都会跟你说一声', fx:{ en:+3, gx:+1 } }] },
+{ id:'song_wufan', kind:'note', src:'家里', free:1, w:2, cd:30, mo:[5,60], who:'wife',
+  title:'周雪轮休，来楼下等你吃午饭',
+  text:'她没提前说。十二点过五分发来一条：我在你们大院对面那家面馆。\n你下午两点有个会。',
+  opts:[{ t:'下去吃了碗面', tier:'none', n:'四十分钟。她说了科里的事，你说了办公室的事，都没说什么要紧的', fx:{ fam:-3, en:+5 } }] },
+{ id:'song_kong', kind:'note', src:'书记交办', free:1, w:2, cd:20, mo:[8,60], img:'office',
+  title:'书记去北京开会，五天',
+  text:'没带你，带的是秘书长。\n走之前他说了句：家里你看着。这五天内线一次没响。',
+  opts:[{ t:'把桌上积的东西清一清', tier:'none', n:'清出来三件早该办的事，顺手办了', fx:{ en:+6 }, days:2 },
+        { t:'每天按点下班', tier:'none', n:'连着五天在家吃的晚饭。第四天孩子问：爸爸你是不是放假了', fx:{ en:+10, fam:-3 } }] },
+{ id:'song_larou', kind:'note', src:'家里', free:1, w:2, cd:36, cm:[12,1], mo:[10,60],
+  title:'你妈寄来的腊肉太多了',
+  text:'二十斤，家里冰箱放不下。\n周雪说，要不带点到单位。',
+  opts:[{ t:'切了分给科里的人', tier:'none', n:'葛守业说这个味道正。那几天科里的人跟你说话，比平时随便了一点', fx:{ gx:+2, en:+2 } }] },
+{ id:'song_tongxue', kind:'note', src:'有人找你', free:1, w:2, cd:40, mo:[10,60], img:'dinner',
+  title:'大学同学来云州出差',
+  text:'睡你上铺的那个，现在在一家设计院。他不求你办事，就是路过。\n两个人在大院后门吃了碗面，他说你怎么老了这么多，你说你也是。',
+  opts:[{ t:'送他到车站', tier:'none', n:'回来的路上你走得很慢。这一个钟头里没有人叫你刘秘书', fx:{ en:+8 } }] },
+{ id:'song_tuogao', kind:'note', src:'书记交办', free:1, w:2, cd:30, mo:[12,60], img:'changwei',
+  title:'他在会上脱稿说了一句',
+  text:'全市大会，讲到一半他放下稿子，说了一句话。台下有人在记。\n那句话是你三个月前写在一份材料里、后来被删掉的。他记住了。',
+  opts:[{ t:'低头接着做记录', tier:'none', n:'第二天那句话上了日报的标题', fx:{ trust:+3, en:+3 } }] },
+{ id:'song_tijian', kind:'note', src:'办文', free:1, w:2, cd:30, mo:[12,60], img:'hospital',
+  title:'体检报告出来了',
+  text:'机关统一组织的。你那份比去年厚了两页，翻到最后，结论栏里写的是：未见明显异常，建议规律作息。\n周雪把报告拿过去，从头看到尾，看完还给你，什么也没说。',
+  opts:[{ t:'把「规律作息」四个字念了一遍', tier:'none', n:'她笑了一下。这个月头一回', fx:{ en:+5, fam:-1 } }] },
+{ id:'song_zhanlan', kind:'note', src:'家里', free:1, w:2, once:true, mo:[12,44], who:'sister',
+  title:'刘敏发来一张照片',
+  text:'城关区文化馆的一个展，她布的。照片里她站在展板前面，胸口别着工作牌。\n她说：哥，这个展是我从头弄到尾的。没人帮忙。',
+  opts:[{ t:'周末带孩子去看了', tier:'none', n:'展不大，二十分钟就看完了。她给每一块展板都讲了一遍', fx:{ fam:-2, en:+4 } }] },
+{ id:'song_xue', kind:'note', src:'办文', free:1, w:2, cd:30, cm:[12,1,2], mo:[10,60], img:'mishu',
+  title:'下雪了',
+  text:'云州三年没下过这么大的雪。早上大院里那棵樟树压断了一根枝，机关事务局的人在树底下站了一圈。\n上午没有会。走廊里有人在说老家的事。',
+  opts:[{ t:'站在窗口看了一会儿', tier:'none', n:'十分钟。电话响了，你回去接', fx:{ en:+5 } }] },
+{ id:'song_xianjin', kind:'note', src:'办文', free:1, w:3, cd:22, cm:[12], mo:[11,60], img:'mishu',
+  title:'年度考核，办公室给你报了优秀',
+  text:'两个名额，十二个人。表是秘书长签的字。\n优秀多发一个月工资。',
+  opts:[{ t:'签字领表', tier:'none', n:'钱到账那天周雪说，给你爸买件羽绒服吧', fx:{ money:+0.6, rep:+1, en:+3 } }] },
+{ id:'song_haoma', kind:'note', src:'家里', free:1, w:2, once:true, mo:[6,30],
+  title:'他背出了你的电话号码',
+  text:'幼儿园教的，说走丢了要会背家里人的电话。他背周雪的背错了两位，背你的一位没错。\n周雪说，他天天听我给你打电话。',
+  opts:[{ t:'让他再背一遍', tier:'none', n:'他背了三遍，一遍比一遍大声', fx:{ en:+5, fam:-1 } }] },
+{ id:'song_xiaozhou', kind:'note', src:'办文', free:1, w:3, once:true, mo:[30,60], rankMin:2, img:'mishu',
+  title:'小周写的第一篇稿子',
+  text:'一千二百字的会议通知，他写了三天，改了五遍。送来的时候站在你桌子旁边不走。\n你看完，改了两个字。',
+  opts:[{ t:'跟他说：可以了，发吧', tier:'none', n:'他出门的时候差点撞在门框上。你想起来，当年葛守业也只给你改过两个字', fx:{ en:+4, rep:+1 } }] }
+];
+
 /* === data/events_tf.js === */
 /* ── 突发。半夜的电话、网上的一段视频、门口来的人。
    共同点是：等不到明天 ── */
@@ -4636,6 +5023,78 @@ TOPICS.push(
 
 );
 
+/* === data/own.js === */
+/* ── 每个月一件自己的事。桌上的事都是别人推过来的，这一件是你自己挑的。
+   只能挑一件，花的是你自己的天数，回报写在明面上、当场兑现。
+   不办没有任何后果。
+   {QX}{N} 在生成的时候换成人名地名 ── */
+
+/* 铺路：家里那六件大事是写死了时间的，提前动手，到时候就多一条干净的路 */
+var OWN_PAVE = [
+  { flag:'pave_sis', mo:[2,8], before:'sis_promo',
+    t:'抽两个周末，陪刘敏把申论过一遍', d:2,
+    n:'她要考副科的事，你是听你妈说的，她自己没提。四套题她做了四套，你改了四套。她说哥你改得比我们局长还狠',
+    fx:{ fam:-1 } },
+  { flag:'pave_law', mo:[4,13], before:'law_stent',
+    t:'带岳父去市一院做个全面检查', d:1.5,
+    n:'查出来血管堵了两处，医生说先吃药，半年后复查。心内科的号那天顺手挂上了',
+    fx:{ money:-0.3, fam:-2 } },
+  { flag:'pave_cousin', mo:[8,21], before:'cousin_job',
+    t:'给小伟报个事业编的培训班，钱你出', d:1,
+    n:'六千块。姑妈说花这钱干什么，你不是一句话的事吗。小伟没吭声，第二周去上课了',
+    fx:{ money:-0.6 } },
+  { flag:'pave_son', mo:[6,26], before:'son_school',
+    t:'去教育局把后年的入学政策问清楚', d:2,
+    n:'实验一小每年留六个名额给一线医护的子女，要连续三年的夜班记录和医院推荐。周雪的夜班，从这个月起得一个不落地记上',
+    fx:{ fam:-1 } },
+  { flag:'pave_father', mo:[20,36], before:'father_move',
+    t:'周末回趟老家，把你爸带到市一院建个病历', d:2,
+    n:'他一路上说乱花钱。检查做了一上午，医生说现在不用住。病历留在这边，以后转过来方便',
+    fx:{ money:-0.5, fam:-2 } }
+];
+
+/* 自己 */
+var OWN_SELF = [
+  { t:'周三下午请半天假，去接孩子', d:0.5,
+    n:'他在幼儿园门口看见你，愣了一下才跑过来。回家的路上一直在说话',
+    fx:{ fam:-2, en:+4 } },
+  { t:'把攒的年假休掉两天', d:2,
+    n:'手机调了静音。第二天下午你发现自己在想一件跟工作没关系的事，想了很久',
+    fx:{ en:+22, fam:-1 } },
+  { t:'找组织部干部科的人喝杯茶', d:1, rank:1,
+    n:'他说你的材料没毛病，缺的是年限和领导一句话。哪个领导，他没说',
+    fx:{ gx:+2 } },
+  { t:'周末带周雪和孩子去趟梅岭', d:1,
+    n:'索道排了四十分钟队。孩子在缆车上睡着了，周雪靠着窗户，很久没说话，后来说了句挺好的',
+    fx:{ fam:-3, en:+6, money:-0.1 } }
+];
+
+/* 人 */
+var OWN_PEOPLE = [
+  { kind:'qx', t:'不打招呼，去{QX}跑一天', d:2,
+    n:'没惊动当地。看了两个点，跟三个人聊了天。回来的路上，你把听到的记在了手机里',
+    fx:{ rep:+1 } },
+  { kind:'npc', t:'约{N}的秘书吃顿午饭', d:1,
+    n:'一碗面的工夫。他说的话里有一句是有用的',
+    fx:{ gx:+1 } },
+  { kind:'any', t:'把前任留下的那个卷柜翻一遍', d:1.5,
+    n:'大半是废纸。有一份会议记录的页边上有铅笔字，你抄了下来',
+    fx:{} }
+];
+
+/* 书记的三件事 */
+var OWN_PROJ = [
+  { k:'oldtown', t:'替书记去旧改片区盯两天', d:2.5,
+    n:'指挥部的人看见你来，墙上的进度表当天就换了新的。有两户的事你当场协调掉了',
+    fx:{ trust:+1 }, proj:6 },
+  { k:'invest', t:'陪高新区接一拨客商', d:2,
+    n:'你只负责坐着。市委办的人在场，对方的副总多留了半天',
+    fx:{ npc:{ gaoxin:+3 } }, proj:6 },
+  { k:'qingchuan', t:'去青川化工园看一次整改', d:2.5,
+    n:'没通知县里。三号罐区的围堰还没砌完，你拍了照片。第二天他们就动工了',
+    fx:{ trust:+1 }, proj:6 }
+];
+
 /* === data/pool.js === */
 /* ── 干部池 14 人。平时不露面，只在人事、告状、谈话、排人里出现。
    露过面的才会进班子页。
@@ -4761,6 +5220,71 @@ var OWE_TPL = {
   ]
 };
 
+/* === data/proj.js === */
+/* ── 书记这一届要干成的三件事，和每年年底省里的排名。
+   进度看得见（班子页），每年十二月结一次账 ── */
+var PROJ = [
+  { k:'oldtown',   n:'城关区旧城改造' },
+  { k:'invest',    n:'高新区招商' },
+  { k:'qingchuan', n:'青川化工园整治' }
+];
+function PROJ_WORD(v){
+  return v < 12 ? '还在纸上' : v < 30 ? '刚起了个头' : v < 50 ? '推着在走'
+    : v < 70 ? '过了半' : v < 88 ? '看得见头了' : '成了';
+}
+/* 哪件事办好了会推哪一项。链条的幕写「线id.幕id」，常委会写议题 id */
+var PROJ_EV = {
+  oldtown:  ['petition','gift_bag','tf_shipin','ban_jizhe','gz_quzhang','qx_material','tf_laoganbu_hui',
+             'old_town.a1','old_town.a2','old_town.a3','old_town.a4','old_town.a5','cw_xinfang','cw_school'],
+  invest:   ['num_gap','banquet_gx','sj_jiaoren','xin_gaoxin','sj_jianbao','tf_qianxin','sj_fanju','sj_koujing',
+             'cw_kuoqu','cw_kaohe','cw_budget'],
+  qingchuan:['plant_smoke','qc_request','tf_anfang','gao_diaoyan','xin_jia',
+             'qc_old.b1','qc_old.b2','qc_old.b3','qc_old.b4','qc_old.b5','cw_anquan','cw_huanbao']
+};
+/* 年底那张通报到了之后。{R} 今年第几，{D} 跟去年比 */
+var YEAR_LINE = {
+  top: { steady:'通报是下午到的。他看了两遍，把那页纸压在玻璃板底下，说了句：明年不好干了',
+         strong:'他把通报往桌上一拍：「第{R}！」那天下午他见谁都多说两句',
+         shrewd:'他看完通报问你：排我们前面的是谁？你说了。他说，明年盯着他们' },
+  mid: { steady:'第{R}，{D}。他说了句还行，接着批文件',
+         strong:'第{R}，{D}。他说：不上不下。明年我要前三',
+         shrewd:'第{R}，{D}。他把通报翻到附表，看了很久别的市的数' },
+  low: { steady:'第{R}，{D}。他看完没说话，通报在他桌上放了三天',
+         strong:'第{R}，{D}。他问你：你说，问题出在哪？你还没答，他说，算了',
+         shrewd:'第{R}，{D}。他让你把排在后面那几个市的书记名字抄给他' },
+  bottom:{ steady:'第{R}。省里的会他坐在后排。回来的车上一句话没说，到了楼下才开口：明年这个时候，我不想再坐那个位置',
+         strong:'第{R}。他在办公室关了一下午门。晚上七点叫你进去，桌上的茶一口没动',
+         shrewd:'第{R}。他看完把通报对折，放进了抽屉。那个抽屉平时是锁着的' }
+};
+var YEAR_BONUS = { top:'年终考核奖多发了一档，办公室人人有份', mid:'年终考核奖按时发了，比去年多一点' };
+
+/* === data/ranks.js === */
+/* ── 职级。副主任是挂的，级别得一级一级熬 ──
+   at：最早第几个月；merit：功栏里得有多少条；trust/rep：书记那句话、外面的口碑
+   save：每月能攒下多少（万）；days：每月多出几天；deleg：能不能把一件事交给小周 */
+var RANKS = [
+  { k:0, n:'副科级', post:'市委办公室副主任（挂）', call:'小刘', save:0.25, days:0 },
+  { k:1, n:'正科级', post:'市委办公室副主任（挂）', call:'刘科', save:0.33, days:1,
+    at:10, merit:26, trust:56, rep:0, no:3,
+    story:'文件是下午发的。晚上到家周雪已经知道了，护士站有个人的爱人在组织部。她说，那这个月工资条给我看看。',
+    got:['工资条上多了八百块',
+         '综合科派了个新来的小周替你接电话、跑会签，每个月能省出一天',
+         '走廊里开始有人叫你刘科'] },
+  { k:2, n:'副处级', post:'市委办公室副主任', call:'刘主任', save:0.45, days:1, deleg:1,
+    at:28, merit:85, trust:66, rep:50, no:11,
+    story:'公示七天，没有人反映问题。施培南在走廊上跟你握了手，说早该解决了。他握得很紧。',
+    got:['副主任后面那个「挂」字拿掉了',
+         '小周正式跟你。每个月有一件事可以交给他去跑',
+         '每个月能多攒下一千多',
+         '区县来的电话，开口改成了刘主任'] },
+  { k:3, n:'正处级', post:'市委办公室副主任（正处级）', call:'刘主任', save:0.6, days:1, deleg:2,
+    at:48, merit:175, trust:80, rep:58, no:19,
+    story:'五年里你第三次在这种文件上看见自己的名字。佟建民打来电话，只说了两个字：恭喜。你妈在电话里问正处是多大的官，你说不大。',
+    got:['这个市里比你年轻的正处，一只手数得过来',
+         '小周之外又给你配了一个人，每个月能交出去两件事',
+         '家里每个月能攒下六千'] }
+];
+
 /* === data/remarks.js === */
 /* ── 通用批示：选项自己没写话的时候用这一档兜底。
    空字符串 = 他没批，只在右上角签了个名。 ── */
@@ -4790,6 +5314,24 @@ var BOSS_READ = {
   strong:'他不绕弯子。你办得好他说一个好字，办砸了当面就问为什么。他身边的人都是他自己带来的。',
   shrewd:'他很少表态，批示里一半是问句。他关心的不是这件事，是这件事是谁递上来的。'
 };
+
+/* ── 好批示。难得，所以值钱。强势型最不爱夸人，夸一次顶别人三次 ──
+   p：这个月有办得漂亮的事时，他夸一句的概率；dry：连着这么多个月没夸过，下一回必夸 */
+var PRAISE = {
+  steady:{ p:0.11, dry:9,  trust:1.5, t:['很好。','此件存档备查。','就照这个办，转各区县。','想得周全。'] },
+  strong:{ p:0.06, dry:12, trust:3, t:['好！','干得漂亮。','转发各区县，都学一学。'] },
+  shrewd:{ p:0.08, dry:10, trust:2, t:['这件办得细。','想到我前面去了。','此件转各常委阅。'] }
+};
+/* 桌上不过夜 */
+var CLEAN_DESK = {
+  steady:['他翻到呈阅夹最后一页，说：这个月桌上是干净的。说这话的时候没抬头',
+          '月底那天他路过你办公室，往桌上看了一眼，什么也没说，走了。你知道他看的是什么'],
+  strong:['他把呈阅夹翻到底，合上。「没了？」「没了。」他嗯了一声',
+          '「这个月没有拖的？」你说没有。他说，这才像话'],
+  shrewd:['「这个月没有压件。」他看了你一眼，「周末没歇吧。」',
+          '他数了数呈阅夹里的件数，又看了看日历，把夹子还给你的时候多停了一秒']
+};
+var CLEAN_RUN3 = '连着三个月了。机关里开始有人说，周书记那个秘书，桌上的事不过夜';
 
 /* === data/rules.js === */
 /* ── 纪律条目表：灰色选项写 rule:'xxx'，界面自动显示「可能的处理」── */
@@ -5353,13 +5895,57 @@ if (typeof EVENTS_END     !== 'undefined') EVENTS = EVENTS.concat(EVENTS_END);
 if (typeof EVENTS_CUT     !== 'undefined') EVENTS = EVENTS.concat(EVENTS_CUT);
 if (typeof EVENTS_SJ      !== 'undefined') EVENTS = EVENTS.concat(EVENTS_SJ);
 if (typeof EVENTS_TF      !== 'undefined') EVENTS = EVENTS.concat(EVENTS_TF);
+if (typeof EVENTS_SONG    !== 'undefined') EVENTS = EVENTS.concat(EVENTS_SONG);
 
 var EV_BY_ID = {};
 EVENTS.forEach(function(e){ EV_BY_ID[e.id] = e; });
 
+/* === data/zzz_art.js === */
+/* ── 图挂到事件上。必须排在 zz_index.js 之后。
+   事件自己写了 img / who 的以事件为准；这里只补没写的。
+   没列出来的照旧按来源兜底（SCENE_BY_SRC）。链条的幕写成「线id.幕id」 ── */
+var ART_IMG = {
+  archive: ['ex_sec.c1','ex_sec.c3','qc_old.b2','patrol.f2','sj_pishi','ban_loumi','gz_laoganbu','sj_zhaopian'],
+  car:     ['cut_trip','cut_trip_fam','sj_laolingdao','sj_koujing','ban_che','sj_jiaoren'],
+  chemical:['plant_smoke','qc_request','tf_anfang','gao_diaoyan','qc_old.b4','qc_old.b5'],
+  county:  ['tf_baoyu','xin_baisha','chu_xds_laoshu','chu_xz_xiangli','ban_tuiwen','tf_gongche','jia_xiulu'],
+  dinner:  ['banquet_gx','sj_fanju','ex_sec.c2','classmate','msz_zhizi','ban_jiedai','chu_xz_guiju'],
+  hospital:['law_stent','hurt_law','father_move','sj_laoganbu','jia_biaojiu','jia_zhicheng','tf_shitang','father_bp'],
+  hotel:   ['lead_talk','lead_patrol','patrol.f3','talk_prep','talk_shao','talk_young','talk_lu','talk_ge','gz_wo','xin_me'],
+  night:   ['her_water','ban_zhiban','first_speech','gao_shengli','gao_shuming','gao_shuzhi','gao_hexin',
+            'sj_gaoshou','chu_bgg_yuan','ks_draft','msz_lalong','cut_call'],
+  oldtown: ['old_town.a1','old_town.a2','old_town.a4','tf_shipin','tf_laoganbu_hui','gz_quzhang','gift_bag'],
+  petition:['qc_old.b1','gz_jiashu','tf_qianxin','tf_jinqi','petition','gz_keyuan'],
+  changwei:['old_town.a3','gao_zhuchi','ban_huiyi'],
+  office:  ['boss_kin.e6','boss_leave','sj_jianbao','patrol.f1','patrol.f4']
+};
+var ART_WHO = {
+  her_water:'her',
+  sis_promo:'sister', sis_later:'sister', hurt_sister:'sister',
+  fam_birthday:'wife', wife_shift:'wife', wife_dinner:'wife', jia_paiban:'wife', jia_zhicheng:'wife',
+  msz_xiankan:'mishuzhang', msz_zhizi:'mishuzhang', msz_tishuo:'mishuzhang', msz_lalong:'mishuzhang',
+  msz_tea:'msz_mishu', ks_draft:'keshang', talk_ge:'keshang', fzr_trip:'fuzhuren',
+  gz_quzhang:'cg_quzhang', qx_material:'cg_quzhang', qx_material_late:'cg_quzhang',
+  talk_prep:'qc_xianzhang', talk_shao:'chengguan', g_road:'zuzhi', sj_zhaopian:'xuanchuan',
+  lead_hint:'zhengfa', sj_jiaoren:'gaoxin', ban_tuiwen:'meiling', xin_baisha:'baisha',
+  'ex_sec.c2':'gangkou', 'vice_seat.d3':'mayor', 'old_town.a3':'mayor', 'old_town.a4':'dev_a',
+  'boss_kin.e6':'boss', first_speech:'boss'
+};
+(function(){
+  function find(key){
+    var p = key.split('.');
+    if (p.length === 1) return EV_BY_ID[key] || null;
+    var a = ARCS_BY_ID[p[0]]; if (!a) return null;
+    for (var i = 0; i < a.stages.length; i++) if (a.stages[i].id === p[1]) return a.stages[i];
+    return null;
+  }
+  for (var s in ART_IMG) ART_IMG[s].forEach(function(k){ var e = find(k); if (e && !e.img) e.img = s; });
+  for (var k in ART_WHO){ var e = find(k); if (e && !e.who) e.who = ART_WHO[k]; }
+})();
+
 /* === js/00-core.js === */
 /* ── 00-core：状态、存档、随机、工具 ───────────────────── */
-var VER = '1.3.0';
+var VER = '1.4.0';
 var SAVE_KEY = 'dami_save_v1';
 var START_Y = 2027, TERM = 60, WORKDAYS = 20;
 
@@ -5421,6 +6007,8 @@ function newGame(opt){
     month: 1,
     days: 11,
     origin: opt.origin || 'xds',
+    name: opt.name || '刘峥',
+    rank: 0, rankAt: { 0: 1 }, cards: [],
     bossType: opt.bossType || pick(['steady', 'strong', 'shrewd']),
     stats: { trust: 50, prestige: 45, rep: 50, guanxi: 30, clean: 100, energy: 80 },
     hidden: { lead: 0, dark: [], bossRisk: 0, wind: 0, fam: 0, famBroken: false },
@@ -5475,6 +6063,9 @@ function migrate(g, v){
   if (!g.cool) g.cool = {};
   if (!g.gen) g.gen = {};
   if (!g.seen) g.seen = {};
+  if (!g.cards) g.cards = [];
+  if (g.rank == null){ g.rank = 0; g.rankAt = { 0: 1 }; }
+  if (!g.name) g.name = '刘峥';
   g.ver = VER;
   return g;
 }
@@ -5612,7 +6203,8 @@ function statDrift(){
   var s = G.stats;
   s.guanxi = clamp(Math.round((s.guanxi - 1.1) * 10) / 10, 0, 100);
   if (s.rep > 50) s.rep = clamp(Math.round((s.rep - 0.9) * 10) / 10, 0, 100);
-  var t = s.trust > 52 ? -0.35 : (s.trust < 48 ? 0.35 : 0);
+  /* 过了七十再往上，是另一种难：他用你用得越顺手，越容不得你出一点岔子 */
+  var t = s.trust > 72 ? -0.8 : s.trust > 52 ? -0.35 : (s.trust < 48 ? 0.35 : 0);
   s.trust = clamp(Math.round((s.trust + t) * 10) / 10, 0, 100);
 }
 
@@ -5985,6 +6577,10 @@ var Slots = {
       else if (how === 'msz'){ npcFavor(c.who, -1); }
       else if (how === 'me'){ applyFx({ gx:+1 }); spendDays(0.5); }
     });
+    if (how === 'me'){
+      var heard = left.filter(function(c){ return c.who && INFO[c.who]; });
+      if (heard.length) G._heard = Cards.add('info', heard[ri(heard.length)].who, '中午见的那几个人');
+    }
     if (how === 'msz') Pool.addHeat('p_msz_me', 4);
   }
 };
@@ -6091,6 +6687,9 @@ var Private = {
   /* 欠账 */
   addOwe: function(who, what, back){
     Private.init();
+    /* 他本来就记着你一次。这回开口，两清，不欠 */
+    var fc = Cards.has('favor', who);
+    if (fc){ Cards.drop(fc.id); G._even = who; return; }
     G.owe.push({ who: who, what: what, back: back || '',
       m: G.month, due: G.month + 3 + ri(4), done: 0 });
   },
@@ -6106,7 +6705,7 @@ var Private = {
   /* 每月跑一遍 */
   tick: function(){
     Private.init();
-    Private.earn(0.25);                     /* 两份工资，还着房贷，一年攒三万 */
+    Private.earn(Rank.save());                     /* 两份工资，还着房贷，一年攒三万 */
     Private.schedule();
     Private.her();
     Private.collect();
@@ -6221,6 +6820,386 @@ var Cut = {
   }
 };
 
+/* === js/25-cards.js === */
+/* ── 25-cards：手里的牌。人情、消息 ─────────────────────
+   坏的东西照旧藏着（线索、欠账、报复）。到手的好东西要看得见、用得上 */
+var CARD_MAX = { favor:6, info:4 };
+var FAVOR_AT = 6;      /* 一件事让他对你的好感一次涨这么多，他就记你一次 */
+var INFO_GX  = 5;      /* 一件事让你的人脉一次涨这么多，你顺带听到点什么 */
+
+var Cards = {
+  init: function(){ if (!G.cards) G.cards = []; },
+
+  all: function(){ Cards.init(); return G.cards; },
+  find: function(cid){
+    Cards.init();
+    for (var i = 0; i < G.cards.length; i++) if (G.cards[i].id === cid) return G.cards[i];
+    return null;
+  },
+  has: function(type, who){
+    Cards.init();
+    for (var i = 0; i < G.cards.length; i++)
+      if (G.cards[i].type === type && G.cards[i].who === who) return G.cards[i];
+    return null;
+  },
+
+  /* 牌面上那一行 */
+  label: function(c){
+    var s = Pool.side(c.who);
+    return c.type === 'favor' ? s.n + ' 记着你一次' : (c.t.length > 15 ? c.t.slice(0, 14) + '…' : c.t);
+  },
+
+  add: function(type, who, from, text){
+    Cards.init();
+    if (!who || who === 'me' || who === 'boss' || who === 'jiwei' && type === 'favor') return null;
+    if (type === 'favor' && Cards.has('favor', who)) return null;   /* 一个人只记你一次 */
+    if (type === 'info'){
+      var lines = INFO[who]; if (!lines) return null;
+      var left = lines.filter(function(t){
+        return !G.cards.some(function(c){ return c.type === 'info' && c.t === t; }) &&
+               !(G.infoUsed && G.infoUsed[t]);
+      });
+      if (!left.length) return null;
+      text = left[ri(left.length)];
+    }
+    G.cardN = (G.cardN || 0) + 1;
+    var c = { id:'c' + G.cardN, type:type, who:who, from:from || '', t:text || '', m:G.month };
+    G.cards.push(c);
+    /* 放久了的先淡掉 */
+    var same = G.cards.filter(function(x){ return x.type === type; });
+    if (same.length > CARD_MAX[type]){
+      var old = same[0];
+      G.cards = G.cards.filter(function(x){ return x !== old; });
+    }
+    G.cardGot = (G.cardGot || 0) + 1;
+    return c;
+  },
+
+  drop: function(cid){
+    Cards.init();
+    G.cards = G.cards.filter(function(c){
+      if (c.id !== cid) return true;
+      if (c.type === 'info'){ if (!G.infoUsed) G.infoUsed = {}; G.infoUsed[c.t] = 1; }
+      return false;
+    });
+    G.cardUsed = (G.cardUsed || 0) + 1;
+  },
+
+  /* 办完一件事，看看到手了什么。返回新到手的牌 */
+  gain: function(e, o){
+    var got = [];
+    if (!o || !o.fx) return got;
+    var owes = o.fx.owe ? o.fx.owe.who : null;
+    if (o.fx.npc){
+      for (var k in o.fx.npc){
+        if (o.fx.npc[k] >= FAVOR_AT && k !== owes){
+          var c = Cards.add('favor', k, e.title);
+          if (c) got.push(c);
+        }
+      }
+    }
+    if ((o.fx.gx || 0) >= INFO_GX || o.info){
+      var who = o.info || Cards.someone();
+      var ci = Cards.add('info', who, e.title);
+      if (ci) got.push(ci);
+    }
+    return got;
+  },
+
+  someone: function(){
+    var ks = []; for (var k in INFO) ks.push(k);
+    return ks[ri(ks.length)];
+  },
+
+  /* 这件事能不能一个电话办掉。只有普通的便签才行：
+     主线、常委会、排人、卷宗、家里的事、现生成的事都不行 */
+  plain: function(e){
+    if (!e || !e.opts) return false;
+    if (e.arc || e.acts || e.slot || e.mats || e.fam || e.force || e.endBy) return false;
+    if (e.src === '家里' || e.src === '主线' || e.src === '常委会') return false;
+    if (G.gen && G.gen[e.id]) return false;
+    if (/^(lead_|owe_|hurt_|her_)/.test(e.id)) return false;
+    return true;
+  },
+
+  /* 手里哪张人情牌对得上这件事 */
+  callFor: function(e){
+    if (!Cards.plain(e)) return null;
+    Cards.init();
+    var who = CALL_ON[e.id]; if (!who) return null;
+    for (var i = 0; i < who.length; i++){
+      var c = Cards.has('favor', who[i]);
+      if (c && CALL[c.who]) return c;
+    }
+    return null;
+  },
+
+  /* 多出来的那条路 */
+  callOpt: function(e){
+    var c = Cards.callFor(e); if (!c) return null;
+    var def = CALL[c.who];
+    return { t: def.t.replace('{N}', Pool.side(c.who).n), d: 0, n: def.n, tier:'good', card: c.id, call: 1,
+             fx:{ trust:+1, rep:+1 }, resN: def.res,
+             rk:{ steady:'办得快。', strong:'好。', shrewd:'这回是谁帮的忙？' } };
+  },
+
+  /* 跟书记提一句 */
+  tell: function(cid){
+    var c = Cards.find(cid); if (!c || c.type !== 'info') return null;
+    if (G.flags.toldMo === G.month) return null;
+    G.flags.toldMo = G.month;
+    applyFx({ trust:+1.5 });
+    Cards.drop(cid);
+    meritAdd('跟书记提过一句：' + c.t);
+    logAdd('跟书记提了一句');
+    save();
+    return pick(TELL_BOSS[G.bossType] || TELL_BOSS.steady);
+  },
+
+  /* 常委会前打一张牌 */
+  play: function(uid, cid){
+    var it = Desk.find(uid); if (!it || it.done) return;
+    var e = EV(it.id); if (!e || !e.acts) return;
+    var c = Cards.find(cid); if (!c) return;
+    if (VOTERS.indexOf(c.who) < 0) return;
+    if (c.type === 'info'){
+      if (!it.peek) it.peek = {};
+      it.peek[c.who] = 1;
+      logAdd(e.title + '：摸了' + Pool.side(c.who).n + '的底');
+    } else {
+      if (!it.eff) it.eff = {};
+      it.eff[c.who] = (it.eff[c.who] || 0) + 2.5;
+      if (!it.peek) it.peek = {};
+      it.peek[c.who] = 1;
+      if (!it.called) it.called = {};
+      it.called[c.who] = 1;
+      logAdd(e.title + '：' + Pool.side(c.who).n + '还了你一次');
+    }
+    Cards.drop(cid);
+    save(); UI.render();
+  },
+
+  /* 这场会上手里能打的牌 */
+  forMeeting: function(it, e){
+    Cards.init();
+    return G.cards.filter(function(c){
+      if (VOTERS.indexOf(c.who) < 0) return false;
+      if (c.type === 'info') return !it || !Meeting.known(it, e, c.who);   /* 已经知道的人不用再摸 */
+      return !(it && it.called && it.called[c.who]);
+    });
+  }
+};
+
+/* === js/26-rank.js === */
+/* ── 26-rank：职级。熬年头、攒功、书记点头，三样齐了才动 ── */
+var Rank = {
+  init: function(){
+    if (G.rank == null) G.rank = 0;
+    if (!G.rankAt) G.rankAt = { 0: 1 };
+    if (!G.name) G.name = '刘峥';
+  },
+  cur: function(){ Rank.init(); return RANKS[G.rank] || RANKS[0]; },
+  next: function(){ Rank.init(); return RANKS[G.rank + 1] || null; },
+  call: function(){ return Rank.cur().call; },
+  days: function(){ return Rank.cur().days || 0; },
+  save: function(){ return Rank.cur().save || 0.25; },
+  delegLeft: function(){
+    var n = Rank.cur().deleg || 0;
+    if (G.flags.delegMo !== G.month) return n;
+    return Math.max(0, n - (G.flags.delegN || 0));
+  },
+  canDeleg: function(){ return Rank.delegLeft() > 0; },
+
+  /* 最近一年里过栏添了几条。组织部考察的时候翻的就是这一年 */
+  recentFault: function(){
+    return G.archive.fault.filter(function(x){ return G.month - x.m <= 12; }).length;
+  },
+
+  /* 档案页上那一句：还差什么 */
+  word: function(){
+    var nx = Rank.next();
+    if (!nx) return '再往上，就不是办公室能定的了';
+    if (G.month < nx.at){
+      var left = nx.at - G.month;
+      return '报' + nx.n + '，年限还差 ' + left + ' 个月';
+    }
+    if (G.archive.merit.length < nx.merit) return '年限够了。拿得出手的事还不够多';
+    if (G.stats.trust < nx.trust) return '年限够了，事也办了不少。报不报，要看书记那句话';
+    if (G.stats.rep < nx.rep) return '书记点了头。组织部下去摸了一圈，回来说再看看';
+    if (Rank.recentFault() > 4) return '材料报上去了，卡在考察那一关。这一年你名下的事有点多';
+    return '材料已经报上去了';
+  },
+
+  /* 每月看一次。够了就提，提了下个月初发文件 */
+  tick: function(){
+    Rank.init();
+    var nx = Rank.next(); if (!nx) return;
+    if (G.month < nx.at) return;
+    if (G.archive.merit.length < nx.merit) return;
+    if (G.stats.trust < nx.trust || G.stats.rep < nx.rep) return;
+    if (Rank.recentFault() > 4) return;
+    G.rank = nx.k;
+    G.rankAt[nx.k] = G.month;
+    G.promo = nx.k;                       /* 界面看到这个就弹任命文件 */
+    if (nx.k === 1) applyFx({ gx:+5 });
+    if (nx.k === 2) applyFx({ gx:+6, rep:+5 });
+    if (nx.k === 3) applyFx({ gx:+6, rep:+5 });
+    meritAdd('晋升' + nx.n);
+    logAdd('晋升' + nx.n);
+  },
+
+  /* 「市委办的小刘」这种背后的称呼跟着职级走。
+     当面叫你小刘的都是领导，那个不改 */
+  rename: function(s){
+    if (!s || !G) return s;
+    s = String(s).replace(/\{ME\}/g, G.rank >= 2 ? '刘主任' : G.rank === 1 ? '刘科长' : '刘秘书');
+    if (!G.rank) return s;
+    return String(s).replace(/市委办的小刘/g, '市委办的' + (G.rank >= 2 ? '刘主任' : '刘科长'));
+  }
+};
+
+/* === js/27-proj.js === */
+/* ── 27-proj：书记的三件事、年底排名 ── */
+function cnNum(n){ var c = '零一二三四五六七八九十'; return n <= 10 ? c.charAt(n) : '十' + c.charAt(n - 10); }
+function cnCount(n){ return n === 2 ? '两' : cnNum(n); }
+var Proj = {
+  init: function(){
+    if (!G.proj) G.proj = { oldtown:4, invest:8, qingchuan:2 };
+    if (G.cityRank == null) G.cityRank = 9;        /* 他来之前那一年，云州排第九 */
+    if (!G.rankLog) G.rankLog = [];
+  },
+  add: function(k, v){
+    Proj.init();
+    if (G.proj[k] == null) return;
+    G.proj[k] = clamp(Math.round((G.proj[k] + v) * 10) / 10, 0, 100);
+    if (v > 0) G._projUp = k;
+  },
+  keyOf: function(e){
+    var key = e.arc ? (e.arc + '.' + e.stage) : e.id;
+    for (var k in PROJ_EV){
+      var a = PROJ_EV[k];
+      for (var i = 0; i < a.length; i++){
+        if (a[i] === key) return k;
+        if (e.acts && a[i].indexOf('cw_') === 0 && e.id.indexOf(a[i]) >= 0) return k;
+      }
+    }
+    return null;
+  },
+  /* 一件事办完，看它推不推哪一项。灰的办法推得最快——所以才有人用 */
+  onChoose: function(e, o, it){
+    if (o.proj){
+      if (typeof o.proj === 'object'){ for (var pk in o.proj) Proj.add(pk, o.proj[pk]); }
+      return;
+    }
+    var k = Proj.keyOf(e); if (!k) return;
+    if (e.acts){ Proj.add(k, it.tally && it.tally.pass ? 7 : -4); return; }
+    var tier = it.tier;
+    Proj.add(k, tier === 'gray' ? 2.5 : tier === 'good' ? 1.5 : tier === 'tail' ? 0.5 : 0);
+  },
+  onNeglect: function(e){
+    var k = Proj.keyOf(e); if (k) Proj.add(k, -3);
+  },
+  tick: function(){
+    Proj.init();
+    PROJ.forEach(function(p){ G.proj[p.k] = clamp(G.proj[p.k] + 0.25, 0, 100); });
+  },
+  avg: function(){
+    Proj.init();
+    return (G.proj.oldtown + G.proj.invest + G.proj.qingchuan) / 3;
+  },
+  /* 十二月过完，省里的通报就到了 */
+  yearEnd: function(){
+    Proj.init();
+    var yr = Math.round((G.month - 1) / 12);          /* 刚过完第几年 */
+    var diff = Proj.avg() - 5 - yr * 13;
+    var r = clamp(Math.round(7.5 - diff / 2.6 + (rnd() * 1.6 - 0.8)), 1, 13);
+    var last = G.cityRank;
+    G.cityRank = r;
+    G.rankLog.push({ y: ymOf(G.month - 1).y, r: r });
+    var band = r <= 3 ? 'top' : r <= 6 ? 'mid' : r <= 9 ? 'low' : 'bottom';
+    if (band === 'top'){ applyFx({ trust:+4, pres:+5, money:+0.8 }); }
+    else if (band === 'mid'){ applyFx({ trust:+2, pres:+2, money:+0.4 }); }
+    else if (band === 'bottom'){ applyFx({ trust:-3, pres:-5 }); }
+    if (r < last) applyFx({ trust:+1 });
+    var d = r < last ? '比去年往前走了' + cnCount(last - r) + '位' : r > last ? '比去年掉了' + cnCount(r - last) + '位' : '跟去年一样';
+    var line = (YEAR_LINE[band][G.bossType] || YEAR_LINE[band].steady)
+      .replace('{R}', cnNum(r)).replace('{D}', d);
+    if (band === 'top') meritAdd(ymOf(G.month - 1).y + ' 年度考核，云州全省第 ' + r);
+    logAdd('年度考核：第 ' + r);
+    return { y: ymOf(G.month - 1).y, r: r, last: last, band: band, line: line, d: d,
+             bonus: YEAR_BONUS[band] || '' };
+  }
+};
+
+/* === js/28-own.js === */
+/* ── 28-own：每个月一件自己的事；29：回响 ── */
+var Own = {
+  gen: function(){
+    if (G.month < 2) return;
+    var id = 'own_' + G.month;
+    if (G.gen[id]) return;
+    var opts = [];
+    function mk(x, extra){
+      var o = { t:x.t, d:x.d, n:x.n, tier:'none', fx:{}, rk:'' };
+      for (var k in x.fx) o.fx[k] = x.fx[k];
+      if (extra) for (var e in extra) o[e] = extra[e];
+      return o;
+    }
+    /* 铺路：还没铺、还来得及的 */
+    var pv = OWN_PAVE.filter(function(p){
+      return !G.flags[p.flag] && G.month >= p.mo[0] && G.month <= p.mo[1] && !G.seen[p.before];
+    });
+    if (pv.length){
+      var p = pv[ri(pv.length)], sf = {}; sf[p.flag] = 1;
+      opts.push(mk(p, { setf: sf }));
+    }
+    var selfs = OWN_SELF.filter(function(s){ return !s.rank || (G.rank >= s.rank && Rank.next()); });
+    opts.push(mk(selfs[ri(selfs.length)]));
+    /* 人 */
+    var pp = OWN_PEOPLE[ri(OWN_PEOPLE.length)], who, o2;
+    if (pp.kind === 'qx'){
+      var q = QX_DEF[ri(QX_DEF.length)]; who = q.id;
+      o2 = mk(pp, { info: who }); o2.t = pp.t.replace('{QX}', q.n);
+    } else if (pp.kind === 'npc'){
+      var vs = VOTERS.filter(function(v){ return v !== 'jiwei'; }); who = vs[ri(vs.length)];
+      o2 = mk(pp, { info: who }); o2.t = pp.t.replace('{N}', Pool.side(who).n);
+    } else {
+      o2 = mk(pp, { info: Cards.someone() });
+    }
+    opts.push(o2);
+    /* 书记的三件事里挑一件 */
+    var pj = OWN_PROJ[ri(OWN_PROJ.length)], pr = {}; pr[pj.k] = pj.proj;
+    opts.push(mk(pj, { proj: pr }));
+
+    G.gen[id] = { id:id, kind:'note', src:'自己', due:'month', own:1, noRoll:1, img:'night',
+      title:'这个月，自己想办的一件事',
+      text:'台历上这个月还空着几格。桌上那些是别人的事，这一件是你自己的。',
+      nt:'', neglect:{}, opts: opts };
+    Desk.push(id, 'month');
+  }
+};
+
+var Echo = {
+  gen: function(){
+    if (!G.chose) return;
+    if (!G.echoed) G.echoed = {};
+    if (G.flags.echoMo && G.month - G.flags.echoMo < 3) return;
+    var ready = ECHO.filter(function(x){
+      var c = G.chose[x.on];
+      return c && !G.echoed[x.on] && x.opts.indexOf(c.i) >= 0 && G.month - c.m >= x.after;
+    });
+    if (!ready.length || rnd() > 0.4) return;
+    var x = ready[ri(ready.length)];
+    var id = 'echo_' + x.on;
+    G.echoed[x.on] = G.month;
+    G.flags.echoMo = G.month;
+    G.gen[id] = { id:id, kind:'note', src:x.src || '有人找你', due:'month', free:1, echo:1, noRoll:1,
+      img:x.img, title:x.title, text:x.text, nt:'', neglect:{},
+      opts:[{ t:x.ok, d:0, tier:'none', n:x.n, fx:x.fx || {}, info:x.info, proj:x.proj, rk:'' }] };
+    Desk.push(id, 'month');
+  }
+};
+
 /* === js/30-ui.js === */
 /* ── 30-ui：红头、指标条、五页签、送阅件、弹窗、手机 ─────── */
 var TABS = [
@@ -6229,7 +7208,7 @@ var TABS = [
 ];
 
 /* 图都在 assets/ 里，按文件名找。没有就当没有，界面照常 */
-var SCENE_BY_SRC = { '书记交办':'office', '办文':'mishu', '突发':'petition',
+var SCENE_BY_SRC = { '自己':'night', '书记交办':'office', '办文':'mishu', '突发':'petition',
                      '有人找你':'door', '家里':'home', '常委会':'changwei' };
 function art(file, cls){
   return '<img class="art ' + (cls || '') + '" src="assets/' + file + '" alt="">';
@@ -6262,7 +7241,8 @@ var UI = {
       '<span>第 ' + G.month + ' / ' + TERM + ' 个月</span>' +
       '<span class="days">本月剩余 ' + G.days + ' 天</span>' +
       '<span>待办 ' + Desk.live() + '</span>' +
-      '<span style="margin-left:auto;color:var(--ink3)">周维安 书记' + boss + '</span></div>';
+      '<span class="me">' + esc(G.name || '') + ' · ' + Rank.cur().n + '</span>' +
+      '<span style="color:var(--ink3)">周维安 书记' + boss + '</span></div>';
   },
 
   stats: function(){
@@ -6311,7 +7291,49 @@ var UI = {
         '<div class="meta">' + esc(q.src) + ' · ' + when +
         (q.done ? ' · 已办' : '') + '</div></button></li>';
     });
-    return h + '</ul></div><div class="panel">' + UI.docPane() + '</div></div>';
+    h += '</ul>' + UI.hand() + '</div>';
+    return h + '<div class="panel">' + UI.docPane() + '</div></div>';
+  },
+
+  /* 手里的牌 */
+  hand: function(){
+    var cs = Cards.all();
+    if (!cs.length) return '';
+    var h = '<h3 class="hand-h">手 里</h3><div class="hand">';
+    cs.forEach(function(c){
+      h += '<button class="cardb ' + c.type + '" data-card="' + c.id + '">' +
+        '<span class="ct">' + (c.type === 'favor' ? '人情' : '消息') + '</span>' +
+        '<span class="cn">' + esc(Cards.label(c)) + '</span></button>';
+    });
+    return h + '</div>';
+  },
+
+  cardModal: function(cid){
+    var c = Cards.find(cid); if (!c) return;
+    var s = Pool.side(c.who);
+    var b = '<div class="kv"><i>' + esc(s.p) + '</i><span>' + ymText(c.m) + '</span></div>';
+    if (c.type === 'info'){
+      b += '<p style="font-family:var(--song);font-size:17px;margin:12px 0">' + esc(c.t) + '</p>';
+      b += '<div class="bar-note" style="padding:0">' + esc(c.from) + '</div>';
+    } else {
+      b += '<p style="font-family:var(--song);font-size:17px;margin:12px 0">' +
+        esc((CALL[c.who] && CALL[c.who].n) || '他记着你一次') + '</p>';
+      b += '<div class="bar-note" style="padding:0">' + esc(c.from) + '</div>';
+    }
+    var told = G.flags.toldMo === G.month;
+    var foot = '<button class="btn" data-x>放着</button>';
+    if (c.type === 'info')
+      foot += '<button class="btn pri" data-tell' + (told ? ' disabled' : '') + '>' +
+        (told ? '这个月已经提过一回了' : '找个没人的时候跟书记提一句') + '</button>';
+    var d = UI.open(esc(c.type === 'info' ? '关于' + s.n : Cards.label(c)), b, foot);
+    on($('[data-x]', d), 'click', UI.close);
+    on($('[data-tell]', d), 'click', function(){
+      var w = Cards.tell(cid); if (!w) return;
+      UI.close(); UI.render();
+      var d2 = UI.open('', '<p style="font-family:var(--song);text-indent:2em">' + esc(w) + '</p>',
+        '<button class="btn pri" data-x>嗯</button>');
+      on($('[data-x]', d2), 'click', UI.close);
+    });
   },
 
   docPane: function(){
@@ -6325,19 +7347,26 @@ var UI = {
     var n = (q.uid.replace(/\D/g, '') | 0);
     var scene = e.img || SCENE_BY_SRC[q.src] || '';
     var h = '<h3>送阅件</h3>' +
-      (scene ? artWrap('s_' + scene + '.png', 'art-banner') : '') +
+      (scene ? artWrap('s_' + scene + '.webp', 'art-banner') : '') +
       '<div class="doc">' +
       '<div class="no">云委办〔' + ymOf(G.month).y + '〕' + (100 + n * 7 % 800) + '号</div>' +
-      (e.who ? artWrap('p_' + e.who + '.png', 'art-face doc-face') : '') +
-      '<h2>' + esc(e.title) + '</h2>' +
+      (e.who ? artWrap('p_' + e.who + '.webp', 'art-face doc-face') : '') +
+      '<h2>' + esc(Rank.rename(e.title)) + '</h2>' +
       '<div class="sub">' + esc(q.src) + ' · ' + DUE_TAG[q.due] + ' · 剩 ' + Desk.daysLeft(q) +
       ' 天' + (q.bumped ? ' · 上月拖过来的' : '') +
       (q.held ? ' · 这件在秘书长那儿转了一圈' : '') + '</div>' +
-      '<p>' + esc(e.text) + '</p>';
+      '<p>' + esc(Rank.rename(e.text)) + '</p>';
     if (q.done){
-      return h + '<div class="result"><div class="r">你的处理：' + esc(q.res.t) + '</div>' +
-        (q.res.n ? '<div class="r" style="color:var(--ink2);font-size:14px">' + esc(q.res.n) + '</div>' : '') +
-        (q.res.keep ? '<div class="keep">留痕：' + esc(q.res.keep) + '</div>' : '') + '</div></div>';
+      var fresh = UI._fresh === q.uid; if (fresh) UI._fresh = null;
+      var r = q.res, extra = '';
+      if (r.proj) extra += '<div class="got">推了一把：' + esc(r.proj) + '</div>';
+      if (r.deleg) extra += '<div class="keep">小周跑的，没占你的天数</div>';
+      if (r.used) extra += '<div class="keep">用掉了：' + esc(r.used) + (r.even ? '。这回开口，两清，不欠他的' : '') + '</div>';
+      (r.got || []).forEach(function(g){ extra += '<div class="got">到手：' + esc(g) + '</div>'; });
+      return h + '<div class="result' + (fresh ? ' fresh' : '') + '"><span class="stamp">已办</span>' +
+        '<div class="r">你的处理：' + esc(r.t) + '</div>' +
+        (r.n ? '<div class="r" style="color:var(--ink2);font-size:14px">' + esc(Rank.rename(r.n)) + '</div>' : '') +
+        (r.keep ? '<div class="keep">留痕：' + esc(r.keep) + '</div>' : '') + extra + '</div></div>';
     }
     if (e.slot){
       var pk = Slots.picked(q);
@@ -6423,21 +7452,43 @@ var UI = {
         h += '</div>';
       }
     }
+    if (e.acts){
+      var mc = Cards.forMeeting(q, e);
+      if (mc.length){
+        h += '<div class="lab" style="margin-top:12px">手 里 能 打 的</div><div class="opts">';
+        mc.forEach(function(c){
+          var nm = Pool.side(c.who).n;
+          h += '<button class="opt cardopt" data-mc="' + c.id + '"><span class="d">当场</span>' +
+            '<span class="t">' + (c.type === 'favor' ? '让' + esc(nm) + '把上回那个人情还了'
+              : '你知道' + esc(nm) + '的一件事，先摸摸他的底') + '</span>' +
+            '<div class="n">' + (c.type === 'favor' ? '他这一票会往书记这边挪一大步。用掉就没了'
+              : esc(c.t) + '。不用看材料，他这一票你心里就有数了') + '</div></button>';
+        });
+        h += '</div>';
+      }
+    }
+    if (Desk.canDeleg(q, e) || q.deleg){
+      h += '<button class="deleg' + (q.deleg ? ' on' : '') + '" id="deleg"><span class="box">' +
+        (q.deleg ? '✓' : '') + '</span>这件交给小周去跑<i>不占你的天数。见不得人的事他跑不了</i></button>';
+    }
     h += '<div class="hr"></div><div class="lab">' +
       (e.acts ? '开 会 那 天' : '拟 办 意 见') + '</div><div class="opts">';
-    e.opts.forEach(function(o, i){
+    Desk.optsOf(q, e).forEach(function(o, i){
       var lackF = o.reqFind && !Dossier.lit(q, e, o.reqFind);
       var lack = lackF || (o.req && !Desk.meet(o.req));
-      var cost = costOf(dayOf(o)) + (q.held ? 1 : 0);
+      var cost = Desk.costFor(q, e, o);
       var noRoom = cost > G.days + 0.001 && !e.force;
       var nod = lack || noRoom;
       var note = lackF ? Dossier.lackWord(q, e, o.reqFind)
         : (lack ? (o.nlow || '') : (o.n || ''));
-      h += '<button class="opt' + (o.rule ? ' gray' : '') + '" data-o="' + i + '"' +
+      note = Rank.rename(note);
+      var even = (!lack && o.fx && o.fx.owe && Cards.has('favor', o.fx.owe.who))
+        ? '<div class="n even">' + esc(Pool.side(o.fx.owe.who).n) + '还记着你一次。这回开口，两清</div>' : '';
+      h += '<button class="opt' + (o.rule ? ' gray' : '') + (o.call ? ' cardopt' : '') + '" data-o="' + i + '"' +
         (nod ? ' disabled' : '') + '><span class="d">' +
         (lack ? '' : (noRoom ? '排不下' : (cost ? cost + ' 天' : '当场'))) + '</span>' +
         '<span class="t">' + esc(o.t) + '</span>' +
-        (note ? '<div class="n">' + esc(note) + '</div>' : '') + '</button>';
+        (note ? '<div class="n">' + esc(note) + '</div>' : '') + even + '</button>';
     });
     h += '</div>';
     return h + '</div>';
@@ -6448,7 +7499,7 @@ var UI = {
     var h = '<div class="panel"><h3>市委常委会</h3><div class="cards">';
     NPC_DEF.forEach(function(d){
       var s = G.npc[d.id] || { fav:40 };
-      h += '<div class="card">' + artWrap('p_' + d.id + '.png', 'art-face') +
+      h += '<div class="card">' + artWrap('p_' + d.id + '.webp', 'art-face') +
         '<div class="n">' + d.n + '</div>' +
         '<div class="p">' + d.p + ' · ' + d.f + '</div>' +
         '<div class="l">' + d.line + '</div>' +
@@ -6463,6 +7514,15 @@ var UI = {
     h += '</div></div>';
 
     var met = Pool.metList();
+    Proj.init();
+    h += '<div class="panel" style="margin-top:12px"><h3>他这一届要干成的三件事</h3><div style="padding:10px 14px">';
+    PROJ.forEach(function(p){
+      var v = Math.round(G.proj[p.k]);
+      h += '<div class="kv" style="font-size:14px"><i style="color:var(--ink)">' + p.n + '</i><span>' + PROJ_WORD(v) + '</span></div>' +
+        '<div class="mini red" style="margin-bottom:10px"><i style="width:' + v + '%"></i></div>';
+    });
+    h += '<div class="bar-note" style="padding:4px 0 0">去年全省十三个市，云州排第 ' + G.cityRank + '。' +
+      (G.rankLog.length ? '' : '那是他来之前的事') + '</div></div></div>';
     h += '<div class="panel" style="margin-top:12px"><h3>见过面的</h3>';
     if (!met.length){
       h += '<div class="empty">—</div>';
@@ -6470,7 +7530,7 @@ var UI = {
       h += '<div class="cards">';
       met.forEach(function(x){
         var s = G.pool[x.id];
-        h += '<div class="card">' + artWrap('p_' + x.id + '.png', 'art-face') +
+        h += '<div class="card">' + artWrap('p_' + x.id + '.webp', 'art-face') +
           '<div class="n">' + x.n + '</div>' +
           '<div class="p">' + Pool.postOf(x) + ' · ' + x.grp + ' · ' + x.age + ' 岁' +
           (G.pool[x.id].moved ? '　（' + ymText(G.pool[x.id].moved) + '调整）' : '') + '</div>' +
@@ -6515,10 +7575,10 @@ var UI = {
   qx: function(){
     npcInit();
     var h = '<div class="panel"><h3>云州市 三区三县</h3>' +
-      artWrap('s_city.png', 'art-banner') + '<div class="cards">';
+      artWrap('s_city.webp', 'art-banner') + '<div class="cards">';
     QX_DEF.forEach(function(d){
       var s = G.qx[d.id] || { fav:45 };
-      h += '<div class="card">' + artWrap('p_' + d.id + '.png', 'art-face') +
+      h += '<div class="card">' + artWrap('p_' + d.id + '.webp', 'art-face') +
         '<div class="n">' + d.n + '</div><div class="p">' + d.tag + '</div>' +
         '<div class="l">' + ((G.qxHead && G.qxHead[d.id]) || d.head) + '：' +
         ((G.qxHead && G.qxHead[d.id]) ? '新上任，还在摸情况' : d.hl) + '</div>' +
@@ -6536,10 +7596,10 @@ var UI = {
       : f >= 3 ? '她值夜班，你加班，一周能碰上两顿早饭'
       : '周末带孩子去了趟公园，你手机响了三次';
     Private.init();
-    var h = '<div class="panel"><h3>家里</h3>' + artWrap('s_home.png', 'art-banner') +
+    var h = '<div class="panel"><h3>家里</h3>' + artWrap('s_home.webp', 'art-banner') +
       '<div class="cards">';
     KIN.forEach(function(d){
-      h += '<div class="card">' + artWrap('p_' + d.id + '.png', 'art-face') +
+      h += '<div class="card">' + artWrap('p_' + d.id + '.webp', 'art-face') +
         '<div class="n">' + d.rel + (d.n ? '　' + d.n : '') + '</div>' +
         '<div class="l">' + d.line + '</div></div>';
     });
@@ -6559,7 +7619,15 @@ var UI = {
           '<span style="text-align:right;max-width:78%">' + esc(x.t) + '</span></div>';
       }).join('') + '</div>';
     }
-    var h = '<div class="panel"><h3>履历 · 功</h3>' + lines(a.merit) + '</div>';
+    var rk = Rank.cur();
+    var h = '<div class="panel"><h3>干部履历</h3><div class="card" style="border:0;position:relative;padding:10px 14px">' +
+      artWrap('p_me.webp', 'art-face') +
+      '<div class="kv"><i>姓名</i><span>' + esc(G.name) + '</span></div>' +
+      '<div class="kv"><i>现任</i><span>' + esc(rk.post) + '</span></div>' +
+      '<div class="kv"><i>职级</i><span>' + rk.n + '（' + ymText(G.rankAt[G.rank] || 1) + '起）</span></div>' +
+      '<div class="kv"><i>批示里被夸过</i><span>' + (G.flags.praised || 0) + ' 回</span></div>' +
+      '<div class="bar-note" style="padding:8px 0 0">' + esc(Rank.word()) + '</div></div></div>';
+    h += '<div class="panel" style="margin-top:12px"><h3>履历 · 功</h3>' + lines(a.merit) + '</div>';
     h += '<div class="panel" style="margin-top:12px"><h3>履历 · 过</h3>' +
          lines(a.fault) + '</div>';
     h += '<div class="panel" style="margin-top:12px"><h3>留存材料</h3>' +
@@ -6606,10 +7674,17 @@ var UI = {
       on(b, 'click', function(){ if (!b.disabled) Slots.toggle(G.sel, b.dataset.k); });
     });
     on($('#slotok'), 'click', function(){ Slots.confirm(G.sel); });
+    $$('[data-card]').forEach(function(b){
+      on(b, 'click', function(){ UI.cardModal(b.dataset.card); });
+    });
+    $$('[data-mc]').forEach(function(b){
+      on(b, 'click', function(){ Cards.play(G.sel, b.dataset.mc); });
+    });
+    on($('#deleg'), 'click', function(){ Desk.deleg(G.sel); });
     $$('.mat[data-m]').forEach(function(b){
       on(b, 'click', function(){ Dossier.read(G.sel, b.dataset.m); });
     });
-    $$('.opt').forEach(function(b){
+    $$('.opt[data-o]').forEach(function(b){
       on(b, 'click', function(){ if (!b.disabled) Desk.choose(G.sel, +b.dataset.o); });
     });
     on($('#exp'), 'click', exportSave);
@@ -6700,8 +7775,14 @@ var UI = {
 
   showRemarks: function(res){
     var rs = (res && res.remarks) || [], ms = (res && res.missed) || [];
-    if (G.ending || (!rs.length && !ms.length)){ G.sel = null; UI.render(); return; }
+    if (G.ending){ G.sel = null; UI.render(); return; }
+    UI._year = res && res.year;
+    if (!rs.length && !ms.length && !(res && (res.clean || res.tea))){ G.sel = null; UI.render(); UI.yearEnd(); return; }
     var b = '';
+    if (res.clean){
+      b += '<div class="cleandesk"><span class="seal">清</span><div>' + esc(res.clean.t) +
+        (res.clean.word ? '<div class="cw">' + esc(res.clean.word) + '</div>' : '') + '</div></div>';
+    }
     if (ms.length){
       b += '<div class="lab">没 办 的 那 几 件</div>';
       ms.forEach(function(m){
@@ -6710,13 +7791,63 @@ var UI = {
       b += '<div style="height:14px"></div>';
     }
     if (rs.length) b += '<div class="lab">书 记 批 示</div>';
-    rs.forEach(function(r){ b += UI.remarkHTML(r.t, r.on); });
+    rs.forEach(function(r){ b += UI.remarkHTML(r.t, r.on, r.praise); });
+    if (res.tea) b += '<div class="got" style="margin-top:12px">到手：' + esc(res.tea) + '</div>';
     var d = UI.open(ymText(G.month - 1) + ' 呈阅件', b,
       '<button class="btn pri" data-x>进入 ' + ymText(G.month) + '</button>');
-    on($('[data-x]', d), 'click', function(){ UI.close(); G.sel = null; UI.render(); });
+    on($('[data-x]', d), 'click', function(){ UI.close(); G.sel = null; UI.render(); UI.yearEnd(); });
   },
 
-  remarkHTML: function(txt, on){
+  /* 年底省里的通报。十三个市排一排 */
+  yearEnd: function(){
+    var y = UI._year; UI._year = null;
+    if (!y || G.ending){ UI.promo(); return; }
+    Proj.init();
+    var row = '';
+    for (var i = 1; i <= 13; i++)
+      row += '<span class="rk' + (i === y.r ? ' on' : '') + (i === y.last ? ' last' : '') + '">' + (i === y.r ? '云州' : i) + '</span>';
+    var pj = '';
+    PROJ.forEach(function(p){
+      var v = Math.round(G.proj[p.k]);
+      pj += '<div class="kv"><i>' + p.n + '</i><span>' + PROJ_WORD(v) + '</span></div>' +
+        '<div class="mini red"><i style="width:' + v + '%"></i></div>';
+    });
+    var b = '<div class="appoint yearp"><div class="ah">江东省委办公厅通报</div>' +
+      '<div class="ano">' + y.y + ' 年度全省地市综合考核结果</div><div class="aline"></div>' +
+      '<div class="bigr">第 <b>' + y.r + '</b> 名</div><div class="rks">' + row + '</div>' +
+      '<div class="ano" style="margin-top:8px">' + esc(y.d) + '</div></div>' +
+      '<p style="font-family:var(--song);text-indent:2em;margin-top:16px">' + esc(y.line) + '</p>' +
+      (y.bonus ? '<div class="got">' + esc(y.bonus) + '</div>' : '') +
+      '<div style="margin-top:14px">' + pj + '</div>';
+    var d = UI.open('', b, '<button class="btn pri" data-x>进入 ' + ymOf(G.month).y + ' 年</button>');
+    d.className += ' big';
+    on($('[data-x]', d), 'click', function(){ UI.close(); UI.render(); UI.promo(); });
+  },
+
+  /* 任命文件。整张纸，红头，盖章 */
+  promo: function(){
+    if (G.promo == null || G.ending) return;
+    var r = RANKS[G.promo]; G.promo = null; save();
+    if (!r) return;
+    var ym = ymOf(G.month);
+    var b = '<div class="appoint"><div class="ah">中共云州市委办公室文件</div>' +
+      '<div class="ano">云委办干〔' + ym.y + '〕' + (3 + r.k * 4) + '号</div><div class="aline"></div>' +
+      '<div class="at">关于' + esc(G.name) + '同志职级晋升的通知</div>' +
+      '<p>各科室：</p><p>经市委组织部批复同意，' + esc(G.name) + '同志晋升为' + r.n +
+      (r.k === 2 ? '，任市委办公室副主任，不再挂职' : '') + '。</p><p>特此通知。</p>' +
+      '<div class="asign">中共云州市委办公室<br>' + ym.y + '年' + ym.m + '月' +
+      '<span class="aseal"><i>★</i>中共云州市委办公室</span></div></div>' +
+      '<p style="font-family:var(--song);text-indent:2em;margin-top:16px">' + esc(r.story) + '</p>';
+    (r.got || []).forEach(function(g){ b += '<div class="got">' + esc(g) + '</div>'; });
+    var d = UI.open('', b, '<button class="btn pri" data-x>收好</button>');
+    d.className += ' big';
+    on($('[data-x]', d), 'click', function(){ UI.close(); UI.render(); });
+  },
+
+  remarkHTML: function(txt, on, praise){
+    if (praise) return '<div class="remark praise"><span class="ring">阅</span>' +
+      (txt ? esc(txt) + '　' : '') + '<b>' + esc(praise) + '</b>' +
+      '<span class="on">' + esc(on) + '</span></div>';
     if (!txt) return '<div class="remark none">（没批，右上角签了个名）' +
       '<span class="on">' + esc(on) + '</span></div>';
     return '<div class="remark">' + esc(txt) + '<span class="on">' + esc(on) + '</span></div>';
@@ -6729,7 +7860,7 @@ var UI = {
     var a = G.archive, mo = G.endAt || Math.min(G.month, TERM);
     var h = UI.head();
     h += '<div class="panel" style="margin-top:14px">' +
-      artWrap('e_' + G.ending + '.png', 'art-end') + '<div class="doc">';
+      artWrap('e_' + G.ending + '.webp', 'art-end') + '<div class="doc">';
     h += '<div class="no">云委办〔' + ymOf(mo).y + '〕结 字</div>';
     h += '<h2 style="font-size:24px">' + esc(e.n) + '</h2>';
     h += '<div class="sub">' + ymText(mo) + ' · 第 ' + mo + ' 个月</div>';
@@ -6763,6 +7894,7 @@ var UI = {
 
     /* 你自己的账和家里 */
     h += '<div class="panel" style="margin-top:12px"><h3>你自己</h3><div style="padding:10px 14px">' +
+      '<div class="kv"><i>走的时候</i><span>' + Rank.cur().n + '</span></div>' +
       '<div class="kv"><i>这五年</i><span>' + CLEAN_WORD(G.stats.clean) + '</span></div>' +
       '<div class="kv"><i>家里</i><span>' + (G.hidden.famBroken ? '她不问你几点回来了' :
         G.hidden.fam >= 8 ? '接送表上你的名字很少出现' : '还过得去') + '</span></div>' +
@@ -6804,12 +7936,14 @@ var UI = {
   },
 
   start: function(){
-    var b = artWrap('cover.png', 'art-cover') +
+    var b = artWrap('cover.webp', 'art-cover') +
       '<p style="font-family:var(--song);text-indent:2em">' +
       '周维安是上个月到的云州。到任第三天，他在办公室叫住你，问了你三个问题，' +
       '最后一个是你爱人做什么的。第二天办公室的分工表上，你名字后面添了四个字：书记秘书。</p>' +
-      '<p style="font-family:var(--song);text-indent:2em">你二十九，副科，第一年挂副主任。' +
+      '<p style="font-family:var(--song);text-indent:2em">你二十九，副科，挂的市委办副主任。' +
       '他这一届，五年。</p>' +
+      '<div class="lab">你 叫</div><div class="namerow"><span>刘</span>' +
+      '<input id="gname" maxlength="2" value="峥" autocomplete="off"></div>' +
       '<div class="lab">在 这 之 前</div><div class="opts">' +
       '<button class="opt" data-o="xds"><span class="t">选调生</span>' +
       '<div class="n">乡镇挂过两年，市委办三年。谁跟谁什么关系，你心里有本账</div></button>' +
@@ -6822,8 +7956,9 @@ var UI = {
     if (c) on(c, 'click', function(){ UI.close(); if (load()) UI.render(); });
     $$('.opt', d).forEach(function(btn){
       on(btn, 'click', function(){
+        var gn = $('#gname', d), nm = gn ? gn.value.replace(/[^\u4e00-\u9fa5]/g, '') : '';
         UI.close();
-        newGame({ origin: btn.dataset.o });
+        newGame({ origin: btn.dataset.o, name: '刘' + (nm || '峥') });
         npcInit();
         var o = btn.dataset.o;
         if (o === 'xds') applyFx({ gx:+10, rep:+3 });
@@ -6864,7 +7999,7 @@ var Desk = {
       used += d; txt.push(r.t + ' ' + d + ' 天');
     }
     G.routine = txt.join('，');
-    return WORKDAYS - used;
+    return WORKDAYS - used + Rank.days();
   },
 
   push: function(id, due, plan){
@@ -6889,6 +8024,7 @@ var Desk = {
     if (!req) return true;
     for (var k in req){
       if (k === 'money'){ if (!Private.can(req[k])) return false; continue; }
+      if (k === 'flag'){ if (!G.flags[req[k]]) return false; continue; }
       if (k === 'keep'){
         var want = req[k], got = false;
         G.archive.mats.forEach(function(m){ if (m.t.indexOf(want) >= 0) got = true; });
@@ -6973,41 +8109,74 @@ var Desk = {
     return G.days;
   },
 
+  /* 这件事眼下有哪几条路。手里的人情对得上，就多一条 */
+  optsOf: function(it, e){
+    var call = Cards.callOpt(e);
+    return call ? e.opts.concat([call]) : e.opts;
+  },
+  /* 这条路要花几天。交给小周跑的不占你的天数，见不得人的事他跑不了 */
+  costFor: function(it, e, o){
+    if (e.free) return 0;
+    if (it.deleg && !o.rule) return 0;
+    return costOf(dayOf(o)) + (it.held ? 1 : 0);
+  },
+  canDeleg: function(it, e){
+    return Rank.canDeleg() && Cards.plain(e) && !it.done;
+  },
+  deleg: function(u){
+    var it = Desk.find(u); if (!it || it.done) return;
+    var e = EV(it.id);
+    if (G.flags.delegMo !== G.month){ G.flags.delegMo = G.month; G.flags.delegN = 0; }
+    if (it.deleg){ it.deleg = 0; G.flags.delegN = Math.max(0, (G.flags.delegN || 0) - 1); }
+    else { if (!Desk.canDeleg(it, e)) return; it.deleg = 1; G.flags.delegN = (G.flags.delegN || 0) + 1; }
+    save(); UI.render();
+  },
+
   /* 选了一条拟办意见 */
   choose: function(u, idx){
     var it = Desk.find(u); if (!it || it.done) return;
-    var e = EV(it.id); var o = e.opts[idx]; if (!o) return;
+    var e = EV(it.id); var o = Desk.optsOf(it, e)[idx]; if (!o) return;
     if (o.req && !Desk.meet(o.req)) return;
     if (o.reqFind && !Dossier.lit(it, e, o.reqFind)) return;
     if (e.slot && !it.slotDone){ UI.toast('先把这四个空排了'); return; }
-    var cost = costOf(dayOf(o)) + (it.held ? 1 : 0);
+    var cost = Desk.costFor(it, e, o);
     if (cost > G.days + 0.001 && !e.force){
       UI.toast('这个月剩下的天数不够了');
       return;
     }
     spendDays(cost);
+    G._even = null;
     applyFx(o.fx);
+    var got = Cards.gain(e, o);
+    var usedCard = null;
+    if (o.card){ usedCard = Cards.find(o.card); Cards.drop(o.card); }
     if (o.rule){
       var r = ruleOf(o.rule);
       applyFx({ lead: leadOf(o.rule) });
       faultAdd(e.title + '：' + o.t, o.rule);
       if (r && r.red){ G.flags.redline = 1; applyFx({ risk:+2 }); }
-    } else {
-      meritAdd(e.title + '：' + o.t);
+    } else if (!e.free){
+      meritAdd((e.own ? '' : e.title + '：') + o.t);
     }
     if (o.coop) G.archive.coop += o.coop;
     if (o.setf) for (var fk in o.setf) G.flags[fk] = o.setf[fk];
     if (o.rest) Slots.rest(it, o.rest);
+    if (G._heard){ got.push(G._heard); G._heard = null; }
     if (o.grudge) Private.addGrudge(o.grudge);
     if (o.clear && o.oweIdx != null) Private.settle(o.oweIdx);
     if (o.renege && o.oweIdx != null) Private.renege(o.oweIdx);
+    if (o.days) G.days = Math.round((G.days + o.days) * 10) / 10;
     if (o.keep) keepAdd(o.keep, o.keyk);
     if (o.dropk) dropKey(o.dropk);
     /* 人情是消耗品：一个电话打出去就少一个 */
     if (o.req && o.req.gx && !(o.fx && o.fx.gx < 0)) applyFx({ gx: -(2 + Math.round(o.req.gx / 12)) });
     it.done = true;
     it.tier = o.tier || (o.rule ? 'gray' : 'good');
-    it.res = { t: o.t, n: o.n || '', keep: o.keep || '', rule: o.rule || null };
+    it.res = { t: o.t, n: (o.call ? o.resN : o.n) || '', keep: o.keep || '', rule: o.rule || null,
+               got: got.map(function(c){ return c.type === 'info' ? c.t : Cards.label(c); }),
+               used: usedCard ? Cards.label(usedCard) : (G._even ? Pool.side(G._even).n + ' 记着你一次' : ''),
+               even: G._even ? 1 : 0, deleg: it.deleg ? 1 : 0 };
+    UI._fresh = it.uid;
     G.done.push({ id: it.id, title: e.title, tier: it.tier, opt: o.t, rk: o.rk });
     logAdd(e.title + ' → ' + o.t);
     if (e.acts){
@@ -7020,6 +8189,11 @@ var Desk = {
       it.res.t = it.res.t + '　——　' + tl.yes + ' 比 ' + tl.no + '，' + (tl.pass ? '过了' : '没过');
       logAdd(e.title + '：' + tl.yes + ' 比 ' + tl.no);
     }
+    if (!G.chose) G.chose = {};
+    if (!e.own && !e.echo && !o.call) G.chose[e.arc ? e.arc + '.' + e.stage : e.id] = { i: idx, m: G.month };
+    G._projUp = null;
+    Proj.onChoose(e, o, it);
+    if (G._projUp){ for (var pi = 0; pi < PROJ.length; pi++) if (PROJ[pi].k === G._projUp) it.res.proj = PROJ[pi].n; }
     checkLead();
     if (e.arc) Arcs.advance(e, idx, it);
     if (o.end) Endings.trigger(o.end);
@@ -7039,12 +8213,13 @@ var Desk = {
       if (e.noRoll){
         applyFx(e.neglect);
         if (e.nt) G.missed.push({ id: e.id, on: e.title, t: e.nt });
-        logAdd(e.title + ' → 这个月过去了');
+        if (!e.own && !e.echo) logAdd(e.title + ' → 这个月过去了');
         return;
       }
       if (q.due === 'over'){
         /* 逾期再没办 → 按不办的后果结算 */
         applyFx(e.neglect);
+        Proj.onNeglect(e);
         faultAdd(e.title + '：没办', null);
         if (e.nt) G.missed.push({ id: e.id, on: e.title, t: e.nt });
         logAdd(e.title + ' → 没办，按后果结算');
@@ -7112,6 +8287,27 @@ var Desk = {
       G.flags.famMiss = 0;
     }
 
+    /* 桌上不过夜：本月和逾期的全办了，而且不是闲月 */
+    var left = G.queue.filter(function(q){ var qe = EV(q.id); return !q.done && q.due !== 'plan' && !(qe && qe.own); }).length;
+    var clean = null;
+    if (!left && G.done.length >= 5){
+      G.flags.cleanRun = (G.flags.cleanRun || 0) + 1;
+      G.flags.cleanAll = (G.flags.cleanAll || 0) + 1;
+      applyFx({ en:+4 });
+      /* 头一回说一句整话，往后只记个数，不然月月都是那两句 */
+      clean = { t: G.flags.cleanRun === 1 ? pick(CLEAN_DESK[G.bossType] || CLEAN_DESK.steady)
+                  : '桌上不过夜，连着第 ' + G.flags.cleanRun + ' 个月', run: G.flags.cleanRun };
+      if (G.flags.cleanRun === 3){ applyFx({ rep:+3 }); clean.word = CLEAN_RUN3; }
+    } else {
+      G.flags.cleanRun = 0;
+    }
+    /* 秘书长讲十年前的人和事，总有一两句是有用的 */
+    var tea = null;
+    if (c.k === 'msz'){
+      var ks = VOTERS.filter(function(v){ return v !== 'mishuzhang'; });
+      tea = Cards.add('info', ks[ri(ks.length)], '秘书长办公室那两壶茶');
+    }
+
     Pool.mszRule(G.done.length, c.k === 'msz');
     Desk.rollover();
     var missed = G.missed || [];
@@ -7127,6 +8323,9 @@ var Desk = {
     Pool.drift();
     Msz.tick();
     Private.tick();
+    Proj.tick();
+    var year = (G.month > 1 && (G.month - 1) % 12 === 0) ? Proj.yearEnd() : null;
+    Rank.tick();
     checkLead();
     Endings.tick();
 
@@ -7136,7 +8335,8 @@ var Desk = {
       Events.fill();
     }
     save();
-    return { remarks: remarks, missed: missed };
+    return { remarks: remarks, missed: missed, clean: clean, year: year,
+             tea: tea ? tea.t : '' };
   }
 };
 
@@ -7229,6 +8429,7 @@ var Meeting = {
 
   /* 这个人的态度你看过没有 */
   known: function(it, e, id){
+    if (it.peek && it.peek[id]) return true;
     if (!e.mats) return true;
     for (var i = 0; i < e.mats.length; i++)
       if (e.mats[i].who === id) return Dossier.hasRead(it, e.mats[i].id);
@@ -7325,6 +8526,21 @@ var Remark = {
     return rk[G.bossType] || '';
   },
 
+  /* 办得漂亮的那几件里挑一件，他多批一句。一个月最多一句 */
+  praise: function(out){
+    var P = PRAISE[G.bossType]; if (!P) return;
+    var good = out.filter(function(r){ return r.tier === 'good'; });
+    G.flags.dry = (G.flags.dry || 0) + 1;
+    if (!good.length || G.month < 3) return;
+    if (G.flags.dry < P.dry && rnd() >= P.p * Math.min(3, good.length)) return;
+    var r = good[ri(good.length)];
+    r.praise = pick(P.t);
+    G.flags.dry = 0;
+    G.flags.praised = (G.flags.praised || 0) + 1;
+    applyFx({ trust: P.trust });
+    meritAdd('书记在「' + r.on + '」上批了：' + r.praise);
+  },
+
   build: function(missed){
     var out = [];
     G.done.forEach(function(d){
@@ -7334,15 +8550,16 @@ var Remark = {
         if (w) out.push({ on: d.title, t: w });
         return;
       }
-      out.push({ on: d.title, t: Remark.textOf(d.rk, d.tier || 'good') });
+      out.push({ on: d.title, t: Remark.textOf(d.rk, d.tier || 'good'), tier: d.tier || 'good' });
     });
+    Remark.praise(out);
     /* 真没办成的挑一件，他问一句。家里的事不算 */
     var late = (missed || []).filter(function(m){ return !Remark.isFam(m.id); });
     if (late.length){
       out.push({ on: late[0].on, t: remarkOf('none') });
     }
     out = out.slice(0, 6);
-    out.forEach(function(r){ G.archive.remarks.push({ m: G.month, on: r.on, t: r.t }); });
+    out.forEach(function(r){ G.archive.remarks.push({ m: G.month, on: r.on, t: r.praise ? (r.t ? r.t + '　' : '') + r.praise : r.t, p: r.praise ? 1 : 0 }); });
     return out;
   }
 };
@@ -7361,6 +8578,7 @@ var Events = {
     if (Desk.has(e.id)) return false;
     if (e.fam && G.hidden.famBroken) return false;
     if (e.orig && e.orig !== G.origin) return false;
+    if (e.rankMin && (G.rank || 0) < e.rankMin) return false;
     return true;
   },
 
@@ -7401,6 +8619,8 @@ var Events = {
       Desk.push(e.id, rnd() < 0.62 ? 'month' : 'next');
     }
     if (Desk.hasFam()) G.flags.famLastMo = G.month;
+    Echo.gen();
+    Own.gen();
   }
 };
 

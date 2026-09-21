@@ -1,5 +1,5 @@
 /* ── 00-core：状态、存档、随机、工具 ───────────────────── */
-var VER = '1.3.0';
+var VER = '1.4.0';
 var SAVE_KEY = 'dami_save_v1';
 var START_Y = 2027, TERM = 60, WORKDAYS = 20;
 
@@ -61,6 +61,8 @@ function newGame(opt){
     month: 1,
     days: 11,
     origin: opt.origin || 'xds',
+    name: opt.name || '刘峥',
+    rank: 0, rankAt: { 0: 1 }, cards: [],
     bossType: opt.bossType || pick(['steady', 'strong', 'shrewd']),
     stats: { trust: 50, prestige: 45, rep: 50, guanxi: 30, clean: 100, energy: 80 },
     hidden: { lead: 0, dark: [], bossRisk: 0, wind: 0, fam: 0, famBroken: false },
@@ -115,6 +117,9 @@ function migrate(g, v){
   if (!g.cool) g.cool = {};
   if (!g.gen) g.gen = {};
   if (!g.seen) g.seen = {};
+  if (!g.cards) g.cards = [];
+  if (g.rank == null){ g.rank = 0; g.rankAt = { 0: 1 }; }
+  if (!g.name) g.name = '刘峥';
   g.ver = VER;
   return g;
 }

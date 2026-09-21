@@ -362,3 +362,6 @@ button{font-family:inherit;font-size:inherit;color:inherit}
   color:var(--ink3);font-family:var(--hei)}
 .rks .rk.last{border-style:dashed;border-color:var(--ink2)}
 .rks .rk.on{background:var(--red);border-color:var(--red);color:#fff;font-weight:700;flex:1.8 1 0}
+
+/* 还没打过交道 */
+.card .l.dim{ color:var(--ink3); }

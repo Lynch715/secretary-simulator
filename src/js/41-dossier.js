@@ -23,6 +23,7 @@ var Dossier = {
     if (cost > G.days + 0.001){ UI.toast('这个月排不下了'); return; }
     spendDays(cost);
     Dossier.readOf(it)[mid] = 1;
+    if (m.who) npcMet(m.who);
     if (!G.mats) G.mats = {};
     G.mats[mid] = 1;
     keepAdd(m.t, m.key);

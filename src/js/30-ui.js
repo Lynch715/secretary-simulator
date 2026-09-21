@@ -28,7 +28,7 @@ var UI = {
   },
 
   head: function(){
-    return '<div class="letterhead"><h1>中共云州市委办公室</h1>' +
+    return '<div class="letterhead"><h1>云州市委办公室</h1>' +
            '<div class="rule"></div><div class="rule2"></div></div>';
   },
 
@@ -75,7 +75,6 @@ var UI = {
 
   desk: function(){
     var h = '';
-    if (G.routine) h += '<div class="bar-note">这个月先没了：' + esc(G.routine) + '</div>';
     h += '<div class="main"><div class="panel"><h3>待办</h3><ul class="queue">';
     var list = Desk.list(), sepDone = false;
     if (!list.length) h += '<li class="empty">—</li>';
@@ -276,8 +275,9 @@ var UI = {
       var cost = Desk.costFor(q, e, o);
       var noRoom = cost > G.days + 0.001 && !e.force;
       var nod = lack || noRoom;
+      /* 选之前不剧透结果：o.n 只在办完后的「已办」里出现 */
       var note = lackF ? Dossier.lackWord(q, e, o.reqFind)
-        : (lack ? (o.nlow || '') : (o.n || ''));
+        : (lack ? (o.nlow || '') : '');
       note = Rank.rename(note);
       var even = (!lack && o.fx && o.fx.owe && Cards.has('favor', o.fx.owe.who))
         ? '<div class="n even">' + esc(Pool.side(o.fx.owe.who).n) + '还记着你一次。这回开口，两清</div>' : '';
@@ -299,13 +299,16 @@ var UI = {
       h += '<div class="card">' + artWrap('p_' + d.id + '.webp', 'art-face') +
         '<div class="n">' + d.n + '</div>' +
         '<div class="p">' + d.p + ' · ' + d.f + '</div>' +
-        '<div class="l">' + d.line + '</div>' +
+        (npcKnown(d.id) >= 1
+          ? '<div class="l">' + d.line + '</div>'
+          : '<div class="l dim">还没打过交道</div>') +
         (d.id === 'boss' ?
           '<div class="kv"><i>说话的分量</i><span>' + UI.presWord(G.stats.prestige) + '</span></div>' +
           '<div class="mini"><i style="width:' + G.stats.prestige + '%"></i></div>' :
           '<div class="kv"><i>对你</i><span>' + UI.favWord(s.fav) + '</span></div>' +
           '<div class="mini"><i style="width:' + s.fav + '%"></i></div>' +
-          (d.bottom ? '<div class="l" style="margin-top:6px">' + bottomLine(d.bottom) + '</div>' : '')) +
+          (d.bottom && npcKnown(d.id) >= 4
+            ? '<div class="l" style="margin-top:6px">' + bottomLine(d.bottom) + '</div>' : '')) +
         '</div>';
     });
     h += '</div></div>';
@@ -377,8 +380,10 @@ var UI = {
       var s = G.qx[d.id] || { fav:45 };
       h += '<div class="card">' + artWrap('p_' + d.id + '.webp', 'art-face') +
         '<div class="n">' + d.n + '</div><div class="p">' + d.tag + '</div>' +
-        '<div class="l">' + ((G.qxHead && G.qxHead[d.id]) || d.head) + '：' +
-        ((G.qxHead && G.qxHead[d.id]) ? '新上任，还在摸情况' : d.hl) + '</div>' +
+        '<div class="l' + (npcKnown(d.id) >= 1 || (G.qxHead && G.qxHead[d.id]) ? '' : ' dim') + '">' +
+        ((G.qxHead && G.qxHead[d.id]) || d.head) + '：' +
+        ((G.qxHead && G.qxHead[d.id]) ? '新上任，还在摸情况'
+          : (npcKnown(d.id) >= 1 ? d.hl : '还没打过交道')) + '</div>' +
         '<div class="kv"><i>对你</i><span>' + UI.favWord(s.fav) + '</span></div>' +
         '<div class="mini"><i style="width:' + s.fav + '%"></i></div></div>';
     });
@@ -627,13 +632,13 @@ var UI = {
     var r = RANKS[G.promo]; G.promo = null; save();
     if (!r) return;
     var ym = ymOf(G.month);
-    var b = '<div class="appoint"><div class="ah">中共云州市委办公室文件</div>' +
+    var b = '<div class="appoint"><div class="ah">云州市委办公室文件</div>' +
       '<div class="ano">云委办干〔' + ym.y + '〕' + (3 + r.k * 4) + '号</div><div class="aline"></div>' +
       '<div class="at">关于' + esc(G.name) + '同志职级晋升的通知</div>' +
       '<p>各科室：</p><p>经市委组织部批复同意，' + esc(G.name) + '同志晋升为' + r.n +
       (r.k === 2 ? '，任市委办公室副主任，不再挂职' : '') + '。</p><p>特此通知。</p>' +
-      '<div class="asign">中共云州市委办公室<br>' + ym.y + '年' + ym.m + '月' +
-      '<span class="aseal"><i>★</i>中共云州市委办公室</span></div></div>' +
+      '<div class="asign">云州市委办公室<br>' + ym.y + '年' + ym.m + '月' +
+      '<span class="aseal"><i>★</i>云州市委办公室</span></div></div>' +
       '<p style="font-family:var(--song);text-indent:2em;margin-top:16px">' + esc(r.story) + '</p>';
     (r.got || []).forEach(function(g){ b += '<div class="got">' + esc(g) + '</div>'; });
     var d = UI.open('', b, '<button class="btn pri" data-x>收好</button>');

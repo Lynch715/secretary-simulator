@@ -31,13 +31,28 @@ function npcInit(){
   if (G.npc) return;
   G.npc = {};
   NPC_DEF.forEach(function(d){
-    G.npc[d.id] = { to: 0, fav: d.id === 'boss' ? 50 : 40 + ri(20), grip: 0, known: 0 };
+    G.npc[d.id] = { to: 0, fav: d.id === 'boss' ? 50 : 40 + ri(20), grip: 0,
+                    known: (d.id === 'boss' || d.id === 'mishuzhang') ? 9 : 0 };
   });
   G.qx = {};
-  QX_DEF.forEach(function(d){ G.qx[d.id] = { fav: 45 + ri(15) }; });
+  QX_DEF.forEach(function(d){ G.qx[d.id] = { fav: 45 + ri(15), known: 0 }; });
 }
+/* 打过交道：常委/区县各自累计，用来解锁卡片上那两行评价 */
+function npcMet(id, n){
+  npcInit();
+  n = n || 1;
+  if (G.npc && G.npc[id]) G.npc[id].known = (G.npc[id].known || 0) + n;
+  else if (G.qx && G.qx[id]) G.qx[id].known = (G.qx[id].known || 0) + n;
+}
+function npcKnown(id){
+  if (G.npc && G.npc[id]) return G.npc[id].known || 0;
+  if (G.qx && G.qx[id]) return G.qx[id].known || 0;
+  return 0;
+}
+
 function npcFavor(id, v){
   npcInit();
+  npcMet(id);
   if (id === 'me' || id === 'boss' && false) return;
   if (G.npc[id]){ G.npc[id].fav = clamp(G.npc[id].fav + v, 0, 100); return; }
   if (G.qx && G.qx[id]){ G.qx[id].fav = clamp(G.qx[id].fav + v, 0, 100); return; }

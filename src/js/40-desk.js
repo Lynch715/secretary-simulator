@@ -13,13 +13,14 @@ var Desk = {
 
   /* 一个月 20 个工作日，先被例行的事占掉十到十四天 */
   budget: function(){
-    var pool = shuffle(ROUTINE), used = 0, txt = [];
-    for (var i = 0; i < pool.length && (used < 10 || txt.length < 3); i++){
+    var pool = shuffle(ROUTINE), used = 0, n = 0;
+    for (var i = 0; i < pool.length && (used < 10 || n < 3); i++){
       if (used >= 14) break;
-      var r = pool[i], d = r.d[0] + ri(r.d[1] - r.d[0] + 1);
-      used += d; txt.push(r.t + ' ' + d + ' 天');
+      var r = pool[i];
+      used += r.d[0] + ri(r.d[1] - r.d[0] + 1);
+      n++;
     }
-    G.routine = txt.join('，');
+    G.routine = '';
     return WORKDAYS - used + Rank.days();
   },
 
@@ -167,6 +168,9 @@ var Desk = {
     }
     spendDays(cost);
     G._even = null;
+    if (e.who) npcMet(e.who);
+    /* 上了常委会，这一屋子人你都算打过交道 */
+    if (e.acts && typeof VOTERS !== 'undefined') VOTERS.forEach(function(v){ npcMet(v); });
     applyFx(o.fx);
     var got = Cards.gain(e, o);
     var usedCard = null;

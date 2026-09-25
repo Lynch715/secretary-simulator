@@ -12,6 +12,7 @@ var Events = {
     if (e.fam && G.hidden.famBroken) return false;
     if (e.orig && e.orig !== G.origin) return false;
     if (e.rankMin && (G.rank || 0) < e.rankMin) return false;
+    if (e.fac && !Fac.ok(e)) return false;
     return true;
   },
 

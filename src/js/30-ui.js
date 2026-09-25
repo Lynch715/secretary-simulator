@@ -25,6 +25,7 @@ var UI = {
       '<div id="body">' + UI.tabBody() + '</div>' + UI.tabs();
     UI.bind();
     UI.flash();
+    if (G.notice && !UI.modal) UI.notice();
   },
 
   head: function(){
@@ -147,11 +148,11 @@ var UI = {
       '<div class="doc">' +
       '<div class="no">云委办〔' + ymOf(G.month).y + '〕' + (100 + n * 7 % 800) + '号</div>' +
       (e.who ? artWrap('p_' + e.who + '.webp', 'art-face doc-face') : '') +
-      '<h2>' + esc(Rank.rename(e.title)) + '</h2>' +
+      '<h2>' + esc(Rank.rename(Fac.title(e))) + '</h2>' +
       '<div class="sub">' + esc(q.src) + ' · ' + DUE_TAG[q.due] + ' · 剩 ' + Desk.daysLeft(q) +
       ' 天' + (q.bumped ? ' · 上月拖过来的' : '') +
       (q.held ? ' · 这件在秘书长那儿转了一圈' : '') + '</div>' +
-      '<p>' + esc(Rank.rename(e.text)) + '</p>';
+      '<p>' + esc(Rank.rename(Fac.text(e))) + '</p>';
     if (q.done){
       var fresh = UI._fresh === q.uid; if (fresh) UI._fresh = null;
       var r = q.res, extra = '';
@@ -291,17 +292,32 @@ var UI = {
     return h + '</div>';
   },
 
+  /* 局势图：这张桌子上，谁坐谁那边 */
+  board: function(){
+    var rows = Fac.board();
+    var h = '<div class="panel"><h3>这张桌子上，谁坐谁那边</h3><div class="board">';
+    rows.forEach(function(r){
+      h += '<span class="bd bd-' + r.s + '">' + esc(r.n) + '<i>' + esc(r.p) + '</i></span>';
+    });
+    var w = Fac.boardWord();
+    h += '</div>' + (w ? '<div class="bar-note" style="padding:0 14px 12px">' + esc(w) + '</div>' : '') + '</div>';
+    return h;
+  },
+
   ban: function(){
-    npcInit(); Pool.init();
-    var h = '<div class="panel"><h3>市委常委会</h3><div class="cards">';
+    npcInit(); Pool.init(); Fac.init();
+    var h = UI.board();
+    h += '<div class="panel" style="margin-top:12px"><h3>市委常委会</h3><div class="cards">';
     NPC_DEF.forEach(function(d){
       var s = G.npc[d.id] || { fav:40 };
-      h += '<div class="card">' + artWrap('p_' + d.id + '.webp', 'art-face') +
-        '<div class="n">' + d.n + '</div>' +
-        '<div class="p">' + d.p + ' · ' + d.f + '</div>' +
-        (npcKnown(d.id) >= 1
-          ? '<div class="l">' + d.line + '</div>'
-          : '<div class="l dim">还没打过交道</div>') +
+      var pulled = G.fac.pulled[d.id], sc = pulled ? Fac.succ(d.id) : null;
+      var nm = sc ? sc.n : d.n;
+      var line = sc ? '<div class="l">新来的，还在摸情况</div>'
+        : (npcKnown(d.id) >= 1 ? '<div class="l">' + d.line + '</div>' : '<div class="l dim">还没打过交道</div>');
+      if (G.fac.turned[d.id]) line += '<div class="l" style="color:var(--red)">已经不在那边了</div>';
+      h += '<div class="card">' + artWrap('p_' + (sc ? 'none' : d.id) + '.webp', 'art-face') +
+        '<div class="n">' + nm + '</div>' +
+        '<div class="p">' + d.p + ' · ' + (sc ? '书记提的' : d.f) + '</div>' + line +
         (d.id === 'boss' ?
           '<div class="kv"><i>说话的分量</i><span>' + UI.presWord(G.stats.prestige) + '</span></div>' +
           '<div class="mini"><i style="width:' + G.stats.prestige + '%"></i></div>' :
@@ -646,6 +662,24 @@ var UI = {
     on($('[data-x]', d), 'click', function(){ UI.close(); UI.render(); });
   },
 
+  /* 拔掉一个人之后的那张纸：红头、文号、落款、章 */
+  notice: function(){
+    var n = G.notice; if (!n || G.ending) return;
+    G.notice = null; save();
+    var t = FAC_NOTICE[n.way] || FAC_NOTICE.hr;
+    function sub(s){ return String(s).replace(/\{N\}/g, n.n).replace(/\{P\}/g, n.p).replace(/\{TO\}/g, n.to || ''); }
+    var ym = ymOf(G.month);
+    var b = '<div class="appoint"><div class="ah">' + esc(t.h) + (n.way === 'jw' ? '通报' : '文件') + '</div>' +
+      '<div class="ano">' + (n.way === 'jw' ? '省纪监' : '云委') + '〔' + ym.y + '〕' + (20 + (G.month * 3) % 60) + '号</div><div class="aline"></div>' +
+      '<div class="at">' + esc(sub(t.t)) + '</div>' +
+      '<p>' + esc(sub(t.body)) + '</p>' +
+      '<div class="asign">' + esc(t.h) + '<br>' + ym.y + '年' + ym.m + '月' +
+      '<span class="aseal"><i>★</i>' + esc(t.h) + '</span></div></div>';
+    var d = UI.open('', b, '<button class="btn pri" data-x>收好</button>');
+    d.className += ' big';
+    on($('[data-x]', d), 'click', function(){ UI.close(); });
+  },
+
   remarkHTML: function(txt, on, praise){
     if (praise) return '<div class="remark praise"><span class="ring">阅</span>' +
       (txt ? esc(txt) + '　' : '') + '<b>' + esc(praise) + '</b>' +
@@ -712,9 +746,15 @@ var UI = {
     after.sort(function(x, y){ return y.d - x.d; });
     h += '<div class="panel" style="margin-top:12px"><h3>这些人后来</h3><div class="doc" style="padding:12px 16px">';
     after.slice(0, 5).forEach(function(x){
-      h += '<p style="text-indent:0;margin-bottom:8px;font-size:15px">' +
-        esc(AFTER_LINE[x.id][x.up ? 1 : 0]) + '</p>';
+      var line = AFTER_LINE[x.id][x.up ? 1 : 0];
+      if (x.id === 'mayor' && G.fac && G.fac.mayor && FAC_MAYOR_END[G.fac.mayor]) line = FAC_MAYOR_END[G.fac.mayor].n + '。';
+      else if (G.fac && G.fac.pulled[x.id]) line = npcName(x.id) + '走了。这件事是你办的。';
+      h += '<p style="text-indent:0;margin-bottom:8px;font-size:15px">' + esc(line) + '</p>';
     });
+    if (G.fac && (Fac.gone() || G.fac.mayor)){
+      h += '<p style="text-indent:0;margin-bottom:8px;font-size:15px">' +
+        '那边的人，这五年走了 ' + Fac.pulledN() + ' 个，过来了 ' + Fac.turnedN() + ' 个。' + '</p>';
+    }
     h += '</div></div>';
 
     /* 图鉴 */

@@ -382,12 +382,25 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 /* 还没打过交道 */
 .card .l.dim{ color:var(--ink3); }
 
+/* ── 局势图 ── */
+.board{display:flex;flex-wrap:wrap;gap:6px 14px;padding:12px 14px 14px}
+.bd{display:inline-flex;flex-direction:column;font-size:14px;color:var(--ink);padding:2px 0 3px;border-bottom:2px solid var(--ink);line-height:1.2}
+.bd i{font-style:normal;font-size:11px;color:var(--ink3);margin-top:2px}
+.bd-mayor{border-bottom-color:var(--red);color:var(--red)}
+.bd-mayor i{color:#B5705F}
+.bd-unk{border-bottom-style:dashed;border-bottom-color:#A2957F;color:var(--ink2)}
+.bd-none{border-bottom-color:transparent;color:var(--ink3)}
+.bd-gone{text-decoration:line-through;color:var(--ink3);border-bottom-color:transparent}
+.bd-gone i{text-decoration:none}
+.bd-turned{border-bottom-color:var(--ink);color:var(--ink)}
+.bd-turned::after{content:'';display:block;height:2px;margin-top:-2px;background:linear-gradient(90deg,var(--red),var(--ink))}
+
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-/* 大秘 build 2026-09-21 09:03 */
+/* 大秘 build 2026-09-24 16:57 */
 "use strict";
 /* === data/arcs.js === */
 /* 链条登记处。每条线自己一个文件，写完调 defArc 挂上来 */
@@ -1782,6 +1795,18 @@ var ECHO = [
 /* ── 十个结局。正文不写道理，只写那天发生了什么 ── */
 var ENDING_TEXT = {
 
+yunzhou: { n:'云州是他的了',
+  p:['陈立群走后的第一次常委会，书记讲了四十分钟，没人插话。散会的时候他把材料往桌上一放，说了句：散了。',
+     '那天晚上他没让司机送，自己走回宿舍。你跟在后面，隔着二十米。走到大院门口他停下来，回头问你：小刘，这五年，你数过没有，我们动了几个人。',
+     '你说数过。他说，那就别忘了。'],
+  end:'后来他去了省里，再后来去了更远的地方。你在云州又待了几年。有人问起当年那件事，你说：那不是我干的，是书记干的。' },
+
+struck: { n:'他们先动了手',
+  p:['谈话室在招待所三楼，窗户朝北。他们问的第一件事，是三年前的一件事。你想了很久才想起来那天是星期几。',
+     '第四天书记来了一趟，隔着门说了两句话，没进来。你听清了第一句：该说的都说。第二句你没听清。',
+     '陈立群在那年年底调走了，去了省里。你的事结论是第二年春天下的，那时候周维安已经不在云州了。'],
+  end:'后来你在一个二级单位待了很多年。有一次在街上碰见小赵，他已经是副处了。他叫了你一声刘主任，叫完自己也愣了一下。' },
+
 rise: { n:'随书记高升',
   p:['任职文件下来那天是个星期四。周维安去省里报到，车队只有两辆。',
      '他走到车边回头看了一眼市委大院的那棵樟树，说了句这树长得真慢。然后跟你说：跟上。',
@@ -2568,6 +2593,530 @@ var EVENTS_DOSSIER = [
       rk:{} }
   ],
   neglect:{ trust:-4, npc:{keshang:-6} } }
+
+];
+
+/* === data/events_fac.js === */
+/* ── 拔钉子那一批事件：露马脚 10、伏笔 6、卷宗 3、反扑 6、投靠 3、市长 2、楼下 1 ──
+   textIf：同一件事，他是暗桩和他不是，正文不一样，玩家只能从细节里读。
+   probe：顺着查一下。yes 是他真是的时候，no 是他不是的时候。
+   guess：没查就跟书记说。猜错了要付的 ── */
+var EVENTS_FAC = [
+
+/* ════════ 露马脚 · 纪守望（统战部长）════════ */
+{ id:'tell_tz_1', kind:'note', src:'办文', mo:[4,44], w:4, once:true, who:'tongzhan',
+  fac:{ tell:'tongzhan', n:1 },
+  title:'统战部报来的一份捐款名单',
+  text:'民营企业家向市慈善总会捐款，名单十一家，统战部汇总的。你核了一遍，第七家的地址写的是市政府大院，联系人那一栏是空的。',
+  textIf:[{ nothid:'tongzhan', t:'民营企业家向市慈善总会捐款，名单十一家，统战部汇总的。你核了一遍，第七家的地址写的是市政府大院，联系人是个女同志的名字。' }],
+  nt:'名单原样报了。第七家的地址，没人再提',
+  opts:[
+    { t:'顺着查一下这家公司', d:0.5, tier:'good', probe:'tongzhan',
+      yes:{ n:'工商登记的法人是个陌生名字，联系电话是市政府办的座机。纪守望汇总名单的时候，不会不知道' },
+      no:{ n:'那家公司在市政府大院租了两间办公室，正经做事的。地址没错，是你多心了' } },
+    { t:'名单原样报', d:0, tier:'tail', n:'书记翻了一眼就签了。第七家是哪家，他没问' },
+    { t:'跟书记说一句：这名单有点意思', d:0, tier:'tail', guess:'tongzhan',
+      yes:{ n:'他没抬头，说：你留意着。第二天纪守望在走廊上跟你打招呼，比平时热情', fx:{ trust:+3 } },
+      no:{ n:'他抬头看了你一眼，问：你查过了？你没查。他把名单签了，什么也没说', fx:{ trust:-4, npc:{ tongzhan:-8 } } } }
+  ],
+  neglect:{} },
+
+{ id:'tell_tz_2', kind:'note', src:'突发', mo:[9,52], w:4, once:true, who:'tongzhan',
+  fac:{ tell:'tongzhan', n:2, after:'tell_tz_1' },
+  title:'纪守望在会上抬手慢了半拍',
+  text:'常委会表决旧改那一项，他是最后一个抬手的。抬之前他看了一眼市长。\n散会后书记问你：你注意到没有。',
+  textIf:[{ nothid:'tongzhan', t:'常委会表决旧改那一项，他是最后一个抬手的。抬之前他低头看了一眼材料。\n散会后书记问你：你注意到没有。' }],
+  nt:'你说没注意。书记说，那算了',
+  opts:[
+    { t:'去统战部坐半天，把那笔捐款的去向问清楚', d:1, tier:'good', probe:'tongzhan',
+      yes:{ n:'捐款进了慈善总会，三天后转出去六十万，收款方是一家文化公司。那家公司的股东名单，你在市长家里人那条线上见过一个名字',
+            keep:'统战口那笔捐款的转账记录', keyk:'g_tongzhan',
+            fx:{ npc:{ tongzhan:-4 } } },
+      no:{ n:'捐款一分没动，全在慈善总会账上。纪守望抬手慢是因为老花镜没戴，他看材料要凑近' } },
+    { t:'跟书记说：他一直是数票的', d:0, tier:'tail', guess:'tongzhan',
+      yes:{ n:'书记说：数票的人，看谁的手。这句话他没说完', fx:{ trust:+3 } },
+      no:{ n:'书记说：数票是他的活。你这话说得有点重了', fx:{ trust:-3, npc:{ tongzhan:-6 } } } },
+    { t:'说没注意', d:0, tier:'tail', n:'书记「嗯」了一声。这个「嗯」跟平时的不一样' }
+  ],
+  neglect:{} },
+
+/* ════════ 露马脚 · 方静仪（宣传部长）════════ */
+{ id:'tell_xc_1', kind:'note', src:'突发', mo:[4,44], w:4, once:true, who:'xuanchuan',
+  fac:{ tell:'xuanchuan', n:1 },
+  title:'一条帖子删得太快了',
+  text:'早上八点有人发了旧改片区的照片，九点十分帖子没了。你是九点半才看见宣传部的处置报告的。\n报告上的时间是九点零五分，签发人那一行是手写的。',
+  textIf:[{ nothid:'xuanchuan', t:'早上八点有人发了旧改片区的照片，九点十分帖子没了。你是九点半才看见宣传部的处置报告的。\n报告上的时间是九点零五分，走的是值班流程。' }],
+  nt:'报告归了档。删得快，本来也是宣传部的本事',
+  opts:[
+    { t:'问一句是谁先报的', d:0.5, tier:'good', probe:'xuanchuan',
+      yes:{ n:'网信办说不是他们发现的，是宣传部长直接打电话让删的。八点十分打的。那时候帖子刚发了十分钟，她怎么知道的' },
+      no:{ n:'网信办有个值班的小姑娘，八点零五分就监测到了，报给了方静仪。方静仪的效率一直是这样' } },
+    { t:'不问', d:0, tier:'tail', n:'处置报告写得很规范。书记批了个「好」' },
+    { t:'跟书记说：这条删得太快了', d:0, tier:'tail', guess:'xuanchuan',
+      yes:{ n:'书记说：快有快的道理。他把报告放到一边，没批', fx:{ trust:+3 } },
+      no:{ n:'书记说：删得快还不好？你没话接。方静仪后来知道了这句话', fx:{ trust:-4, npc:{ xuanchuan:-8 } } } }
+  ],
+  neglect:{} },
+
+{ id:'tell_xc_2', kind:'note', src:'有人找你', mo:[9,52], w:4, once:true, who:'xuanchuan',
+  fac:{ tell:'xuanchuan', n:2, after:'tell_xc_1' },
+  title:'省报记者说稿子被撤了',
+  text:'省报的一个记者给你打电话，说他写的云州旧改那篇稿子，排好版了被撤下来。撤稿的电话是从云州打过去的。\n他问你：是书记的意思吗。',
+  textIf:[{ nothid:'xuanchuan', t:'省报的一个记者给你打电话，说他写的云州旧改那篇稿子，排好版了被撤下来。撤稿的电话是从省里打过去的。\n他问你：是书记的意思吗。' }],
+  nt:'你说不清楚。他说那算了',
+  opts:[
+    { t:'把这几个月被撤、被删的东西列一张表', d:1, tier:'good', probe:'xuanchuan',
+      yes:{ n:'七条。七条里五条是对市长不利的，两条是对书记不利的。对书记不利的那两条，删的时候慢了一天',
+            keep:'那七条舆情处置的时间表', keyk:'g_xuanchuan',
+            fx:{ npc:{ xuanchuan:-4 } } },
+      no:{ n:'七条，删的时候快慢都差不多。稿子是省里宣传口撤的，跟云州没关系。方静仪的问题是怕，不是站队' } },
+    { t:'跟书记说：宣传口的电话打得有点多', d:0, tier:'tail', guess:'xuanchuan',
+      yes:{ n:'书记说：她怕舆情，也怕别的。这句你记下了', fx:{ trust:+3 } },
+      no:{ n:'书记说：宣传部长不打电话谁打。你说的这句，她第三天就知道了', fx:{ trust:-3, npc:{ xuanchuan:-6 } } } },
+    { t:'跟记者说不清楚', d:0, tier:'tail', n:'他说那算了。他后来再没给你打过电话' }
+  ],
+  neglect:{} },
+
+/* ════════ 露马脚 · 曹世昌（发改委主任）════════ */
+{ id:'tell_fg_1', kind:'note', src:'办文', mo:[4,44], w:4, once:true, who:'fagai', reveal:['fagai'],
+  fac:{ tell:'fagai', n:1 },
+  title:'开发区扩区的评估报了两个版本',
+  text:'发改委报上来的评估，书记桌上一份，市长桌上一份。你对了一遍，扩区面积一份写十二平方公里，一份写八点五。\n签字都是曹世昌。',
+  textIf:[{ nothid:'fagai', t:'发改委报上来的评估，书记桌上一份，市长桌上一份。你对了一遍，两份一样，只是市长那份多了一页附件。\n签字都是曹世昌。' }],
+  nt:'两个版本都归了档。用哪个，看谁开会',
+  opts:[
+    { t:'去发改委问一句为什么', d:0.5, tier:'good', probe:'fagai',
+      yes:{ n:'曹世昌说是笔误。你问哪一份是笔误，他想了两秒才答。两秒，够了' },
+      no:{ n:'附件是市长要的财政测算，书记没要。曹世昌说：书记要我也报。他这个人，谁要什么给什么，不多给' } },
+    { t:'不问', d:0, tier:'tail', n:'书记用的是十二那份。市长在会上说的是八点五' },
+    { t:'跟书记说：发改委在两头报', d:0, tier:'tail', guess:'fagai',
+      yes:{ n:'书记说：他是个明白人。明白人，这三个字他说得很慢', fx:{ trust:+3 } },
+      no:{ n:'书记说：两头报是他的本分。他这句话说完，你知道自己想多了', fx:{ trust:-4, npc:{ fagai:-8 } } } }
+  ],
+  neglect:{} },
+
+{ id:'tell_fg_2', kind:'note', src:'有人找你', mo:[9,52], w:4, once:true, who:'fagai',
+  fac:{ tell:'fagai', n:2, after:'tell_fg_1' },
+  title:'曹世昌的司机说了一句话',
+  text:'你去发改委送件，等电梯的时候曹世昌的司机跟你闲聊。他说主任这个月去了四趟省城，三趟是跟市长一辆车。\n他说完自己觉得说多了。',
+  textIf:[{ nothid:'fagai', t:'你去发改委送件，等电梯的时候曹世昌的司机跟你闲聊。他说主任这个月去了四趟省城，都是省发改委的会。\n他说完看了看表。' }],
+  nt:'你没接话。电梯来了',
+  opts:[
+    { t:'把那三稿评估的差别一页一页标出来', d:1, tier:'good', probe:'fagai',
+      yes:{ n:'三稿。第一稿是发改委自己的数，第二稿按市长的意思压了，第三稿按书记的意思抬了。曹世昌在每一稿上都签了字',
+            keep:'扩区评估三稿的对比', keyk:'g_fagai',
+            fx:{ npc:{ fagai:-4 } } },
+      no:{ n:'三稿的差别全是省里要求的口径调整，每一处都有省发改委的函。曹世昌这个人，事事留底' } },
+    { t:'跟书记说：曹世昌跟市长走得近', d:0, tier:'tail', guess:'fagai',
+      yes:{ n:'书记说：发改委主任跟谁都近。然后他说：你盯着', fx:{ trust:+3 } },
+      no:{ n:'书记说：发改委主任跟谁都近。然后他没再说话。你知道这句没说完的是什么', fx:{ trust:-3, npc:{ fagai:-6 } } } },
+    { t:'当没听见', d:0, tier:'tail', n:'司机后来见了你都绕着走' }
+  ],
+  neglect:{} },
+
+/* ════════ 露马脚 · 秦振声（白沙常务副县长）════════ */
+{ id:'tell_bs_1', kind:'note', src:'有人找你', mo:[4,44], w:4, once:true, who:'bs_fuxian', reveal:['bs_fuxian'],
+  fac:{ tell:'bs_fuxian', n:1 },
+  title:'白沙的数字报了两套',
+  text:'程一鸣报给书记的搬迁进度是百分之六十一。市政府那边统计的是百分之七十四。两个数都是白沙报的，签字的都是秦振声。',
+  textIf:[{ nothid:'bs_fuxian', t:'程一鸣报给书记的搬迁进度是百分之六十一。市政府那边统计的是百分之七十四。两个数都是白沙报的，一份是季报一份是月报。' }],
+  nt:'两个数各归各的档。书记讲话用的是六十一',
+  opts:[
+    { t:'打电话问白沙统计站', d:0.5, tier:'good', probe:'bs_fuxian',
+      yes:{ n:'统计站说七十四是秦县长让报的，说市里要。市里谁要，他们不知道。程一鸣不知道有这个数' },
+      no:{ n:'季报截的是上个月底，月报截的是这个月十五号。中间搬了两个村。数没问题，是你看漏了日期' } },
+    { t:'用书记那份', d:0, tier:'tail', n:'书记讲话用了六十一。市长在另一个会上用了七十四' },
+    { t:'跟书记说：白沙的副县长在往市政府报数', d:0, tier:'tail', guess:'bs_fuxian',
+      yes:{ n:'书记说：程一鸣年轻。这句话的意思是，他知道了', fx:{ trust:+3 } },
+      no:{ n:'书记说：你去过白沙没有。你没去过', fx:{ trust:-4, npc:{ bs_fuxian:-8 } } } }
+  ],
+  neglect:{} },
+
+{ id:'tell_bs_2', kind:'note', src:'突发', mo:[9,52], w:4, once:true, who:'bs_fuxian',
+  fac:{ tell:'bs_fuxian', n:2, after:'tell_bs_1' },
+  title:'白沙搬迁款晚到了四十天',
+  text:'省里的搬迁款到市财政是三月，到白沙是四月中。中间四十天，钱在市财政的过渡户上。程一鸣打电话来问，是不是市里卡他。\n你查了一下，批款的签字是高振邦，经办是秦振声在市里的一个老部下。',
+  textIf:[{ nothid:'bs_fuxian', t:'省里的搬迁款到市财政是三月，到白沙是四月中。中间四十天，钱在市财政的过渡户上。程一鸣打电话来问，是不是市里卡他。\n你查了一下，批款的签字是高振邦，四十天是走程序的正常时间。' }],
+  nt:'钱后来到了。程一鸣没再问',
+  opts:[
+    { t:'把这笔钱走的路画出来', d:1, tier:'good', probe:'bs_fuxian',
+      yes:{ n:'四十天里这笔钱在过渡户上，利息进了一个账户，账户的开户人是秦振声的连襟。三千二百块，不多。多的是这条路走了三年',
+            keep:'白沙搬迁款那三年的走向', keyk:'g_bsfx',
+            fx:{ npc:{ bs_fuxian:-4 } } },
+      no:{ n:'四十天是正常的。财政局的人说，所有县都是这个时间。秦振声跟这笔钱没关系，他只是在白沙待得太久了，谁都容易多想' } },
+    { t:'跟书记说：秦振声在市里有人', d:0, tier:'tail', guess:'bs_fuxian',
+      yes:{ n:'书记说：本土的老人，在市里都有人。他停了停：你说的那个人，是谁', fx:{ trust:+3 } },
+      no:{ n:'书记说：本土的老人，在市里都有人。他没停', fx:{ trust:-3, npc:{ bs_fuxian:-6 } } } },
+    { t:'跟程一鸣说钱到了就行', d:0, tier:'tail', n:'他说行。他这个人，说行的时候都不行' }
+  ],
+  neglect:{} },
+
+/* ════════ 露马脚 · 葛守业（综合科科长，你原来的科长）════════ */
+{ id:'tell_ks_1', kind:'note', src:'办文', mo:[4,44], w:4, once:true, who:'keshang', reveal:['keshang'],
+  fac:{ tell:'keshang', n:1 },
+  title:'一份还没发的文，市政府办先知道了',
+  text:'书记改过的旧改批复，你放在综合科打印。第二天上午市政府办的人打电话来问「书记改的那两处」。文还没发。\n打印的是综合科，签收的是葛守业。',
+  textIf:[{ nothid:'keshang', t:'书记改过的旧改批复，你放在综合科打印。第二天上午市政府办的人打电话来问「书记改的那两处」。文还没发。\n打印的是综合科，那天值班的不是葛守业。' }],
+  nt:'文发了。市政府办那边早就知道了，也就不算什么',
+  opts:[
+    { t:'去打印室看一眼登记本', d:0.5, tier:'good', probe:'keshang',
+      yes:{ n:'登记本上那份文打了两份。一份你拿走了，另一份没登记去向。打印室的小姑娘说，葛科长自己来拿的' },
+      no:{ n:'登记本上只打了一份。市政府办那边知道，是因为高振邦的秘书跟书记办公室的门房是老乡。跟葛守业没关系' } },
+    { t:'算了', d:0, tier:'tail', n:'你把打印的事挪到了自己办公室。葛守业没问' },
+    { t:'跟书记说：综合科漏文', d:0, tier:'tail', guess:'keshang',
+      yes:{ n:'书记说：你原来的科长？他没再说下去。你知道他记住了', fx:{ trust:+3 } },
+      no:{ n:'书记说：自己科里的事，自己管。这话说得不重，但你脸上挂不住', fx:{ trust:-4, npc:{ keshang:-8 } } } }
+  ],
+  neglect:{} },
+
+{ id:'tell_ks_2', kind:'note', src:'突发', mo:[9,52], w:4, once:true, who:'keshang',
+  fac:{ tell:'keshang', n:2, after:'tell_ks_1' },
+  title:'葛守业知道你抽屉里那份东西',
+  text:'他在走廊上跟你说：那份青川的材料，你放抽屉里不安全。\n那份材料你没跟任何人说过。',
+  textIf:[
+    { hid:'keshang', flag:'seed_night', t:'他在走廊上跟你说：那份青川的材料，你放抽屉里不安全。\n那份材料你没跟任何人说过。你想起传达室老张那句话：那天晚上有人进过你办公室。' },
+    { nothid:'keshang', t:'他在走廊上跟你说：那份青川的材料，你放抽屉里不安全。\n你想了一下，是你上周让他帮你找过一份文件，抽屉是你自己拉开的。' }],
+  nt:'你把抽屉锁了。他没再说过',
+  opts:[
+    { t:'问他怎么知道的', d:0.5, tier:'good', probe:'keshang',
+      yes:{ n:'他说猜的。你回办公室查了门禁，上周三晚上十点四十，他的卡刷过你这一层。那天你不在，你的办公室没锁',
+            keep:'门禁记录上那一行', keyk:'g_keshang',
+            fx:{ npc:{ keshang:-6 } } },
+      no:{ n:'他说上周找文件的时候看见的，让你小心点。他是好意。你在心里对他说了声对不起' } },
+    { t:'跟书记说：科里有人在看我的东西', d:0, tier:'tail', guess:'keshang',
+      yes:{ n:'书记说：把要紧的东西放我这儿。第二天他给了你一把钥匙', fx:{ trust:+3 } },
+      no:{ n:'书记看了你一会儿，说：小刘，你最近太紧了', fx:{ trust:-3, npc:{ keshang:-6 } } } },
+    { t:'说声谢谢', d:0, tier:'tail', n:'你把抽屉锁了。钥匙放在身上' }
+  ],
+  neglect:{} },
+
+/* ════════ 伏笔 6 件：当时什么也不发生 ════════ */
+{ id:'seed_jiyao', kind:'note', src:'有人找你', mo:[3,14], w:5, once:true, cd:99,
+  title:'市长秘书来借去年的会议纪要',
+  text:'小赵，市长的秘书，比你小两岁。他说市长要看去年下半年的常委会纪要，市政府办那边缺了两期。\n纪要是你保管的。',
+  nt:'他没再来。市政府办后来自己补齐了',
+  opts:[
+    { t:'借给他', d:0, tier:'tail', n:'他第二天就还了。还的时候说了声谢谢，谢得很规矩', setf:{ seed_jiyao:1 }, fx:{ npc:{ mayor:+3 } } },
+    { t:'说要书记点头', d:0, tier:'good', n:'他说那算了，不麻烦了。转身走得很快', fx:{ npc:{ mayor:-2 } } }
+  ],
+  neglect:{} },
+
+{ id:'seed_night', kind:'note', src:'办文', mo:[3,14], w:5, once:true, cd:99,
+  title:'传达室老张说有人晚上来过',
+  text:'早上进门老张叫住你，说昨晚十点多有人上了三楼，他以为是你。你昨晚九点就走了。\n他问要不要查一下。',
+  nt:'你没查。老张后来也没提',
+  opts:[
+    { t:'问一句是谁', d:0.5, tier:'good', n:'老张说没看清，个子不高，穿的深色外套。这个描述，机关里一半的人都对得上', setf:{ seed_night:1 } },
+    { t:'算了', d:0, tier:'tail', n:'你把办公室的门锁换了。换锁的师傅问你要几把钥匙，你说一把' }
+  ],
+  neglect:{} },
+
+{ id:'seed_dianti', kind:'note', src:'突发', mo:[4,14], w:5, once:true, cd:99, who:'vice1',
+  title:'高振邦在电梯里问了你一句',
+  text:'电梯里就你们两个。他问：你岳父身体怎么样了。\n你岳父的心脏，你只跟周雪说过。',
+  nt:'电梯到了。他先出去',
+  opts:[
+    { t:'说还好，谢谢领导关心', d:0, tier:'tail', n:'他说市一院心内科的主任是他老同学，有事说话。这句话你记了很久', setf:{ seed_dianti:1 }, fx:{ npc:{ vice1:+3 } } },
+    { t:'岔开，说旧改的事', d:0, tier:'good', n:'他笑了笑，说小刘你这个人，谈工作可以，谈家事不行' }
+  ],
+  neglect:{} },
+
+{ id:'seed_cha', kind:'note', src:'有人找你', mo:[4,14], w:5, once:true, cd:99, who:'tongzhan',
+  title:'纪守望送来一盒茶',
+  text:'统战部长亲自拿来的，说是老家的茶，不值钱。盒子很旧，茶叶是散的。\n他说：小刘，你辛苦。',
+  nt:'茶放在柜子里。你没喝',
+  opts:[
+    { t:'收下', d:0, tier:'tail', n:'茶是真的好。你后来在市长办公室的茶几上见过一模一样的盒子', setf:{ seed_cha:1 }, fx:{ npc:{ tongzhan:+4 } } },
+    { t:'退回去', d:0, tier:'good', n:'他没坚持。走的时候说：小刘你太谨慎了。谨慎不是坏事', fx:{ npc:{ tongzhan:-2 }, clean:+1 } }
+  ],
+  neglect:{} },
+
+{ id:'seed_qianshou', kind:'note', src:'办文', mo:[3,14], w:5, once:true, cd:99,
+  title:'收文登记上有一份的签收人是空的',
+  text:'月底核收文登记，市政府办转来的一份，签收人那一栏空着。文你见过，是你自己收的，签的时候你忘了写名字。\n补不补，都是一行字的事。',
+  nt:'那一行空着。年底档案室来核，那份文的去向说不清',
+  opts:[
+    { t:'补上名字', d:0, tier:'good', n:'补了。你顺手把那个月所有空着的都补了，一共三处', setf:{ seed_qianshou:1 } },
+    { t:'放着', d:0, tier:'tail', n:'一行空着的字，谁会看' }
+  ],
+  neglect:{} },
+
+{ id:'seed_fan', kind:'note', src:'有人找你', mo:[6,10], w:6, once:true, cd:99, who:'mayor',
+  title:'市长请你吃饭',
+  text:'不是饭局，就他一个人。他的秘书打来电话，说市长周五晚上想请你吃个便饭，在市政府食堂的小包间。\n书记那天在省里。',
+  nt:'你没回话。周五晚上小赵又打来一次，你说在加班',
+  opts:[
+    { t:'去', d:0.5, tier:'gray', rule:'banquet',
+      n:'两个菜一个汤。他讲的全是你不知道的事，讲了两个钟头，一句没提书记。临走他说：小刘，你还年轻，路长',
+      setf:{ seed_fan:1 }, fx:{ npc:{ mayor:+15 }, clean:-4, dark:'mayor_dinner' }, facHeat:-15 },
+    { t:'推掉，说书记交代了事', d:0, tier:'good', n:'小赵说那下次。下次没有再约', fx:{ npc:{ mayor:-5 } } },
+    { t:'去，但只坐二十分钟，只喝茶', d:0.5, tier:'tail',
+      n:'他没留你。你走的时候他说了句：小刘做事有分寸。这句话后来传到了书记耳朵里，不知道是谁传的',
+      fx:{ npc:{ mayor:+5 }, trust:+2 } }
+  ],
+  neglect:{} },
+
+/* ════════ 把柄卷宗 3 件 ════════ */
+{ id:'grip_vice1', kind:'dossier', src:'书记交办', mo:[10,50], w:3, once:true, who:'vice1',
+  fac:{ alive:'vice1' },
+  title:'卫健口那笔专项',
+  text:'省里下的公立医院改革专项，一点二个亿。市一院拿到的是四千万，剩下的去向，卫健委的报表上写的是「统筹安排」。\n书记让你把这笔钱走的路弄清楚。他没说为什么，你也没问。',
+  nt:'报表原样归档。「统筹安排」这四个字，以后还会再见',
+  mats:[
+    { id:'gv_1', t:'专项资金拨付表', from:'市财政局', d:1,
+      text:'一点二亿分五笔下的。前三笔进了市一院和两家区医院，后两笔进了一个「医疗卫生发展基金」，八千万。',
+      for:['钱没到医院'] },
+    { id:'gv_2', t:'那个基金的章程', from:'卫健委', d:1,
+      text:'基金理事长是常务副市长高振邦。章程第七条：资金使用由理事长审批。',
+      for:['钱没到医院','高振邦经手'], key:'g_vice1' },
+    { id:'gv_3', t:'基金去年的支出', from:'你托财政局一个科长抄的', d:1.5,
+      text:'六千万支出，四千一百万是「购置设备」。设备供应商是一家去年才注册的公司，注册地在城关区。',
+      for:['高振邦经手'], key:'g_vice1' },
+    { id:'gv_4', t:'市一院院长的一句话', from:'周雪转述', d:0.5,
+      text:'院长在食堂说过一句：钱到不了，人到了。他说的人是设备公司的销售，一个月来三趟。',
+      for:['高振邦经手'] }
+  ],
+  finds:[
+    { id:'钱没到医院', t:'八千万没进医院', need:2 },
+    { id:'高振邦经手', t:'这笔钱高振邦一个人说了算', need:2 }
+  ],
+  opts:[
+    { t:'整理成一页纸报书记', d:1, tier:'good', reqFind:'高振邦经手',
+      n:'书记看完没说话。他把那一页纸对折，放进了西装内袋，不是抽屉',
+      fx:{ trust:+7 }, keep:'你写的那一页', keyk:'g_vice1',
+      rk:{ steady:'这件事先放着。', strong:'八千万？', shrewd:'这一页谁帮你抄的？' } },
+    { t:'只报「钱的去向已核」，材料自己留着', d:0.5, tier:'tail',
+      n:'他说知道了。材料在你抽屉里，你锁了',
+      fx:{ clean:+1 }, keep:'卫健口那笔专项的全套材料', keyk:'g_vice1',
+      rk:{ shrewd:'核了就好。' } },
+    { t:'先跟高振邦通个气', d:0.5, tier:'gray', rule:'leak',
+      n:'他在电话里沉默了几秒，说小刘你有心了。第二天基金的账目全部重新做过',
+      fx:{ clean:-10, lead:+6, npc:{ vice1:+18 }, dark:'tip_vice1' },
+      rk:{} }
+  ],
+  neglect:{ trust:-5 } },
+
+{ id:'grip_caizheng', kind:'dossier', src:'办文', mo:[12,50], w:3, once:true, who:'caizheng', reveal:['caizheng'],
+  fac:{ alive:'caizheng' },
+  title:'一笔走了三道弯的专项资金',
+  text:'审计局的年度报告里夹着一页附表，一笔两千万的产业扶持资金，从财政局到区财政到一家园区公司再回到市财政，三道弯，四个月。\n附表上没有结论，只有一句：建议进一步核实。',
+  nt:'附表跟着报告归了档。审计局的人没再提',
+  mats:[
+    { id:'gc_1', t:'审计的那页附表', from:'市审计局', d:0.5,
+      text:'钱走了三道弯，每一道都有批文。三道弯的批文，签字都是阮学文。',
+      for:['钱转了一圈'] },
+    { id:'gc_2', t:'园区公司的流水', from:'你托人从银行调的', d:1.5,
+      text:'两千万在园区公司账上待了四十七天。这四十七天里，公司给一家咨询公司付了六十万「服务费」。',
+      for:['钱转了一圈','有人拿了'], key:'g_caizheng' },
+    { id:'gc_3', t:'咨询公司的登记信息', from:'市场监管局', d:0.5,
+      text:'注册资本十万，成立三年，员工两人。法人姓阮，四十二岁，青川人。',
+      for:['有人拿了'], key:'g_caizheng' },
+    { id:'gc_4', t:'阮学文的一句话', from:'常委会茶歇时听见的', d:0,
+      text:'他跟高振邦说：那笔钱走完了，干净的。高振邦说：干净就好。',
+      for:['有人拿了'] }
+  ],
+  finds:[
+    { id:'钱转了一圈', t:'这笔钱转了一圈回到原地', need:2 },
+    { id:'有人拿了', t:'转的时候有人拿了', need:2 }
+  ],
+  opts:[
+    { t:'报书记，附上流水', d:1, tier:'good', reqFind:'有人拿了',
+      n:'书记看完问：法人姓阮？你说是。他没再问',
+      fx:{ trust:+6 }, keep:'那笔专项资金的流水', keyk:'g_caizheng',
+      rk:{ steady:'知道了。', strong:'六十万。', shrewd:'银行那边是谁帮你调的？' } },
+    { t:'让审计局按程序核实', d:1, tier:'tail',
+      n:'审计局核了三个月，结论是「程序基本合规」。附表从报告里拿掉了',
+      fx:{ rep:+2 }, keep:'审计那页附表', keyk:'g_caizheng',
+      rk:{ shrewd:'基本合规？' } },
+    { t:'跟阮学文提一句', d:0.5, tier:'gray', rule:'leak',
+      n:'他请你吃了顿饭，饭桌上说他侄子不懂事。三天后那家咨询公司注销了',
+      fx:{ clean:-8, lead:+5, npc:{ caizheng:+16 }, dark:'tip_caizheng' },
+      rk:{} }
+  ],
+  neglect:{ rep:-2 } },
+
+{ id:'grip_cgqz', kind:'dossier', src:'突发', mo:[12,50], w:3, once:true, who:'cg_quzhang', reveal:['cg_quzhang'],
+  fac:{ alive:'cg_quzhang' },
+  title:'城关那家拆迁公司',
+  text:'旧改片区拆迁，签合同的是一家叫「安居」的公司。有拆迁户到市委门口反映，说这家公司的人上门的时候带着区政府的介绍信。\n介绍信是复印件，落款是城关区政府办。',
+  nt:'拆迁户走了。安居公司后来又签了两个片区',
+  mats:[
+    { id:'gq_1', t:'那封介绍信', from:'拆迁户留下的', d:0.5,
+      text:'区政府办的抬头，盖的是区政府办的章。介绍信编号是〔2027〕17号，你查了，区政府办那年的介绍信只发到 15 号。',
+      for:['介绍信有问题'] },
+    { id:'gq_2', t:'安居公司的股东名单', from:'市场监管局', d:1,
+      text:'三个股东。第二个股东的身份证地址，跟郑大林的一样。',
+      for:['介绍信有问题','跟郑大林有关'], key:'g_cgqz' },
+    { id:'gq_3', t:'拆迁补偿的支付记录', from:'城关区财政', d:1,
+      text:'安居公司经手的三个片区，补偿款平均比其他公司经手的低一成一。差的那一成一，没有去向。',
+      for:['跟郑大林有关'], key:'g_cgqz' },
+    { id:'gq_4', t:'邵国栋的一句话', from:'你去城关区的时候听见的', d:0,
+      text:'他跟区政府办主任说：安居那边，让大林自己管。',
+      for:['跟郑大林有关'] }
+  ],
+  finds:[
+    { id:'介绍信有问题', t:'那封介绍信是假的', need:2 },
+    { id:'跟郑大林有关', t:'安居公司背后是郑大林', need:2 }
+  ],
+  opts:[
+    { t:'报书记，把股东名单附上', d:1, tier:'good', reqFind:'跟郑大林有关',
+      n:'书记看完说：郑大林告邵国栋的时候，你在场。你说在。他说：你记住这件事',
+      fx:{ trust:+6 }, keep:'安居公司的股东名单', keyk:'g_cgqz',
+      rk:{ steady:'先放着。', strong:'介绍信是假的？', shrewd:'这份名单还有谁看过？' } },
+    { t:'转信访局按程序办', d:1, tier:'tail',
+      n:'信访局办了两个月，结论是「已协调」。拆迁户没再来',
+      fx:{ rep:+2 }, keep:'那封介绍信', keyk:'g_cgqz',
+      rk:{ shrewd:'协调？' } },
+    { t:'跟郑大林说一声，让他自己处理', d:0.5, tier:'gray', rule:'conceal',
+      n:'他第二天就来了，带了一份说明，说明写得很好。安居公司换了法人',
+      fx:{ clean:-7, lead:+4, npc:{ cg_quzhang:+15 }, dark:'tip_cgqz' },
+      rk:{} }
+  ],
+  neglect:{ rep:-2 } },
+
+/* ════════ 反扑：过阈值出的四件，加两件小动作 ════════ */
+{ id:'fb_30', kind:'note', src:'有人找你', hidden:1, who:'mayor',
+  title:'市长办公室来要你近三个月的行程',
+  text:'小赵打来的电话，说市长要看市委办近三个月的公务行程统计，各科室都要报。你的行程也在里面。\n这种统计以前从来没做过。',
+  textIf:[{ flag:'seed_jiyao', t:'小赵打来的电话，说市长要看市委办近三个月的公务行程统计，各科室都要报。你的行程也在里面。\n他说话的语气跟上回借纪要的时候一样规矩。' }],
+  nt:'你没报。第二个月市政府办自己整理了一份，比你自己记的还全',
+  opts:[
+    { t:'按公务的报，私事不报', d:0.5, tier:'good', n:'报了十四条。小赵说谢谢。你知道他们要的不是这十四条', fx:{ rep:-1 } },
+    { t:'跟书记说一声再报', d:0, tier:'good', n:'书记说：他要看就看。然后他说：你自己留一份底', fx:{ trust:+2 } },
+    { t:'不报，说市委办的行程归秘书长管', d:0, tier:'tail', n:'小赵没再打电话。市长在常委会上提了一句「有些同志不太配合」', fx:{ npc:{ mayor:-6 }, pres:-1 } }
+  ],
+  neglect:{ rep:-2 } },
+
+{ id:'fb_50', kind:'note', src:'突发', hidden:1, img:'archive',
+  title:'一封冲你来的举报信到了纪委',
+  text:'宋自强让人把信的复印件送到你桌上，没有附任何话。信里写了你办过的四件事，两件是真的，两件是编的。真的那两件，写得很细。\n落款：一名党员干部。',
+  textIf:[
+    { flag:'seed_fan', t:'宋自强让人把信的复印件送到你桌上，没有附任何话。信里写了你办过的四件事，两件是真的，两件是编的。还有一段写的是市政府食堂那顿饭，写得比你记得的还细。\n落款：一名党员干部。' },
+    { flag:'seed_jiyao', t:'宋自强让人把信的复印件送到你桌上，没有附任何话。信里写了你办过的四件事，两件是真的，两件是编的。真的那两件，引的是去年常委会纪要里的原话，一字不差。\n落款：一名党员干部。' }],
+  nt:'信在纪委放着。宋自强没找你，也没不找你',
+  opts:[
+    { t:'主动去纪委把四件事说清楚', d:1.5, tier:'good', coop:1,
+      n:'说了两个钟头。宋自强记了六页，最后说：真的那两件，你自己心里有数。你说有',
+      fx:{ lead:+5, rep:+2 } },
+    { t:'当没这回事', d:0, tier:'tail',
+      n:'信在纪委的柜子里。柜子不会说话，但也不会忘',
+      fx:{ lead:+12 } },
+    { t:'让童大勇查是谁寄的', d:0.5, tier:'gray', rule:'meddle',
+      n:'三天后他给了你一个名字。这个名字你没想到，也想到了',
+      fx:{ clean:-8, lead:+4, npc:{ gongan:+6 }, dark:'trace_letter' }, facTell:1, facHeat:-10 }
+  ],
+  neglect:{ lead:+8 } },
+
+{ id:'fb_70', kind:'note', src:'突发', hidden:1, img:'office',
+  title:'有人在打听书记的家里人',
+  text:'省里一个老同事打电话来，说最近有人在省城打听周维安爱人的情况，问的是她的工作调动。打听的人自称是云州市政府的。\n他说：小刘，你们那边是不是出什么事了。',
+  nt:'你没接话。他后来没再打过',
+  opts:[
+    { t:'原话报书记', d:0, tier:'good', n:'书记听完说：他们急了。这三个字他说的时候在笑', fx:{ trust:+5 } },
+    { t:'自己去省城打听是谁', d:1.5, tier:'tail', n:'打听到了：市政府办的一个副主任。这个名字你记下了，没告诉书记', fx:{ gx:-3 }, keep:'那个副主任的名字' },
+    { t:'跟老同事说没事', d:0, tier:'tail', n:'他说那就好。你知道他不信', fx:{ trust:-2 } }
+  ],
+  neglect:{ risk:+4 } },
+
+{ id:'fb_90', kind:'note', src:'突发', hidden:1, img:'hotel', force:1,
+  title:'有人在楼下等你',
+  text:'传达室老张打来内线，说楼下有两个人找你，穿的便装，出示了证件。他没看清是哪个单位的。\n你桌上的东西，来得及收的只有一样。',
+  nt:'',
+  opts:[
+    { t:'下去', d:0, tier:'good', facStrike:1, n:'' },
+    { t:'先给书记打个电话，再下去', d:0, tier:'good', facStrike:1, coop:1, n:'', fx:{ trust:+2 } }
+  ],
+  neglect:{} },
+
+{ id:'fb_small_1', kind:'note', src:'办文', hidden:1, free:1, cd:8,
+  title:'你的材料在市政府办转了一圈',
+  text:'一份该直接送书记的件，被市政府办的收发室「误收」了，隔了一天才送回来。送回来的时候封口的订书钉换过了。',
+  nt:'',
+  opts:[ { t:'知道了', d:0, tier:'tail', n:'你换了一种订书钉' } ],
+  neglect:{} },
+
+{ id:'fb_small_2', kind:'note', src:'突发', hidden:1, free:1, cd:8,
+  title:'书记的行程有人提前知道了',
+  text:'书记周四去青川，是周二晚上定的。周三早上马汉江的秘书就打电话来问几点到。\n周二晚上知道这件事的，一共四个人。',
+  nt:'',
+  opts:[ { t:'知道了', d:0, tier:'tail', n:'你把行程的知会范围又缩了一个人' } ],
+  neglect:{} },
+
+/* ════════ 投靠 3 件 ════════ */
+{ id:'turn_caizheng', kind:'note', src:'有人找你', mo:[14,56], w:4, once:true, who:'caizheng', reveal:['caizheng'],
+  fac:{ pulled:2, alive:'caizheng', turn:'caizheng' },
+  title:'阮学文来了一趟',
+  text:'财政局长自己来的，没带人。他说了二十分钟财政的困难，然后从包里拿出一个信封，放在你桌上：「这个，你看看。」\n信封里是一本明细，高振邦那个基金三年的支出，一笔一笔。',
+  nt:'信封在你桌上放了一个月。他没再来。你把它锁进了抽屉，没打开',
+  opts:[
+    { t:'收下', d:0.5, tier:'good', facTurn:'caizheng',
+      n:'他走的时候说：小刘，我五十四了，想在这个位子上退。你说我知道。以后常委会上，他的票不一样了',
+      fx:{ npc:{ caizheng:+15 } }, keep:'阮学文留下的那本明细', keyk:'g_vice1' },
+    { t:'不收，把信封推回去', d:0, tier:'tail', n:'他把信封收回去了，脸上没有表情。这本明细，他还会给别人', fx:{ npc:{ caizheng:-10 } } },
+    { t:'收下信封，但让他自己去找书记', d:0.5, tier:'good',
+      n:'他没去。信封在你手里，他在原来的位子上。两边都没变',
+      fx:{ trust:+3 }, keep:'阮学文留下的那本明细', keyk:'g_vice1' }
+  ],
+  neglect:{} },
+
+{ id:'turn_cgqz', kind:'note', src:'有人找你', mo:[14,56], w:4, once:true, who:'cg_quzhang', reveal:['cg_quzhang'],
+  fac:{ pulled:2, alive:'cg_quzhang', turn:'cg_quzhang' },
+  title:'郑大林说他想清楚了',
+  text:'他在电话里说：小刘，我在城关干了九年，邵国栋压了我九年。市长那边，我看明白了，不会给我什么。\n他说他手里有邵国栋旧改评估的原件，不是复印件。',
+  nt:'他后来没再打电话。原件去了哪儿，你不知道',
+  opts:[
+    { t:'让他把原件送来', d:0.5, tier:'good', facTurn:'cg_quzhang',
+      n:'原件十一页，比复印件多了两页签字页。他送来的时候说：我不求别的。你知道他求的是什么',
+      fx:{ npc:{ cg_quzhang:+15 } }, keep:'郑大林那十一页的原件', keyk:'g_chengguan' },
+    { t:'跟他说这个我不能收', d:0, tier:'tail', n:'他说明白了。他明白的是另一件事：你这边也不要他', fx:{ npc:{ cg_quzhang:-12 } } },
+    { t:'让他直接送给书记', d:0, tier:'good',
+      n:'他送了。书记收了，但没让他坐。他从书记办公室出来的时候，没看你',
+      fx:{ trust:+3, npc:{ cg_quzhang:+3 } } }
+  ],
+  neglect:{} },
+
+{ id:'turn_tongzhan', kind:'note', src:'有人找你', mo:[14,56], w:4, once:true, who:'tongzhan',
+  fac:{ pulled:2, alive:'tongzhan', hid:'tongzhan', turn:'tongzhan' },
+  title:'纪守望约你在楼梯间说了几句',
+  text:'不是办公室，是楼梯间。他说：小刘，我数了这么多年票，这回数不清了。\n他说他知道市长那边还有一个人在市委办里，他可以告诉你是谁。',
+  nt:'楼梯间的话，出了楼梯间就不算数。他后来在会上照旧数票',
+  opts:[
+    { t:'听他说', d:0.5, tier:'good', facTurn:'tongzhan', facTell:1,
+      n:'他说了一个名字。说完他说：我这个人，看谁的手，就跟谁走。你说我知道',
+      fx:{ npc:{ tongzhan:+12 } } },
+    { t:'跟他说楼梯间不是说话的地方', d:0, tier:'tail', n:'他点点头走了。会上他的手还是慢半拍', fx:{ npc:{ tongzhan:-6 } } },
+    { t:'让他去跟书记说', d:0, tier:'good', n:'他没去。他说他这个岁数，不想再选一次', fx:{ trust:+2 } }
+  ],
+  neglect:{} },
+
+/* ════════ 市长 ════════ */
+{ id:'fac_mayor', kind:'note', src:'自己', hidden:1, who:'mayor', img:'office', due:'next',
+  title:'他的人少了一半',
+  text:'常委会上市长那边的手，你数了一遍，只剩下三只。散会后书记把门关上，问你：你觉得，到时候了吗。\n他没说是什么时候。',
+  nt:'你没答。他说：那再等等',
+  opts:[
+    { t:'把手里的东西一并交上去', d:2, tier:'good', req:{ keys:2 }, facMayor:'down',
+      nlow:'手里的东西不够',
+      n:'东西是书记亲自送到省里的。他回来的那天晚上没回家，在办公室坐到十二点',
+      fx:{ trust:+5 }, rk:{ steady:'交了就交了。', strong:'好。', shrewd:'一共几份？' } },
+    { t:'让书记去省里说一次话', d:1, tier:'good', req:{ pres:60 }, facMayor:'move',
+      nlow:'他在班子里说话的分量还不够，省里不会听',
+      n:'他去了两天。回来只说了一句：定了',
+      fx:{ trust:+4 }, rk:{ steady:'定了。', strong:'定了。', shrewd:'定了。' } },
+    { t:'等他自己开口', d:0, tier:'good', req:{ flag:'mayorWeak' }, facMayor:'retire',
+      nlow:'他还没到开口的时候',
+      n:'书记说：那就等。等了一个月，他开口了',
+      fx:{}, rk:{ steady:'等。', strong:'他会开口的。', shrewd:'' } },
+    { t:'说再等等', d:0, tier:'tail', n:'书记说：也好。他这个「也好」，你以后还会听到', fx:{}, facMayor:'wait' }
+  ],
+  neglect:{} },
+
+{ id:'fac_mayor_gone', kind:'note', src:'主线', hidden:1, who:'mayor', img:'office', free:1,
+  title:'陈立群走了',
+  text:'',
+  nt:'',
+  opts:[ { t:'知道了', d:0, tier:'good', n:'', facMayorDone:1 } ],
+  neglect:{} }
 
 ];
 
@@ -4719,6 +5268,197 @@ var EVENTS_XIN = [
 
 ];
 
+/* === data/faction.js === */
+/* ── 拔钉子：市长的人是谁、把柄在哪、四条路各自怎么说、拔掉之后谁顶上来 ──
+   明的开局就知道；半明的打过交道才知道；暗的每局从五个候选里抽两个，
+   剩下三个是红鲱鱼——一样有露马脚的事，查到底才知道是清白的 */
+var FAC_OPEN = ['mayor', 'vice1', 'chengguan'];
+var FAC_HALF = ['zhengfa', 'qingchuan', 'zhujian', 'caizheng', 'cg_quzhang'];
+var FAC_CAND = ['tongzhan', 'xuanchuan', 'fagai', 'bs_fuxian', 'keshang'];
+var FAC_HID_N = 2;
+/* 局势图上一开始就算书记这边的 */
+var FAC_BOSS = ['boss', 'gaoxin', 'baisha'];
+/* 拔够这么多，市长才动得了 */
+var FAC_MAYOR_AT = 5;
+
+/* 每颗钉子：key 把柄的键；ways 四条路的当场那句；fall 拔掉之后那件事的正文；
+   succ 接手的人；hrTo 人事那条路写在通知上的去向 */
+var NAIL = {
+  vice1: { key:'g_vice1', hrTo:'省供销社副主任',
+    succ:{ n:'白重远', p:'常务副市长' },
+    ways:{
+      jw:'那份东西装进一个牛皮纸袋。宋自强没拆，说放这儿吧。你出门的时候他还没拆',
+      hr:'佟建民把名字记在本子上，问了一句：书记的意思？你说是。他把本子合上了',
+      cw:'书记看了你一眼，说：那就上会。这三个字他说得很轻',
+      gray:'信是在市外寄的。你回来的路上把打印店的小票撕了' },
+    fall:{
+      jw:'省纪委的通报只有两行。高振邦的名字后面是「另案处理」，前面是卫健口那笔专项。他办公室的门开着，里面的人在装箱',
+      hr:'调令是省里下的，供销社副主任，正处。他去市委办公室交钥匙的时候在走廊上碰见你，点了点头，什么也没说',
+      cw:'分工调整的文件发下去了。财政那一块从他名下划走，划到了白重远那儿。他在会上没说话，散会第一个走',
+      gray:'信是三个星期后有回音的。省里来了两个人，住了四天。第五天他被带走，走的时候手里拿着自己的保温杯' } },
+  chengguan: { key:'g_chengguan', hrTo:'市人大城建环资委副主任', qx:1,
+    succ:{ n:'郑大林', p:'城关区委书记' },
+    ways:{
+      jw:'那十一页你复印了一份，原件交了。宋自强翻到第七页停了很久',
+      hr:'佟建民说城关区的位子不好动，动了就是一片。你说书记知道。他说那就动',
+      cw:'书记说：城关区拖了两年，该换人了。这句话他在会上也是这么说的',
+      gray:'信里附了那十一页里的三页。你挑的是最不容易看出来源的三页' },
+    fall:{
+      jw:'邵国栋是在办公室被带走的。区里的人说他走之前把桌上那盆君子兰浇了水',
+      hr:'人大城建环资委副主任。宣布那天他在台上讲了八分钟，讲的全是感谢。台下没人鼓掌',
+      cw:'常委会上六票。他坐在那儿听完，说了句服从组织安排，然后收拾东西走了',
+      gray:'帖子是在网上先出来的，比信早了一天。区里的人后来都说是郑大林干的。你没解释' } },
+  zhengfa: { key:'qc', hrTo:'省法学会专职副会长',
+    succ:{ n:'童大勇', p:'政法委书记' },
+    ways:{
+      jw:'青川那件事，宋自强手里本来就有一半。你补上的是另一半',
+      hr:'政法这一块动人要省里点头。佟建民打了两个电话，第二个电话打了四十分钟',
+      cw:'书记说：这件事我来说。会上他讲了七分钟青川，一次没提韩树声的名字，每个人都听得懂',
+      gray:'信寄给了省委政法委。你知道那边有人一直等着这封信' },
+    fall:{
+      jw:'省纪委的人进驻政法委那天，韩树声还在开会。他把会开完了，然后跟着他们走了',
+      hr:'省法学会专职副会长，副厅级，算是升了。他走的那天市里没开欢送会，他自己也没要',
+      cw:'分工调整：不再分管公安。他在会上说了句「我服从」，声音不大。散会后童大勇在走廊上等着你，说以后多联系',
+      gray:'省委政法委来了人。三天后韩树声主动去了纪委。他去之前给你打过一个电话，你没接' } },
+  qingchuan: { key:'qc', hrTo:'市政协社法委副主任', qx:1,
+    succ:{ n:'杜怀远', p:'青川县委书记' },
+    ways:{
+      jw:'青川那本账早就在宋自强那儿，差的就是有人把它翻开。你翻开了',
+      hr:'佟建民说青川那边本来就该动了。他没问为什么',
+      cw:'书记在会上讲的是化工园整治。讲到一半停下来问：马汉江同志有什么意见。马汉江说没有',
+      gray:'家属那边有人一直在等一个能发出去的东西。你给了' },
+    fall:{
+      jw:'马汉江被带走的消息是杜怀远打电话告诉你的。他在电话里没有高兴，也没有别的',
+      hr:'市政协社法委副主任。他到市里报到那天，顺路来了趟市委办，跟你握了手',
+      cw:'常委会定了：马汉江调离。杜怀远接任。青川的人说，县委大院那棵老槐树当天晚上被风吹断了一根枝',
+      gray:'帖子出来第二天省里就下了组。这回没人压，马汉江自己写了辞职报告' } },
+  zhujian: { key:'g_zhujian', hrTo:'市住房公积金中心主任',
+    succ:{ n:'范平', p:'住建局长' },
+    ways:{
+      jw:'台账和他爱人那家公司的客户名单，你放在一起交的。宋自强看了两分钟，说够了',
+      hr:'住建局长的位子，佟建民说有的是人想要。他翻了翻本子，说下个月',
+      cw:'书记说这个人不能再管工程。会上高振邦替他说了两句，没人接',
+      gray:'信里只写了那两家施工单位的名字。写这封信的人，一看就是懂行的' },
+    fall:{
+      jw:'卢志高被留置的第二天，住建局的人来市委办送材料，进门先看了你一眼',
+      hr:'公积金中心主任，正处，闲。他在新办公室挂了一幅字：知足常乐。你听说的',
+      cw:'分工调整，不再分管重点工程。他自己知道这意味着什么，第二个月就报了病休',
+      gray:'省住建厅来了个组，查了三个项目，三个都有问题。卢志高走的时候，他爱人那家公司也关了' } },
+  caizheng: { key:'g_caizheng', hrTo:'市审计局副局长',
+    succ:{ n:'陆文光', p:'财政局长' },
+    ways:{
+      jw:'专项资金那三道弯，你画了张图附在材料里。宋自强说这图画得清楚',
+      hr:'财政局长这个位子，佟建民说要跟市长通气。你说书记通过了。他说那就行',
+      cw:'书记在会上说的是「财政管理要规范」。高振邦知道这句话是冲谁去的',
+      gray:'信寄给了省财政厅。那笔钱本来就是省里下来的' },
+    fall:{
+      jw:'阮学文的事结论很轻，警告处分，调离。他走之前把办公室收拾得很干净，连抽屉都擦了',
+      hr:'审计局副局长。他到岗第一个月，审的是财政局。这一手是佟建民安排的',
+      cw:'常委会上高振邦投了反对票，唯一一票。散会后他在走廊上站了很久',
+      gray:'省财政厅的核查组来了。阮学文配合得很好，好到最后只有他一个人担了' } },
+  cg_quzhang: { key:'g_cgqz', hrTo:'市水务集团副总',
+    succ:{ n:'温从周', p:'城关区长' },
+    ways:{
+      jw:'那家拆迁公司的股东名单，宋自强看完问了一句：这个人是不是还告过邵国栋',
+      hr:'佟建民说这个人本来是要提的。你说书记不同意。他把名字划掉了',
+      cw:'书记在会上说的是「区级政府班子要配强」。市长听懂了，没说话',
+      gray:'信是寄给邵国栋的。你知道邵国栋收到会怎么办' },
+    fall:{
+      jw:'郑大林的事查了四个月。结论是违规经商，免职。他被带走那天城关区没人送',
+      hr:'水务集团副总。企业，没级别。他走的时候把办公室那盆绿萝留下了',
+      cw:'常委会定了：郑大林另有任用。「另有任用」这四个字，机关里谁都懂',
+      gray:'邵国栋拿着信去找了市长。三天后郑大林被免了。邵国栋自己也没落着好' } },
+  tongzhan: { key:'g_tongzhan', hrTo:'省社会主义学院副院长',
+    succ:{ n:'周斌', p:'统战部长' },
+    ways:{
+      jw:'统战口那笔捐款，宋自强没想到会从你这儿来。他问：书记知道吗',
+      hr:'佟建民说，纪守望这个人一直是数票的，动他，票就变了。你说书记就是要票变',
+      cw:'书记在会上没点名。他说：常委会不是谁数票的地方',
+      gray:'信里写的是那笔捐款的去向。收信的是省委统战部' },
+    fall:{
+      jw:'纪守望去省纪委说明情况，一去就是一个月。回来的时候人瘦了一圈，位子也没了',
+      hr:'省社会主义学院副院长。他临走跟你说了句：小刘，你数一数，会上还有几个人',
+      cw:'常委会上他自己投了赞成票。散会后他把那盒茶叶的空盒子放在你桌上，什么也没说',
+      gray:'省委统战部来了人。纪守望自己交代的，交代得比信里写的多' } },
+  xuanchuan: { key:'g_xuanchuan', hrTo:'省新闻出版局副局长',
+    succ:{ n:'沈慧', p:'宣传部长' },
+    ways:{
+      jw:'那几条被压掉的舆情，压的时间和市长办公室的电话记录对得上。宋自强看了一遍就明白了',
+      hr:'佟建民说宣传部长是女同志，动起来要有个说法。你说说法有',
+      cw:'书记在会上讲的是「舆情处置要及时报告」。方静仪在下面记笔记，手一直在抖',
+      gray:'信是寄给省委宣传部的。附了三条被删的帖子的截图' },
+    fall:{
+      jw:'方静仪去省里谈话，三天。回来后她自己提出调离。书记同意了',
+      hr:'省新闻出版局副局长。她走的那天把办公室的绿植分给了科里的人',
+      cw:'分工调整，不再分管舆情。她在会上一句话没说，回去哭了一场。这是她秘书说的',
+      gray:'省委宣传部通报批评。她主动辞职。走之前给你发了条短信：你赢了' } },
+  fagai: { key:'g_fagai', hrTo:'市政府参事',
+    succ:{ n:'韩一鸣', p:'发改委主任' },
+    ways:{
+      jw:'开发区扩区那份评估，改过三稿。三稿之间的差别，你一页一页标出来了',
+      hr:'佟建民说曹世昌是个明白人，你说明白人才可怕',
+      cw:'书记在会上说：发改委的评估要经得起看。曹世昌当场表态说一定改进',
+      gray:'信里写的是三稿评估的差别。看得懂的人不多，省发改委有' },
+    fall:{
+      jw:'曹世昌配合调查，说得很清楚。清楚到最后处理很轻：诫勉，调离',
+      hr:'市政府参事。他这个年纪，参事就是退二线的意思。他自己说：也好',
+      cw:'常委会定了调整。曹世昌在会上说服从，说完看了市长一眼。市长没看他',
+      gray:'省发改委来函要求说明。曹世昌写了六页，写完自己申请调离' } },
+  bs_fuxian: { key:'g_bsfx', hrTo:'县人大副主任',
+    succ:{ n:'——', p:'白沙常务副县长' },
+    ways:{
+      jw:'搬迁那笔钱走的路，你画了一张表。宋自强说这种事青川也有',
+      hr:'佟建民说白沙一个副县长，不用上会。他打了个电话',
+      cw:'书记在会上讲的是「搬迁资金要专款专用」。程一鸣坐在下面，脸色不好看',
+      gray:'信寄给了省扶贫办。搬迁的钱是他们下的' },
+    fall:{
+      jw:'秦振声的事查了两个月。结论是挪用，免职。程一鸣打电话给你，说了句谢谢',
+      hr:'县人大副主任。他五十六了，本来也快了。他自己没觉得是处理',
+      cw:'常委会定了。程一鸣当天晚上请你吃了顿饭，饭桌上一句白沙的事没提',
+      gray:'省扶贫办来了个组。秦振声配合，说钱是县里让这么走的。程一鸣差点被牵进去' } },
+  keshang: { key:'g_keshang', hrTo:'市档案馆副馆长',
+    succ:{ n:'小周', p:'综合科（代）' },
+    ways:{
+      jw:'市委办自己人的事，你没走纪委，走的是机关纪委。他们查了一周',
+      hr:'佟建民说市委办的人你们自己定。你说书记定了',
+      cw:'市委办的事不上常委会。书记跟邱仲华说了一句，邱仲华说他来办',
+      gray:'信是寄给邱仲华的。你知道他看完会怎么办' },
+    fall:{
+      jw:'葛守业调离了，去了档案馆。他走的时候把你桌上那盆吊兰的叶子掐了一片，说留个念想',
+      hr:'档案馆副馆长。他走的那天科里的人都没说话。小周把他的茶杯洗了，放回柜子里',
+      cw:'邱仲华办得很快。葛守业调走那天，你在走廊上碰见他，他说：小刘，你比我狠',
+      gray:'邱仲华拿着信找了书记。葛守业调走了。邱仲华也知道了那封信是谁写的' } },
+  mayor: { key:null, succ:{ n:'罗明川', p:'市长（代）' } }
+};
+
+/* 拔掉之后弹的那张纸：关于 X 同志职务调整的通知 */
+var FAC_NOTICE = {
+  jw:   { h:'省纪委监委', t:'关于对{N}同志立案审查调查的通报', body:'经研究，决定对{N}同志涉嫌违纪违法问题立案审查调查。' },
+  hr:   { h:'云州市委', t:'关于{N}同志职务调整的通知', body:'经市委研究并报省委组织部同意，{N}同志不再担任{P}职务，另行安排为{TO}。' },
+  cw:   { h:'云州市委', t:'关于调整{N}同志工作分工的通知', body:'经市委常委会会议研究，决定调整{N}同志工作分工，不再分管原工作。' },
+  gray: { h:'云州市委', t:'关于{N}同志免职的通知', body:'经市委研究，决定免去{N}同志{P}职务。' }
+};
+
+/* 换边的人、拔掉的人柜子里翻出来的东西：谁能带来谁的把柄 */
+var FAC_HANDOVER = {
+  caizheng: { key:'g_vice1',  t:'阮学文留下的那本明细', who:'vice1' },
+  cg_quzhang:{ key:'g_chengguan', t:'郑大林那十一页的原件', who:'chengguan' },
+  vice1:    { key:'g_caizheng', t:'高振邦柜子里那份专项资金的批件', who:'caizheng' },
+  zhengfa:  { key:'g_tongzhan', t:'政法委档案里一份捐款的收据', who:'tongzhan' }
+};
+
+/* 市长怎么走。三种，加一种把你也带进去的 */
+var FAC_MAYOR_END = {
+  down:  { n:'陈立群被带走了',
+    t:'省纪委的人是早上七点到的。他在办公室，已经等着了。桌上放着一个装好的纸箱，箱子上贴着一张便签：交市委办。\n箱子里是他这五年的会议记录本，一共二十二本。最后一本翻开在昨天那一页，写着：小刘不错，可惜了。' },
+  move:  { n:'陈立群调省政协了',
+    t:'省委的决定是周五宣布的。省政协副秘书长，正厅，不降。他在会上讲了十分钟，讲了云州这五年，一次没提书记，也一次没提你。\n散会后他走到你面前，说：小刘，你以后会知道，这个市里最难的位子不是书记，是市长。' },
+  retire:{ n:'陈立群提前退了',
+    t:'是他自己提的。理由是身体。省里批得很快，快得像是早就写好了。\n他走的那天没有欢送会。传达室老张说他早上六点就到了，把办公室的钥匙放在传达室，走的时候手里什么也没拿。' },
+  trap:  { n:'陈立群被带走了，走之前交了一样东西',
+    t:'省纪委的人是早上七点到的。他在办公室等着，桌上放着一个信封。\n信封里是那顿饭的照片，和三封信的复印件。那三封信是你寄的。他在信封上写了一行字：一并交。' }
+};
+
 /* === data/meetings.js === */
 /* ── 常规议题。每季度一次，有议题才开。
    大部分你不跑票也能过——你的活是把材料弄对、纪要写好。
@@ -5899,6 +6639,7 @@ if (typeof EVENTS_CUT     !== 'undefined') EVENTS = EVENTS.concat(EVENTS_CUT);
 if (typeof EVENTS_SJ      !== 'undefined') EVENTS = EVENTS.concat(EVENTS_SJ);
 if (typeof EVENTS_TF      !== 'undefined') EVENTS = EVENTS.concat(EVENTS_TF);
 if (typeof EVENTS_SONG    !== 'undefined') EVENTS = EVENTS.concat(EVENTS_SONG);
+if (typeof EVENTS_FAC     !== 'undefined') EVENTS = EVENTS.concat(EVENTS_FAC);
 
 var EV_BY_ID = {};
 EVENTS.forEach(function(e){ EV_BY_ID[e.id] = e; });
@@ -5948,7 +6689,7 @@ var ART_WHO = {
 
 /* === js/00-core.js === */
 /* ── 00-core：状态、存档、随机、工具 ───────────────────── */
-var VER = '1.4.0';
+var VER = '1.5.0';
 var SAVE_KEY = 'dami_save_v1';
 var START_Y = 2027, TERM = 60, WORKDAYS = 20;
 
@@ -6029,6 +6770,7 @@ function newGame(opt){
   };
   Pool.init();
   Private.init();
+  Fac.init();
   G.days = Desk.budget();
   Events.fill();
   return G;
@@ -6344,6 +7086,9 @@ var Pool = {
   side: function(k){
     if (k === 'me') return { n:'你', p:'市委办' };
     if (k === 'boss') return { n:'周维安', p:'市委书记' };
+    if (G && G.fac && G.fac.pulled[k] && typeof NAIL !== 'undefined' && NAIL[k]){
+      var sc = Fac.succ(k); if (sc && sc.n !== '——') return sc;
+    }
     for (var i = 0; i < NPC_DEF.length; i++)
       if (NPC_DEF[i].id === k) return { n:NPC_DEF[i].n, p:NPC_DEF[i].p };
     for (var j = 0; j < QX_DEF.length; j++)
@@ -6394,6 +7139,7 @@ var Pool = {
       Pool.promote('cg_quzhang', '城关区委书记');
       G.qxHead = G.qxHead || {};
       G.qxHead.chengguan = '郑大林';
+      Fac.pull('chengguan', 'hr', true);
     }
     if (G.flags.hr_qin) Pool.promote('bs_fuxian', '白沙县委书记');
     if (G.flags.hr_self){
@@ -7045,6 +7791,7 @@ var Rank = {
     if (G.stats.trust < nx.trust) return '年限够了，事也办了不少。报不报，要看书记那句话';
     if (G.stats.rep < nx.rep) return '书记点了头。组织部下去摸了一圈，回来说再看看';
     if (Rank.recentFault() > 4) return '材料报上去了，卡在考察那一关。这一年你名下的事有点多';
+    if (nx.k === 3 && Fac.remain() >= 5) return '佟建民说再等等。他没说等什么，你知道';
     return '材料已经报上去了';
   },
 
@@ -7056,6 +7803,7 @@ var Rank = {
     if (G.archive.merit.length < nx.merit) return;
     if (G.stats.trust < nx.trust || G.stats.rep < nx.rep) return;
     if (Rank.recentFault() > 4) return;
+    if (nx.k === 3 && Fac.remain() >= 5) return;
     G.rank = nx.k;
     G.rankAt[nx.k] = G.month;
     G.promo = nx.k;                       /* 界面看到这个就弹任命文件 */
@@ -7218,6 +7966,429 @@ var Echo = {
   }
 };
 
+/* === js/29-faction.js === */
+/* ── 29-faction：拔钉子。市长的人是谁、认出来、拿住、动手、反扑、投靠、市长的去向、局势图 ──
+   坏的藏着：反扑的数、暗桩是谁、材料硬不硬，界面上一个字不写。
+   好的看得见：局势图上划掉一个名字、红头通报、有人换边坐过来 */
+var Fac = {
+
+  init: function(){
+    if (G.fac) return;
+    G.fac = {
+      hid: shuffle(FAC_CAND).slice(0, FAC_HID_N),
+      mark: {}, clr: {}, pulled: {}, turned: {},
+      heat: 0, lastPull: 0, lastTell: 0, offerCd: {}, busy: null, pending: null,
+      mayor: null, mayorRoute: null, mayorAt: 0, wait: 0, fb: {}, gray: 0
+    };
+  },
+
+  isHidden: function(id){ Fac.init(); return G.fac.hid.indexOf(id) >= 0; },
+  nails: function(){
+    Fac.init();
+    return FAC_OPEN.filter(function(x){ return x !== 'mayor'; }).concat(FAC_HALF, G.fac.hid);
+  },
+  isNail: function(id){ return Fac.nails().indexOf(id) >= 0; },
+  /* 你认出来了没有 */
+  known: function(id){
+    Fac.init();
+    if (FAC_OPEN.indexOf(id) >= 0) return true;
+    if (FAC_HALF.indexOf(id) >= 0){
+      if (POOL_BY_ID[id]) return Pool.seen(id);
+      return npcKnown(id) >= 1;
+    }
+    return !!G.fac.mark[id];
+  },
+  alive: function(id){ Fac.init(); return !G.fac.pulled[id] && !G.fac.turned[id]; },
+  pulledN: function(){ Fac.init(); var n = 0; for (var k in G.fac.pulled) n++; return n; },
+  turnedN: function(){ Fac.init(); var n = 0; for (var k in G.fac.turned) n++; return n; },
+  gone: function(){ return Fac.pulledN() + Fac.turnedN(); },
+  remain: function(){ return Fac.nails().filter(Fac.alive).length; },
+
+  /* 把柄在不在手里。看过的材料都进档案，能拿出去的只有标了键的 */
+  gripN: function(id){
+    var d = NAIL[id]; if (!d || !d.key) return 0;
+    var n = 0;
+    G.archive.mats.forEach(function(m){ if (m.k === d.key) n++; });
+    return n;
+  },
+  hasGrip: function(id){ return Fac.gripN(id) > 0; },
+  name: function(id){ return Pool.side(id).n; },
+  succ: function(id){
+    var d = NAIL[id]; if (!d) return null;
+    if (id === 'chengguan' && G.fac && G.fac.pulled.cg_quzhang) return { n:'温从周', p:'城关区委书记' };
+    return d.succ || null;
+  },
+
+  /* 事件能不能出：e.fac = { tell, n, after, alive, pulled, hid, turn } */
+  ok: function(e){
+    var f = e.fac; if (!f) return true;
+    Fac.init();
+    if (f.hid && !Fac.isHidden(f.hid)) return false;
+    if (f.alive && !Fac.alive(f.alive)) return false;
+    if (f.turn && G.fac.turned[f.turn]) return false;
+    if (f.pulled != null && Fac.gone() < f.pulled) return false;
+    if (f.tell){
+      if (!Fac.alive(f.tell)) return false;
+      if (G.fac.clr[f.tell]) return false;                     /* 查过了，是清白的 */
+      if (f.n === 2 && !G.fac.mark[f.tell] && G.fac.hid.indexOf(f.tell) < 0) { /* 红鲱鱼的第二件照出 */ }
+      if (f.after && !G.seen[f.after]) return false;
+      if (G.month - (G.fac.lastTell || 0) < 4) return false;
+      if (G.queue.some(function(q){ var x = EV(q.id); return x && x.fac && x.fac.tell && !q.done; })) return false;
+    }
+    return true;
+  },
+
+  /* 正文按局面换 */
+  text: function(e){
+    if (e.id === 'fac_mayor_gone' && G.fac && G.fac.mayorRoute){
+      var m = FAC_MAYOR_END[G.fac.mayorRoute]; return m ? m.t : e.text;
+    }
+    if (!e.textIf) return e.text;
+    for (var i = 0; i < e.textIf.length; i++){
+      var c = e.textIf[i];
+      if (c.hid && !Fac.isHidden(c.hid)) continue;
+      if (c.nothid && Fac.isHidden(c.nothid)) continue;
+      if (c.flag && !G.flags[c.flag]) continue;
+      if (c.noflag && G.flags[c.noflag]) continue;
+      return c.t;
+    }
+    return e.text;
+  },
+  title: function(e){
+    if (e.id === 'fac_mayor_gone' && G.fac && G.fac.mayorRoute){
+      var m = FAC_MAYOR_END[G.fac.mayorRoute]; return m ? m.n : e.title;
+    }
+    return e.title;
+  },
+
+  /* 选完一条拟办意见之后 */
+  onChoose: function(e, o, it){
+    Fac.init();
+    if (e.fac && e.fac.tell) G.fac.lastTell = G.month;
+    var id, truth, br;
+    if (o.probe){
+      id = o.probe; truth = Fac.isHidden(id); br = truth ? o.yes : o.no;
+      if (br){
+        it.res.n = br.n || '';
+        applyFx(br.fx);
+        if (truth){ G.fac.mark[id] = 1; if (br.keep) keepAdd(br.keep, br.keyk); it.res.keep = br.keep || ''; }
+        else G.fac.clr[id] = 1;
+      }
+    }
+    if (o.guess){
+      id = o.guess; truth = Fac.isHidden(id); br = truth ? o.yes : o.no;
+      if (br){ it.res.n = br.n || ''; applyFx(br.fx); if (truth) G.fac.mark[id] = 1; }
+    }
+    if (o.facHeat) Fac.heat(o.facHeat);
+    if (o.facTell){
+      var left = G.fac.hid.filter(function(h){ return !G.fac.mark[h] && Fac.alive(h); });
+      if (left.length){ G.fac.mark[left[0]] = 1; it.res.n = (it.res.n || '') + '　那个名字：' + Fac.name(left[0]); }
+      else it.res.n = (it.res.n || '') + '　那个名字你早就知道了';
+    }
+    if (o.facTurn) Fac.turn(o.facTurn);
+    if (o.facWay) Fac.way(e, o, it);
+    if (e.facCw && it.tally){
+      if (it.tally.pass){ Fac.pull(e.facCw, 'cw'); applyFx({ pres:+4 }); Fac.heat(20); }
+      else { applyFx({ pres:-2 }); Fac.heat(30); Pool.addHeat('p_mayor_boss', 25); G.fac.busy = null; G.fac.offerCd[e.facCw] = G.month + 4; }
+    }
+    if (o.facStrike) Fac.strike(it, o);
+    if (o.facMayor) Fac.mayorWay(o.facMayor, it);
+    if (o.facMayorDone) Fac.mayorDone(it);
+  },
+
+  heat: function(v){
+    Fac.init();
+    G.fac.heat = clamp(G.fac.heat + v, 0, 100);
+  },
+
+  /* 动手：四条路 */
+  way: function(e, o, it){
+    var nid = e.facNail, w = o.facWay;
+    if (w === 'none'){ G.fac.offerCd[nid] = G.month + 4; G.fac.offerAll = G.month + 2; return; }
+    G.fac.busy = nid;
+    if (w === 'jw'){
+      G.fac.pending = { id: nid, way:'jw', at: G.month + 3 + ri(4) };
+      Fac.heat(18);
+    } else if (w === 'hr'){
+      G.fac.pending = { id: nid, way:'hr', at: G.month + 1 };
+      Fac.heat(14);
+    } else if (w === 'cw'){
+      Fac.meeting(nid);
+    } else if (w === 'gray'){
+      G.fac.pending = { id: nid, way:'gray', at: G.month + 1 };
+      G.fac.gray = (G.fac.gray || 0) + 1;
+      Fac.heat(26 + (G.flags.seed_qianshou ? 10 : 0));
+      Private.addGrudge(nid); Private.addGrudge(nid);
+    }
+    if (G.month - (G.fac.lastPull || -9) < 6) Fac.heat(10);
+  },
+
+  /* 把柄到手之后，下个月多一件「自己」的事 */
+  offer: function(nid){
+    var d = NAIL[nid]; if (!d) return null;
+    var nm = Fac.name(nid), P = Pool.side(nid).p;
+    var id = 'fac_offer_' + nid + '_' + G.month;
+    if (G.gen[id]) return null;
+    var hidLine = Fac.isHidden(nid) ? '他是市长的人，这一点现在只有你知道。' : '';
+    var e = {
+      id:id, kind:'note', src:'自己', due:'next', who: nid, img:'night', own:1, facNail: nid,
+      title:'手里有了' + nm + '的东西',
+      text:'抽屉里那份东西，你翻出来又看了一遍。' + hidLine + nm + '，' + P + '，市长那边的人。\n办法有四个。哪一个都不会当天见效，哪一个都收不回来。',
+      nt:'东西在抽屉里放着。抽屉锁着',
+      opts:[
+        { t:'转给宋自强', d:1, tier:'good', req:{ key: d.key }, facWay:'jw', n: d.ways.jw,
+          nlow:'手里的东西还不够硬',
+          rk:{ steady:'交了就好。', strong:'交了？', shrewd:'他收了没有？' } },
+        { t:'趁人事窗口把他调走', d:2, tier:'good', req:{ pres:55, fav:{ zuzhi:50 } }, facWay:'hr', n: d.ways.hr,
+          nlow:'佟建民那一关过不去，书记在班子里的分量也还不够',
+          rk:{ steady:'稳当。', strong:'好。', shrewd:'佟建民怎么说的？' } },
+        { t:'让书记拿到常委会上说', d:1, tier:'good', req:{ pres:45 }, facWay:'cw', n: d.ways.cw,
+          nlow:'他在班子里说话的分量还不够，上会就是输',
+          rk:{ steady:'上会要有把握。', strong:'上。', shrewd:'票你数过了？' } },
+        { t:'写封信寄出去', d:0.5, tier:'gray', rule:'leak', facWay:'gray', n: d.ways.gray, rk:{} },
+        { t:'先放着', d:0, tier:'tail', facWay:'none', n:'东西放回抽屉。你把抽屉锁了', rk:'' }
+      ],
+      neglect:{}
+    };
+    G.gen[id] = e;
+    return Desk.push(id, 'next');
+  },
+
+  /* 常委会上摊牌：生成一场真的常委会 */
+  meeting: function(nid){
+    var d = NAIL[nid], nm = Fac.name(nid), P = Pool.side(nid).p;
+    var id = 'fac_cw_' + nid + '_' + G.month;
+    var lean = { mayor:-3, vice1:-2, depsec:0, jiwei:0, zuzhi:+1, zhengfa:-1, xuanchuan:0, mishuzhang:0, tongzhan:0 };
+    if (lean[nid] != null) lean[nid] = -3;           /* 他自己的票 */
+    var e = {
+      id:id, kind:'meeting', src:'常委会', due:'month', topic:'人事', need:5, facCw: nid, who: nid, img:'changwei',
+      title:'关于调整' + nm + '同志分工的建议',
+      text:'书记定的议题。材料是你写的，三页，一句没提那份东西，每一句都指着它。\n市长那边的人会怎么投，你比谁都清楚。',
+      nt:'议题撤了。撤议题这件事，班子里每个人都记住了',
+      lean: lean,
+      mats:[
+        { id:'fc_' + nid + '_1', t:'市长的书面意见', from:'市政府办', d:1, who:'mayor', text:'两页。「' + nm + '同志工作能力强，建议维持现有分工。」' },
+        { id:'fc_' + nid + '_2', t:'副书记的意见', from:'市委办', d:1, who:'depsec', text:'一页。「服从组织安排。」他在人事上从不多说一个字。' },
+        { id:'fc_' + nid + '_3', t:'组织部的考察情况', from:'组织部', d:1, who:'zuzhi', text:'四页。写得很客气，最后一段是「群众反映的问题建议进一步了解」。' }
+      ],
+      acts:[
+        { t:'把那份东西给佟建民看一眼', d:1, eff:{ zuzhi:+2, depsec:+1 }, n:'他看了不会说话，但他会记住', after:'他把考察材料最后那一段改成了「存在的问题」' },
+        { t:'请书记亲自找罗明川谈一次', d:1, eff:{ depsec:+2 }, fx:{ trust:-1 }, n:'人事是他的底线，只有书记能撬', after:'他说他不反对' },
+        { t:'去纪守望那儿坐半小时', d:1, eff:{ tongzhan:+1 }, n:'他看大多数', after:'他说他看大家的意思' },
+        { t:'让宋自强在会上说一句「有反映」', d:1, eff:{ jiwei:+2, zhengfa:-1 }, n:'纪委书记开口，谁都不好接', after:'他说他会说的' }
+      ],
+      opts:[
+        { t:'上会', d:1, tier:'good', n:'',
+          passN:'过了。' + nm + '在会上说了句服从组织安排。市长收拾材料收拾了很久',
+          failN:'没过。市长散会的时候走到书记面前，说：周书记，班子还是要讲团结',
+          fx:{}, passFx:{ trust:+5 }, failFx:{ trust:-3 },
+          rk:{ steady:'过了就好。', strong:'谁投的反对？', shrewd:'几票？' } }
+      ],
+      neglect:{ pres:-3 }
+    };
+    G.gen[id] = e;
+    G.fac.pending = { id: nid, way:'cw', at: G.month + 1, ev: id };
+    var it = Desk.push(id, 'plan'); if (it) it.plan = 1;
+  },
+
+  /* 拔掉一个人 */
+  pull: function(id, way, silent){
+    Fac.init();
+    if (G.fac.pulled[id]) return;
+    var d = NAIL[id] || {}, nm = Fac.name(id), P = Pool.side(id).p;   /* 先记下他的名字，标了之后 side() 给的就是接手的人 */
+    G.fac.pulled[id] = { m: G.month, way: way };
+    G.fac.lastPull = G.month;
+    G.fac.busy = null; G.fac.pending = null;
+    var s = Fac.succ(id);
+    if (d.qx){
+      G.qxHead = G.qxHead || {};
+      if (s) G.qxHead[id] = s.n;
+      if (id === 'chengguan' && s && s.n === '郑大林'){ G.flags.hrDone = G.flags.hrDone || G.month; Pool.promote('cg_quzhang', '城关区委书记'); }
+    }
+    if (POOL_BY_ID[id]){ Pool.init(); G.pool[id].gone = 1; G.pool[id].post = way === 'hr' ? d.hrTo : (way === 'jw' ? '留置' : '免职'); G.pool[id].moved = G.month; }
+    if (silent) return;
+    meritAdd(nm + '的事，办成了');
+    logAdd(nm + ' → ' + (way === 'jw' ? '立案' : way === 'hr' ? '调走' : way === 'cw' ? '分工调整' : '免职'));
+    applyFx({ trust:+4, pres:+3 });
+    if (way === 'jw') applyFx({ risk:+2 });
+    if (way === 'gray') applyFx({ lead:+4 });
+    /* 接手的人整理柜子，偶尔翻出别人的东西 */
+    var extra = '';
+    var h = FAC_HANDOVER[id];
+    if (h && (way === 'hr' || way === 'cw') && Fac.alive(h.who) && !Fac.hasGrip(h.who)){
+      keepAdd(h.t, h.key);
+      extra = '\n接手的人整理柜子，翻出一样东西，送到了你这儿：' + h.t + '。';
+    }
+    var eid = 'fac_gone_' + id + '_' + G.month;
+    G.gen[eid] = { id:eid, kind:'note', src:'主线', due:'month', free:1, who:id, img: way === 'jw' ? 'archive' : 'office',
+      title: nm + (way === 'jw' ? '被带走了' : '走了'),
+      text: (d.fall ? d.fall[way] : nm + '走了。') + extra +
+            (s && s.n !== '——' ? '\n' + s.p + '，' + s.n + '接。' : ''),
+      nt:'', opts:[ { t:'知道了', d:0, tier:'good', n:'', rk:'' } ], neglect:{} };
+    Desk.push(eid, 'month');
+    G.notice = { id:id, way:way, n:nm, p: P, to: d.hrTo || '' };
+    if (Fac.gone() === 1) G.flags.facFirst = G.month;
+  },
+
+  /* 换边 */
+  turn: function(id){
+    Fac.init();
+    if (G.fac.turned[id] || G.fac.pulled[id]) return;
+    G.fac.turned[id] = G.month;
+    G.fac.mark[id] = 1;
+    meritAdd(Fac.name(id) + '过来了');
+    logAdd(Fac.name(id) + ' → 换边');
+    applyFx({ pres:+2 });
+  },
+
+  /* 楼下那两个人 */
+  strike: function(it, o){
+    /* 手里红线的事不止一件，或者风声已经起来了，这一下就扛不住 */
+    var redN = G.archive.fault.filter(function(f){ return f.rule && RULES[f.rule] && RULES[f.rule].red; }).length;
+    var hard = G.archive.fault.some(function(f){ return f.rule && RULES[f.rule] && RULES[f.rule].lv >= 4; });
+    if (redN >= 2 || hard || G.hidden.lead >= 50){
+      it.res.n = '谈话室的窗户朝北。第一个问题问的是三年前的一件事，你已经想不起来那天是星期几了';
+      Endings.trigger('struck');
+      return;
+    }
+    it.res.n = '谈了四十分钟。他们要的东西你没有，问的事你一件一件答了。第三天市长在常委会上少说了很多话。省里那边有人问他，为什么派人下来';
+    G.flags.mayorWeak = 1;
+    G.fac.heat = 0;
+    applyFx({ trust:+5, rep:+3 });
+    Pool.addHeat('p_mayor_boss', -10);
+  },
+
+  /* 市长怎么走 */
+  mayorWay: function(route, it){
+    if (route === 'wait'){ G.fac.wait = G.month; return; }
+    if (route === 'down' && (G.fac.gray || 0) >= 2) route = 'trap';
+    G.fac.mayorRoute = route;
+    G.fac.mayorAt = G.month + 2;
+  },
+  mayorDone: function(it){
+    var r = G.fac.mayorRoute; if (!r) return;
+    if (r === 'trap'){
+      it.res.n = '信封里有你的名字。三天后，有人在楼下等你';
+      Endings.trigger('self_out');
+      return;
+    }
+    G.fac.mayor = r;
+    G.fac.pulled.mayor = { m: G.month, way: r };
+    meritAdd('陈立群走了');
+    logAdd('陈立群 → ' + r);
+    applyFx({ trust:+8, pres:+10 });
+    Pool.addHeat('p_mayor_boss', -40);
+    G.fac.heat = 0;
+    G.notice = { id:'mayor', way: r === 'down' ? 'jw' : 'hr', n:'陈立群', p:'市长', to: r === 'move' ? '省政协副秘书长' : '退休' };
+    it.res.n = r === 'move' ? '他走的那天，书记站在窗口看了很久。' : r === 'retire' ? '他走了。书记那天什么也没说。' : '书记把那二十二本记录本锁进了柜子。';
+  },
+
+  /* 每月一次 */
+  tick: function(){
+    Fac.init();
+    var f = G.fac;
+    f.heat = Math.max(0, f.heat - 1);
+    /* 手上那件事到日子了 */
+    if (f.pending && G.month >= f.pending.at){
+      var p = f.pending;
+      if (p.way === 'cw'){
+        if (!Desk.has(p.ev) && !f.pulled[p.id]){ f.busy = null; f.pending = null; Fac.heat(10); }
+      } else if (p.way === 'jw'){
+        var jf = (G.npc && G.npc.jiwei) ? G.npc.jiwei.fav : 45;
+        if (Fac.gripN(p.id) >= 2 || jf >= 42 || (G.archive.coop || 0) >= 1){
+          Fac.pull(p.id, 'jw');
+        } else {
+          f.busy = null; f.pending = null; f.offerCd[p.id] = G.month + 5;
+          Fac.heat(10); Private.addGrudge(p.id);
+          var fid = 'fac_fail_' + p.id + '_' + G.month, nm = Fac.name(p.id);
+          G.gen[fid] = { id:fid, kind:'note', src:'突发', due:'month', free:1, who:p.id, img:'archive',
+            title:'材料退回来了',
+            text:'宋自强让人把那个牛皮纸袋送了回来，没拆封，附了一张便签：线索不具体，建议补充。\n三天后' + nm + '在走廊上跟你打了个招呼，比平时客气。',
+            nt:'', opts:[ { t:'知道了', d:0, tier:'tail', n:'纸袋放回抽屉。这回你知道了，纪委那扇门，敲一次就少一次' } ], neglect:{} };
+          Desk.push(fid, 'month');
+        }
+      } else {
+        Fac.pull(p.id, p.way);
+      }
+    }
+    /* 市长那件事到日子了 */
+    if (f.mayorRoute && !f.mayor && f.mayorAt && G.month >= f.mayorAt && !Desk.has('fac_mayor_gone') && !G.seen.fac_mayor_gone){
+      Desk.push('fac_mayor_gone', 'month');
+    }
+    /* 反扑 */
+    var h = f.heat;
+    [30, 50, 70, 90].forEach(function(t){
+      var k = 'fb_' + t;
+      if (h >= t && !f.fb[k]){
+        f.fb[k] = G.month;
+        if (t === 70){
+          var kin = G.flags.seed_dianti ? 'hurt_law' : 'hurt_sister';
+          if (!G.hurt) G.hurt = {};
+          var kk = kin === 'hurt_law' ? 'law' : 'sister';
+          if (!G.hurt[kk] && EV(kin)){ G.hurt[kk] = 1; Desk.push(kin, 'month'); }
+          applyFx({ risk:+8 });
+          if (!Desk.has(k)) Desk.push(k, 'month');
+        } else if (!Desk.has(k)) Desk.push(k, 'month');
+      }
+      if (h < t - 25) f.fb[k] = 0;
+    });
+    if (h >= 40 && rnd() < 0.3){
+      var sm = rnd() < 0.5 ? 'fb_small_1' : 'fb_small_2';
+      if (!(G.cool[sm] && G.cool[sm] > G.month) && !Desk.has(sm)) Desk.push(sm, 'month');
+    }
+    /* 把柄到手、手上没别的事，给一件「自己」的事 */
+    if (!f.busy && G.month - (f.lastPull || -9) >= 2 && !(f.offerAll && f.offerAll > G.month) &&
+        !G.queue.some(function(q){ var x = EV(q.id); return x && x.facNail && !q.done; })){
+      var cand = Fac.nails().filter(function(n){
+        return Fac.alive(n) && Fac.known(n) && Fac.hasGrip(n) && !(f.offerCd[n] && f.offerCd[n] > G.month);
+      });
+      if (cand.length) Fac.offer(cand[ri(cand.length)]);
+    }
+    /* 拔够了，市长动得了 */
+    if (!f.mayor && !f.mayorRoute && Fac.gone() >= FAC_MAYOR_AT && !Desk.has('fac_mayor') &&
+        !(f.wait && G.month - f.wait < 3)){
+      Desk.push('fac_mayor', 'next');
+    }
+  },
+
+  /* 局势图 */
+  board: function(){
+    Fac.init(); npcInit(); Pool.init();
+    var rows = [];
+    function st(id){
+      if (id === 'mayor') return G.fac.mayor ? 'gone' : 'mayor';
+      if (G.fac.pulled[id]) return 'gone';
+      if (G.fac.turned[id]) return 'turned';
+      if (Fac.isNail(id)) return Fac.known(id) ? 'mayor' : 'unk';
+      if (FAC_BOSS.indexOf(id) >= 0) return 'boss';
+      if (id === 'jiwei') return 'none';
+      return 'unk';
+    }
+    function put(id, n, p){
+      var s = st(id);
+      rows.push({ id:id, n:n, p:p, s:s });
+      if (s === 'gone' && id !== 'mayor'){
+        var sc = Fac.succ(id);
+        if (sc && sc.n !== '——' && !POOL_BY_ID[id]) rows.push({ id:id + '_succ', n:sc.n, p:sc.p, s:'boss' });
+      }
+    }
+    NPC_DEF.forEach(function(d){ put(d.id, d.n, d.p); });
+    QX_DEF.forEach(function(d){ put(d.id, (G.qxHead && G.qxHead[d.id] && !G.fac.pulled[d.id]) ? G.qxHead[d.id] : d.head, d.n); });
+    POOL.forEach(function(x){
+      if (!G.met[x.id] && !G.fac.pulled[x.id]) return;
+      rows.push({ id:x.id, n:x.n, p: Pool.postOf(x), s: st(x.id) });
+    });
+    return rows;
+  },
+  boardWord: function(){
+    var g = Fac.gone(), r = Fac.remain();
+    if (G.fac.mayor) return '这张桌子，现在是他的了';
+    if (!g) return '';
+    if (r === 0) return '那边的人，一个也不剩了';
+    return '';
+  }
+};
+
 /* === js/30-ui.js === */
 /* ── 30-ui：红头、指标条、五页签、送阅件、弹窗、手机 ─────── */
 var TABS = [
@@ -7246,6 +8417,7 @@ var UI = {
       '<div id="body">' + UI.tabBody() + '</div>' + UI.tabs();
     UI.bind();
     UI.flash();
+    if (G.notice && !UI.modal) UI.notice();
   },
 
   head: function(){
@@ -7368,11 +8540,11 @@ var UI = {
       '<div class="doc">' +
       '<div class="no">云委办〔' + ymOf(G.month).y + '〕' + (100 + n * 7 % 800) + '号</div>' +
       (e.who ? artWrap('p_' + e.who + '.webp', 'art-face doc-face') : '') +
-      '<h2>' + esc(Rank.rename(e.title)) + '</h2>' +
+      '<h2>' + esc(Rank.rename(Fac.title(e))) + '</h2>' +
       '<div class="sub">' + esc(q.src) + ' · ' + DUE_TAG[q.due] + ' · 剩 ' + Desk.daysLeft(q) +
       ' 天' + (q.bumped ? ' · 上月拖过来的' : '') +
       (q.held ? ' · 这件在秘书长那儿转了一圈' : '') + '</div>' +
-      '<p>' + esc(Rank.rename(e.text)) + '</p>';
+      '<p>' + esc(Rank.rename(Fac.text(e))) + '</p>';
     if (q.done){
       var fresh = UI._fresh === q.uid; if (fresh) UI._fresh = null;
       var r = q.res, extra = '';
@@ -7512,17 +8684,32 @@ var UI = {
     return h + '</div>';
   },
 
+  /* 局势图：这张桌子上，谁坐谁那边 */
+  board: function(){
+    var rows = Fac.board();
+    var h = '<div class="panel"><h3>这张桌子上，谁坐谁那边</h3><div class="board">';
+    rows.forEach(function(r){
+      h += '<span class="bd bd-' + r.s + '">' + esc(r.n) + '<i>' + esc(r.p) + '</i></span>';
+    });
+    var w = Fac.boardWord();
+    h += '</div>' + (w ? '<div class="bar-note" style="padding:0 14px 12px">' + esc(w) + '</div>' : '') + '</div>';
+    return h;
+  },
+
   ban: function(){
-    npcInit(); Pool.init();
-    var h = '<div class="panel"><h3>市委常委会</h3><div class="cards">';
+    npcInit(); Pool.init(); Fac.init();
+    var h = UI.board();
+    h += '<div class="panel" style="margin-top:12px"><h3>市委常委会</h3><div class="cards">';
     NPC_DEF.forEach(function(d){
       var s = G.npc[d.id] || { fav:40 };
-      h += '<div class="card">' + artWrap('p_' + d.id + '.webp', 'art-face') +
-        '<div class="n">' + d.n + '</div>' +
-        '<div class="p">' + d.p + ' · ' + d.f + '</div>' +
-        (npcKnown(d.id) >= 1
-          ? '<div class="l">' + d.line + '</div>'
-          : '<div class="l dim">还没打过交道</div>') +
+      var pulled = G.fac.pulled[d.id], sc = pulled ? Fac.succ(d.id) : null;
+      var nm = sc ? sc.n : d.n;
+      var line = sc ? '<div class="l">新来的，还在摸情况</div>'
+        : (npcKnown(d.id) >= 1 ? '<div class="l">' + d.line + '</div>' : '<div class="l dim">还没打过交道</div>');
+      if (G.fac.turned[d.id]) line += '<div class="l" style="color:var(--red)">已经不在那边了</div>';
+      h += '<div class="card">' + artWrap('p_' + (sc ? 'none' : d.id) + '.webp', 'art-face') +
+        '<div class="n">' + nm + '</div>' +
+        '<div class="p">' + d.p + ' · ' + (sc ? '书记提的' : d.f) + '</div>' + line +
         (d.id === 'boss' ?
           '<div class="kv"><i>说话的分量</i><span>' + UI.presWord(G.stats.prestige) + '</span></div>' +
           '<div class="mini"><i style="width:' + G.stats.prestige + '%"></i></div>' :
@@ -7867,6 +9054,24 @@ var UI = {
     on($('[data-x]', d), 'click', function(){ UI.close(); UI.render(); });
   },
 
+  /* 拔掉一个人之后的那张纸：红头、文号、落款、章 */
+  notice: function(){
+    var n = G.notice; if (!n || G.ending) return;
+    G.notice = null; save();
+    var t = FAC_NOTICE[n.way] || FAC_NOTICE.hr;
+    function sub(s){ return String(s).replace(/\{N\}/g, n.n).replace(/\{P\}/g, n.p).replace(/\{TO\}/g, n.to || ''); }
+    var ym = ymOf(G.month);
+    var b = '<div class="appoint"><div class="ah">' + esc(t.h) + (n.way === 'jw' ? '通报' : '文件') + '</div>' +
+      '<div class="ano">' + (n.way === 'jw' ? '省纪监' : '云委') + '〔' + ym.y + '〕' + (20 + (G.month * 3) % 60) + '号</div><div class="aline"></div>' +
+      '<div class="at">' + esc(sub(t.t)) + '</div>' +
+      '<p>' + esc(sub(t.body)) + '</p>' +
+      '<div class="asign">' + esc(t.h) + '<br>' + ym.y + '年' + ym.m + '月' +
+      '<span class="aseal"><i>★</i>' + esc(t.h) + '</span></div></div>';
+    var d = UI.open('', b, '<button class="btn pri" data-x>收好</button>');
+    d.className += ' big';
+    on($('[data-x]', d), 'click', function(){ UI.close(); });
+  },
+
   remarkHTML: function(txt, on, praise){
     if (praise) return '<div class="remark praise"><span class="ring">阅</span>' +
       (txt ? esc(txt) + '　' : '') + '<b>' + esc(praise) + '</b>' +
@@ -7933,9 +9138,15 @@ var UI = {
     after.sort(function(x, y){ return y.d - x.d; });
     h += '<div class="panel" style="margin-top:12px"><h3>这些人后来</h3><div class="doc" style="padding:12px 16px">';
     after.slice(0, 5).forEach(function(x){
-      h += '<p style="text-indent:0;margin-bottom:8px;font-size:15px">' +
-        esc(AFTER_LINE[x.id][x.up ? 1 : 0]) + '</p>';
+      var line = AFTER_LINE[x.id][x.up ? 1 : 0];
+      if (x.id === 'mayor' && G.fac && G.fac.mayor && FAC_MAYOR_END[G.fac.mayor]) line = FAC_MAYOR_END[G.fac.mayor].n + '。';
+      else if (G.fac && G.fac.pulled[x.id]) line = npcName(x.id) + '走了。这件事是你办的。';
+      h += '<p style="text-indent:0;margin-bottom:8px;font-size:15px">' + esc(line) + '</p>';
     });
+    if (G.fac && (Fac.gone() || G.fac.mayor)){
+      h += '<p style="text-indent:0;margin-bottom:8px;font-size:15px">' +
+        '那边的人，这五年走了 ' + Fac.pulledN() + ' 个，过来了 ' + Fac.turnedN() + ' 个。' + '</p>';
+    }
     h += '</div></div>';
 
     /* 图鉴 */
@@ -8049,6 +9260,24 @@ var Desk = {
     for (var k in req){
       if (k === 'money'){ if (!Private.can(req[k])) return false; continue; }
       if (k === 'flag'){ if (!G.flags[req[k]]) return false; continue; }
+      /* 某个人对你的好感 */
+      if (k === 'fav'){
+        var okf = true;
+        for (var who in req.fav){
+          var fv = (G.npc && G.npc[who]) ? G.npc[who].fav : (G.qx && G.qx[who]) ? G.qx[who].fav : (G.pool && G.pool[who]) ? G.pool[who].fav : 0;
+          if (fv < req.fav[who]) okf = false;
+        }
+        if (!okf) return false;
+        continue;
+      }
+      /* 手里有几样能拿出去的东西 */
+      if (k === 'keys'){
+        var ks = {};
+        G.archive.mats.forEach(function(m){ if (m.k) ks[m.k] = 1; });
+        var kn = 0; for (var kx in ks) kn++;
+        if (kn < req[k]) return false;
+        continue;
+      }
       if (k === 'keep'){
         var want = req[k], got = false;
         G.archive.mats.forEach(function(m){ if (m.t.indexOf(want) >= 0) got = true; });
@@ -8141,6 +9370,7 @@ var Desk = {
   /* 这条路要花几天。交给小周跑的不占你的天数，见不得人的事他跑不了 */
   costFor: function(it, e, o){
     if (e.free) return 0;
+    if (o.facWay === 'none') return 0;          /* 放回抽屉不花时间 */
     if (it.deleg && !o.rule) return 0;
     return costOf(dayOf(o)) + (it.held ? 1 : 0);
   },
@@ -8216,6 +9446,7 @@ var Desk = {
       it.res.t = it.res.t + '　——　' + tl.yes + ' 比 ' + tl.no + '，' + (tl.pass ? '过了' : '没过');
       logAdd(e.title + '：' + tl.yes + ' 比 ' + tl.no);
     }
+    Fac.onChoose(e, o, it);
     if (!G.chose) G.chose = {};
     if (!e.own && !e.echo && !o.call) G.chose[e.arc ? e.arc + '.' + e.stage : e.id] = { i: idx, m: G.month };
     G._projUp = null;
@@ -8350,6 +9581,7 @@ var Desk = {
     Pool.drift();
     Msz.tick();
     Private.tick();
+    Fac.tick();
     Proj.tick();
     var year = (G.month > 1 && (G.month - 1) % 12 === 0) ? Proj.yearEnd() : null;
     Rank.tick();
@@ -8444,6 +9676,9 @@ var Meeting = {
   lean: function(it, e, id){
     var v = (e.lean && e.lean[id] != null) ? e.lean[id] : 0;
     var d = (it.eff && it.eff[id]) || 0;
+    /* 拔掉的人，坐在那个位子上的是书记提的人；换边的人，票也跟着换 */
+    if (G.fac && G.fac.pulled[id]) return 1.5 + d;
+    if (G.fac && G.fac.turned[id]) v += 2;
     /* 底线议题：好感不起作用，只有做工作能撬 */
     var def = null;
     for (var i = 0; i < NPC_DEF.length; i++) if (NPC_DEF[i].id === id) def = NPC_DEF[i];
@@ -8458,6 +9693,7 @@ var Meeting = {
   /* 这个人的态度你看过没有 */
   known: function(it, e, id){
     if (it.peek && it.peek[id]) return true;
+    if (G.fac && (G.fac.pulled[id] || G.fac.turned[id])) return true;
     if (!e.mats) return true;
     for (var i = 0; i < e.mats.length; i++)
       if (e.mats[i].who === id) return Dossier.hasRead(it, e.mats[i].id);
@@ -8607,6 +9843,7 @@ var Events = {
     if (e.fam && G.hidden.famBroken) return false;
     if (e.orig && e.orig !== G.origin) return false;
     if (e.rankMin && (G.rank || 0) < e.rankMin) return false;
+    if (e.fac && !Fac.ok(e)) return false;
     return true;
   },
 
@@ -8730,7 +9967,7 @@ var Arcs = {
 /* === js/70-endings.js === */
 /* ── 70-endings：S1 只做判定壳和结局页，S6 补全文本 ───────── */
 var ENDING_ORDER = ['rise','province','outpost','stay','cold','replaced',
-                    'clear','report','together','self_out'];
+                    'clear','report','together','self_out','yunzhou','struck'];
 var ENDINGS = ENDING_TEXT;
 
 /* 图鉴：跨局存，记你打出过哪些 */
@@ -8781,11 +10018,14 @@ var Endings = {
     G.flags.bossGone = G.month;
     var red = G.archive.fault.some(function(f){ return f.rule && RULES[f.rule] && RULES[f.rule].red; });
     var road = G.flags.bossRoad;
-    /* 那天晚上你说了什么，基本就是后面三年 */
-    if (road === 'follow') return Endings.trigger((G.stats.trust >= 62 && !red) ? 'rise' : 'cold');
+    /* 市长走了，云州是他的了。这一条压过别的 */
+    if (G.fac && G.fac.mayor && G.hidden.lead < 70) return Endings.trigger('yunzhou');
+    /* 书记什么也没干成，凭什么带你走：拔掉的人不够三个，跟着走也只能坐冷板凳 */
+    var fewNails = Fac.gone() < 3;
+    if (road === 'follow') return Endings.trigger((G.stats.trust >= 62 && !red && !fewNails) ? 'rise' : 'cold');
     if (road === 'stay')   return Endings.trigger(G.stats.rep >= 58 ? 'stay' : 'cold');
     if (road === 'none')   return Endings.trigger(G.stats.guanxi >= 70 ? 'province' : 'cold');
-    if (G.flags.followBoss && G.stats.trust >= 66 && !red) return Endings.trigger('rise');
+    if (G.flags.followBoss && G.stats.trust >= 66 && !red && !fewNails) return Endings.trigger('rise');
     if (G.stats.guanxi >= 72 && G.stats.rep >= 60) return Endings.trigger('province');
     Endings.trigger(G.stats.rep >= 74 ? 'stay' : 'cold');
   },
@@ -8813,6 +10053,8 @@ var Endings = {
   settle: function(){
     if (G.ending) return;
     var red = G.archive.fault.some(function(f){ return f.rule && RULES[f.rule] && RULES[f.rule].red; });
+    if (G.fac && G.fac.mayor && G.hidden.lead < 70) return Endings.trigger('yunzhou');
+    var fewNails = Fac.gone() < 3;
     if (G.flags.bossGone){
       return Endings.trigger(G.stats.rep >= 74 ? 'stay' : 'cold');
     }
@@ -8820,10 +10062,10 @@ var Endings = {
     var road = G.flags.road;
     if (road === 'province' && G.stats.guanxi >= 52) return Endings.trigger('province');
     if (road === 'outpost' && G.stats.rep >= 55) return Endings.trigger('outpost');
-    if (road === 'follow' && G.stats.trust >= 68 && !red) return Endings.trigger('rise');
+    if (road === 'follow' && G.stats.trust >= 68 && !red && !fewNails) return Endings.trigger('rise');
     /* 什么也没说过的，就看这五年手里攒下的是什么。
        都不突出的那种人最多——机关里本来就是这样 */
-    if (G.stats.trust >= 80 && !red) return Endings.trigger('rise');
+    if (G.stats.trust >= 80 && !red && !fewNails) return Endings.trigger('rise');
     if (G.stats.guanxi >= 80 && G.stats.rep >= 60) return Endings.trigger('province');
     if (G.stats.rep >= 74) return Endings.trigger('outpost');
     Endings.trigger('stay');

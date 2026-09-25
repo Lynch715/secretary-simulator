@@ -9,6 +9,9 @@ var Meeting = {
   lean: function(it, e, id){
     var v = (e.lean && e.lean[id] != null) ? e.lean[id] : 0;
     var d = (it.eff && it.eff[id]) || 0;
+    /* 拔掉的人，坐在那个位子上的是书记提的人；换边的人，票也跟着换 */
+    if (G.fac && G.fac.pulled[id]) return 1.5 + d;
+    if (G.fac && G.fac.turned[id]) v += 2;
     /* 底线议题：好感不起作用，只有做工作能撬 */
     var def = null;
     for (var i = 0; i < NPC_DEF.length; i++) if (NPC_DEF[i].id === id) def = NPC_DEF[i];
@@ -23,6 +26,7 @@ var Meeting = {
   /* 这个人的态度你看过没有 */
   known: function(it, e, id){
     if (it.peek && it.peek[id]) return true;
+    if (G.fac && (G.fac.pulled[id] || G.fac.turned[id])) return true;
     if (!e.mats) return true;
     for (var i = 0; i < e.mats.length; i++)
       if (e.mats[i].who === id) return Dossier.hasRead(it, e.mats[i].id);

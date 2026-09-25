@@ -365,3 +365,16 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 
 /* 还没打过交道 */
 .card .l.dim{ color:var(--ink3); }
+
+/* ── 局势图 ── */
+.board{display:flex;flex-wrap:wrap;gap:6px 14px;padding:12px 14px 14px}
+.bd{display:inline-flex;flex-direction:column;font-size:14px;color:var(--ink);padding:2px 0 3px;border-bottom:2px solid var(--ink);line-height:1.2}
+.bd i{font-style:normal;font-size:11px;color:var(--ink3);margin-top:2px}
+.bd-mayor{border-bottom-color:var(--red);color:var(--red)}
+.bd-mayor i{color:#B5705F}
+.bd-unk{border-bottom-style:dashed;border-bottom-color:#A2957F;color:var(--ink2)}
+.bd-none{border-bottom-color:transparent;color:var(--ink3)}
+.bd-gone{text-decoration:line-through;color:var(--ink3);border-bottom-color:transparent}
+.bd-gone i{text-decoration:none}
+.bd-turned{border-bottom-color:var(--ink);color:var(--ink)}
+.bd-turned::after{content:'';display:block;height:2px;margin-top:-2px;background:linear-gradient(90deg,var(--red),var(--ink))}

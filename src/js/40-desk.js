@@ -47,6 +47,24 @@ var Desk = {
     for (var k in req){
       if (k === 'money'){ if (!Private.can(req[k])) return false; continue; }
       if (k === 'flag'){ if (!G.flags[req[k]]) return false; continue; }
+      /* 某个人对你的好感 */
+      if (k === 'fav'){
+        var okf = true;
+        for (var who in req.fav){
+          var fv = (G.npc && G.npc[who]) ? G.npc[who].fav : (G.qx && G.qx[who]) ? G.qx[who].fav : (G.pool && G.pool[who]) ? G.pool[who].fav : 0;
+          if (fv < req.fav[who]) okf = false;
+        }
+        if (!okf) return false;
+        continue;
+      }
+      /* 手里有几样能拿出去的东西 */
+      if (k === 'keys'){
+        var ks = {};
+        G.archive.mats.forEach(function(m){ if (m.k) ks[m.k] = 1; });
+        var kn = 0; for (var kx in ks) kn++;
+        if (kn < req[k]) return false;
+        continue;
+      }
       if (k === 'keep'){
         var want = req[k], got = false;
         G.archive.mats.forEach(function(m){ if (m.t.indexOf(want) >= 0) got = true; });
@@ -139,6 +157,7 @@ var Desk = {
   /* 这条路要花几天。交给小周跑的不占你的天数，见不得人的事他跑不了 */
   costFor: function(it, e, o){
     if (e.free) return 0;
+    if (o.facWay === 'none') return 0;          /* 放回抽屉不花时间 */
     if (it.deleg && !o.rule) return 0;
     return costOf(dayOf(o)) + (it.held ? 1 : 0);
   },
@@ -214,6 +233,7 @@ var Desk = {
       it.res.t = it.res.t + '　——　' + tl.yes + ' 比 ' + tl.no + '，' + (tl.pass ? '过了' : '没过');
       logAdd(e.title + '：' + tl.yes + ' 比 ' + tl.no);
     }
+    Fac.onChoose(e, o, it);
     if (!G.chose) G.chose = {};
     if (!e.own && !e.echo && !o.call) G.chose[e.arc ? e.arc + '.' + e.stage : e.id] = { i: idx, m: G.month };
     G._projUp = null;
@@ -348,6 +368,7 @@ var Desk = {
     Pool.drift();
     Msz.tick();
     Private.tick();
+    Fac.tick();
     Proj.tick();
     var year = (G.month > 1 && (G.month - 1) % 12 === 0) ? Proj.yearEnd() : null;
     Rank.tick();

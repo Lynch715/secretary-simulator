@@ -1,6 +1,6 @@
 /* ── 70-endings：S1 只做判定壳和结局页，S6 补全文本 ───────── */
 var ENDING_ORDER = ['rise','province','outpost','stay','cold','replaced',
-                    'clear','report','together','self_out'];
+                    'clear','report','together','self_out','yunzhou','struck'];
 var ENDINGS = ENDING_TEXT;
 
 /* 图鉴：跨局存，记你打出过哪些 */
@@ -51,11 +51,14 @@ var Endings = {
     G.flags.bossGone = G.month;
     var red = G.archive.fault.some(function(f){ return f.rule && RULES[f.rule] && RULES[f.rule].red; });
     var road = G.flags.bossRoad;
-    /* 那天晚上你说了什么，基本就是后面三年 */
-    if (road === 'follow') return Endings.trigger((G.stats.trust >= 62 && !red) ? 'rise' : 'cold');
+    /* 市长走了，云州是他的了。这一条压过别的 */
+    if (G.fac && G.fac.mayor && G.hidden.lead < 70) return Endings.trigger('yunzhou');
+    /* 书记什么也没干成，凭什么带你走：拔掉的人不够三个，跟着走也只能坐冷板凳 */
+    var fewNails = Fac.gone() < 3;
+    if (road === 'follow') return Endings.trigger((G.stats.trust >= 62 && !red && !fewNails) ? 'rise' : 'cold');
     if (road === 'stay')   return Endings.trigger(G.stats.rep >= 58 ? 'stay' : 'cold');
     if (road === 'none')   return Endings.trigger(G.stats.guanxi >= 70 ? 'province' : 'cold');
-    if (G.flags.followBoss && G.stats.trust >= 66 && !red) return Endings.trigger('rise');
+    if (G.flags.followBoss && G.stats.trust >= 66 && !red && !fewNails) return Endings.trigger('rise');
     if (G.stats.guanxi >= 72 && G.stats.rep >= 60) return Endings.trigger('province');
     Endings.trigger(G.stats.rep >= 74 ? 'stay' : 'cold');
   },
@@ -83,6 +86,8 @@ var Endings = {
   settle: function(){
     if (G.ending) return;
     var red = G.archive.fault.some(function(f){ return f.rule && RULES[f.rule] && RULES[f.rule].red; });
+    if (G.fac && G.fac.mayor && G.hidden.lead < 70) return Endings.trigger('yunzhou');
+    var fewNails = Fac.gone() < 3;
     if (G.flags.bossGone){
       return Endings.trigger(G.stats.rep >= 74 ? 'stay' : 'cold');
     }
@@ -90,10 +95,10 @@ var Endings = {
     var road = G.flags.road;
     if (road === 'province' && G.stats.guanxi >= 52) return Endings.trigger('province');
     if (road === 'outpost' && G.stats.rep >= 55) return Endings.trigger('outpost');
-    if (road === 'follow' && G.stats.trust >= 68 && !red) return Endings.trigger('rise');
+    if (road === 'follow' && G.stats.trust >= 68 && !red && !fewNails) return Endings.trigger('rise');
     /* 什么也没说过的，就看这五年手里攒下的是什么。
        都不突出的那种人最多——机关里本来就是这样 */
-    if (G.stats.trust >= 80 && !red) return Endings.trigger('rise');
+    if (G.stats.trust >= 80 && !red && !fewNails) return Endings.trigger('rise');
     if (G.stats.guanxi >= 80 && G.stats.rep >= 60) return Endings.trigger('province');
     if (G.stats.rep >= 74) return Endings.trigger('outpost');
     Endings.trigger('stay');

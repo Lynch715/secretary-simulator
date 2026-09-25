@@ -13,6 +13,9 @@
   python3 art.py            只处理 assets/ 里还没有的
   python3 art.py --force    全部重做
   python3 art.py p_jiwei    只做这一个
+  python3 art.py --sheet assets/原图/线阵1.png 3x2 p_mayor,p_vice1,p_depsec,p_jiwei,p_zuzhi,p_zhengfa
+                            把一张「人物线阵图」按 3 列 2 行切开，每格裁成头像，按顺序落到 assets/p_*.webp
+                            （v1.7 起头像一律用线阵图出：一张图里六个人，模型才肯把他们画得不一样）
 """
 import sys, os, glob
 import numpy as np
@@ -90,7 +93,39 @@ def do_face(im, size, tier):
            (tier, 'scale %.2f  头顶留白 %.0f%%' % (scale, head * 100))
 
 
+def do_sheet(path, grid, names):
+    """线阵图切格：每格先去掉四周纯底，再按 3:4 以内容为中心取景，缩到头像尺寸。
+    也把每格的原图存进 assets/原图/<name>.source.png，以后单张返修还能走老流程"""
+    cols, rows = [int(x) for x in grid.lower().split('x')]
+    if len(names) != cols * rows:
+        print('格数 %d，名字 %d 个，对不上' % (cols * rows, len(names))); return
+    im = Image.open(path).convert('RGB')
+    W, H = im.size
+    cw, ch = W // cols, H // rows
+    tw, th = SIZE['p']
+    for i, name in enumerate(names):
+        x0, y0 = (i % cols) * cw, (i // cols) * ch
+        cell = im.crop((x0, y0, x0 + cw, y0 + ch))
+        t, b = live_rows(cell, 4.0); l, r = live_cols(cell, 4.0)
+        t = max(0, t - 8); b = min(ch, b + 8); l = max(0, l - 8); r = min(cw, r + 8)
+        cell = cell.crop((l, t, r, b))
+        w, h = cell.size
+        # 3:4，以内容为中心；头顶那一侧不裁
+        if w / h > tw / th:
+            nw = int(h * tw / th); cx = w // 2
+            cell = cell.crop((max(0, cx - nw // 2), 0, max(0, cx - nw // 2) + nw, h))
+        else:
+            nh = int(w * th / tw)
+            cell = cell.crop((0, 0, w, nh))
+        cell.save(os.path.join(SRC, name + '.source.png'))
+        cell.resize((tw, th), Image.LANCZOS).save(os.path.join(OUT, name + '.webp'), 'WEBP', **Q)
+        print('%-22s 第 %d 格  %dx%d → %dx%d' % (name + '.webp', i + 1, w, h, tw, th))
+
+
 def main():
+    if '--sheet' in sys.argv:
+        i = sys.argv.index('--sheet')
+        do_sheet(sys.argv[i + 1], sys.argv[i + 2], sys.argv[i + 3].split(',')); return
     only = [a for a in sys.argv[1:] if not a.startswith('-')]
     force = '--force' in sys.argv
     srcs = sorted(glob.glob(os.path.join(SRC, '*.source.png')))

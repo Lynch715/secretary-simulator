@@ -1,5 +1,5 @@
 /* ── 00-core：状态、存档、随机、工具 ───────────────────── */
-var VER = '1.4.0';
+var VER = '1.5.0';
 var SAVE_KEY = 'dami_save_v1';
 var START_Y = 2027, TERM = 60, WORKDAYS = 20;
 
@@ -80,6 +80,7 @@ function newGame(opt){
   };
   Pool.init();
   Private.init();
+  Fac.init();
   G.days = Desk.budget();
   Events.fill();
   return G;

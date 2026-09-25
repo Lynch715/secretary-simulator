@@ -34,6 +34,7 @@ var Rank = {
     if (G.stats.trust < nx.trust) return '年限够了，事也办了不少。报不报，要看书记那句话';
     if (G.stats.rep < nx.rep) return '书记点了头。组织部下去摸了一圈，回来说再看看';
     if (Rank.recentFault() > 4) return '材料报上去了，卡在考察那一关。这一年你名下的事有点多';
+    if (nx.k === 3 && Fac.remain() >= 5) return '佟建民说再等等。他没说等什么，你知道';
     return '材料已经报上去了';
   },
 
@@ -45,6 +46,7 @@ var Rank = {
     if (G.archive.merit.length < nx.merit) return;
     if (G.stats.trust < nx.trust || G.stats.rep < nx.rep) return;
     if (Rank.recentFault() > 4) return;
+    if (nx.k === 3 && Fac.remain() >= 5) return;
     G.rank = nx.k;
     G.rankAt[nx.k] = G.month;
     G.promo = nx.k;                       /* 界面看到这个就弹任命文件 */

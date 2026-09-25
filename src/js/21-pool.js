@@ -17,6 +17,9 @@ var Pool = {
   side: function(k){
     if (k === 'me') return { n:'你', p:'市委办' };
     if (k === 'boss') return { n:'周维安', p:'市委书记' };
+    if (G && G.fac && G.fac.pulled[k] && typeof NAIL !== 'undefined' && NAIL[k]){
+      var sc = Fac.succ(k); if (sc && sc.n !== '——') return sc;
+    }
     for (var i = 0; i < NPC_DEF.length; i++)
       if (NPC_DEF[i].id === k) return { n:NPC_DEF[i].n, p:NPC_DEF[i].p };
     for (var j = 0; j < QX_DEF.length; j++)
@@ -67,6 +70,7 @@ var Pool = {
       Pool.promote('cg_quzhang', '城关区委书记');
       G.qxHead = G.qxHead || {};
       G.qxHead.chengguan = '郑大林';
+      Fac.pull('chengguan', 'hr', true);
     }
     if (G.flags.hr_qin) Pool.promote('bs_fuxian', '白沙县委书记');
     if (G.flags.hr_self){

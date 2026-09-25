@@ -110,6 +110,14 @@ function playOne(ctx, seed, style){
   STAT.got += G().cardGot || 0; STAT.used += G().cardUsed || 0;
   STAT.praise += G().flags.praised || 0; STAT.clean += G().flags.cleanAll || 0;
   STAT.trust += G().stats.trust; STAT.even += G().owe.length; STAT.n++;
+  const fac = G().fac || {};
+  STAT.pulled += ctx.Fac.pulledN(); STAT.turned += ctx.Fac.turnedN();
+  if (fac.mayor) STAT.mayor++;
+  const hidKnown = (fac.hid || []).filter(h => fac.mark && fac.mark[h]).length;
+  STAT.hidKnown += hidKnown; STAT.clr += Object.keys(fac.clr || {}).length;
+  STAT.heatMax = Math.max(STAT.heatMax, fac.heat || 0);
+  ['jw','hr','cw','gray'].forEach(w => { Object.keys(fac.pulled || {}).forEach(k => { if (fac.pulled[k].way === w) STAT.ways[w] = (STAT.ways[w] || 0) + 1; }); });
+  STAT.fb += Object.keys(fac.fb || {}).filter(k => fac.fb[k]).length;
   return { end: G().ending, month: G().month, over: overCount / Math.max(1, months),
            doneAvg: doneTotal / Math.max(1, months), merit: G().archive.merit.length,
            fault: G().archive.fault.length, lead: G().hidden.lead,
@@ -117,7 +125,8 @@ function playOne(ctx, seed, style){
 }
 
 let STAT;
-function resetStat(){ STAT = { calls:0, mplay:0, tell:0, promo:[], rank:{}, city:[], echo:0, pave:0, proj:0, got:0, used:0, praise:0, clean:0, trust:0, even:0, n:0 }; }
+function resetStat(){ STAT = { calls:0, mplay:0, tell:0, promo:[], rank:{}, city:[], echo:0, pave:0, proj:0, got:0, used:0, praise:0, clean:0, trust:0, even:0, n:0,
+  pulled:0, turned:0, mayor:0, hidKnown:0, clr:0, heatMax:0, ways:{}, fb:0 }; }
 resetStat();
 const N = parseInt(process.argv[2] || '200', 10);
 const ctx = mkCtx();
@@ -136,7 +145,8 @@ const ctx = mkCtx();
   var extra = '   牌：到手 ' + f(STAT.got) + ' 用掉 ' + f(STAT.used) + '（电话 ' + f(STAT.calls) + ' 会上 ' + f(STAT.mplay) + ' 提一句 ' + f(STAT.tell) + '）\n' +
     '   被夸 ' + f(STAT.praise) + ' 回　桌面清空 ' + f(STAT.clean) + ' 个月　局末信任 ' + f(STAT.trust) + '\n' +
     '   省里排名（逐年均值）' + STAT.city.map(a => (a.reduce((x,y)=>x+y,0)/a.length).toFixed(1)).join(' → ') + '　局末三件事均值 ' + f(STAT.proj) + '　回响 ' + f(STAT.echo) + '　铺路 ' + f(STAT.pave) + '\n' +
-    '   职级分布 ' + JSON.stringify(STAT.rank) + '　' + pmS;
+    '   职级分布 ' + JSON.stringify(STAT.rank) + '　' + pmS + '\n' +
+    '   拔钉子：拔掉 ' + f(STAT.pulled) + ' 换边 ' + f(STAT.turned) + '　市长走掉的局 ' + (STAT.mayor*100/n).toFixed(0) + '%　暗桩认出 ' + f(STAT.hidKnown) + '/2　查清白 ' + f(STAT.clr) + '　路子 ' + JSON.stringify(STAT.ways) + '　反扑阈值 ' + f(STAT.fb);
   const label = { clean:'从不伸手', rare:'偶尔伸手', mid:'随便点', greedy:'见灰就选' }[style];
   console.log('\n【' + label + '】' + N + ' 局，没有报错');
   Object.keys(tally).sort((a,b) => tally[b]-tally[a]).forEach(k => {
@@ -159,7 +169,7 @@ const ctx = mkCtx();
     f(c4.G);
   }
   const cases = [
-    ['rise',     g => { g.flags.road='follow'; g.stats.trust=80; },            () => c4.Endings.settle()],
+    ['rise',     g => { g.flags.road='follow'; g.stats.trust=80; c4.Fac.init(); g.fac.pulled={a:1,b:1,c:1}; },            () => c4.Endings.settle()],
     ['province', g => { g.flags.road='province'; g.stats.guanxi=70; },         () => c4.Endings.settle()],
     ['outpost',  g => { g.flags.road='outpost'; g.stats.rep=60; },             () => c4.Endings.settle()],
     ['stay',     g => { g.stats.trust=50; g.stats.rep=40; g.stats.guanxi=30; },() => c4.Endings.settle()],
@@ -169,7 +179,9 @@ const ctx = mkCtx();
     ['together', g => { g.hidden.bossRisk=75;
                         g.archive.fault.push({m:10,t:'x',rule:'gift'}); },     () => c4.Endings.patrol()],
     ['self_out', g => { g.hidden.lead=75; },                                   () => c4.Endings.patrol()],
-    ['report',   g => {},                                                      () => c4.Endings.trigger('report')]
+    ['report',   g => {},                                                      () => c4.Endings.trigger('report')],
+    ['yunzhou',  g => { c4.Fac.init(); g.fac.mayor = 'move'; },                 () => c4.Endings.settle()],
+    ['struck',   g => { g.hidden.lead=60; },     () => { const it = { res:{} }; c4.Fac.strike(it, {}); }]
   ];
   const bad = [];
   cases.forEach(function(c){
@@ -178,7 +190,7 @@ const ctx = mkCtx();
     if (c4.G.ending !== c[0]) bad.push(c[0] + ' → ' + (c4.G.ending || '没判出来'));
   });
   if (bad.length) throw new Error('结局判定不对：' + bad.join('；'));
-  console.log('十个结局都判得出来');
+  console.log('十二个结局都判得出来');
 }
 
 /* 五个页签都渲染一遍：这类错 node --check 查不出来 */

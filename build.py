@@ -34,6 +34,7 @@ def main():
     parts.append('<link rel="manifest" href="site.webmanifest">')
     parts.append('<meta name="apple-mobile-web-app-title" content="%s">' % TITLE)
     parts.append('<meta name="apple-mobile-web-app-capable" content="yes">')
+    parts.append('<meta name="apple-mobile-web-app-status-bar-style" content="default">')
     parts.append('<meta name="mobile-web-app-capable" content="yes">')
     parts.append('<style>')
     for n, s in css:

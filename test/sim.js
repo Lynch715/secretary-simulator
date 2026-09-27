@@ -1,226 +1,137 @@
-/* 无头跑局：node test/sim.js [局数]  —— 检查 S1 骨架能不能从第1月点到第60月 */
-const fs = require('fs'), path = require('path'), vm = require('vm');
-const ROOT = path.join(__dirname, '..');
-function readDir(sub, ext){
-  const d = path.join(ROOT, 'src', sub);
-  return fs.readdirSync(d).filter(n => n.endsWith(ext) && !n.startsWith('_')).sort()
-    .map(n => fs.readFileSync(path.join(d, n), 'utf8'));
-}
-const code = readDir('data', '.js').concat(readDir('js', '.js')).join('\n');
-
-function mkCtx(){
-  const store = {};
-  const ctx = {
-    console,
-    localStorage: {
-      getItem: k => (k in store ? store[k] : null),
-      setItem: (k, v) => { store[k] = String(v); },
-      removeItem: k => { delete store[k]; }
-    },
-    document: { querySelector: () => null, querySelectorAll: () => [], createElement: () => ({ style:{}, click(){}, appendChild(){}, addEventListener(){} }), body:{ appendChild(){} } },
-    setTimeout: () => 0, Blob: function(){}, URL: { createObjectURL: () => '', revokeObjectURL(){} },
-    FileReader: function(){}
-  };
-  vm.createContext(ctx);
-  vm.runInContext('"use strict";\n' + code, ctx, { filename: 'bundle.js' });
-  ctx.UI.render = () => {};
-  ctx.UI.toast = () => {};
-  return ctx;
-}
-
-/* 四种打法：clean 从不伸手 / rare 偶尔伸手（一成）/ mid 随机 / greedy 有灰的就选灰的。
-   rare 最接近一个真人：五年里伸过七八回手 */
-function chooseIdx(ctx, e, style, it){
-  const opts = ctx.Desk.optsOf(it, e);
-  /* 手里的人情对得上，多半会打这个电话 */
-  const ci = opts.findIndex(o => o.call);
-  if (ci >= 0 && Math.random() < 0.7){ STAT.calls++; return ci; }
-  const ok = e.opts.map((o,i)=>
-    (ctx.Desk.meet(o.req) && (!o.reqFind || ctx.Dossier.lit(it, e, o.reqFind))) ? i : -1
-  ).filter(i=>i>=0);
-  if (!ok.length) return -1;
-  const gray = ok.filter(i=>e.opts[i].rule);
-  const white = ok.filter(i=>!e.opts[i].rule);
-  if (style === 'clean' && white.length) return white[Math.floor(Math.random()*white.length)];
-  if (style === 'greedy' && gray.length) return gray[Math.floor(Math.random()*gray.length)];
-  if (style === 'rare'){
-    if (gray.length && Math.random() < 0.10) return gray[Math.floor(Math.random()*gray.length)];
-    if (white.length) return white[Math.floor(Math.random()*white.length)];
-  }
-  return ok[Math.floor(Math.random()*ok.length)];
-}
-
-/* 排人：干净的打法不会把送礼的那位排进去 */
-function pickSlots(ctx, it, e, style){
-  const dirty = c => (c.fxIn && ((c.fxIn.clean || 0) < 0 || (c.fxIn.lead || 0) > 0));
-  const order = e.list.map((c, i) => i)
-    .sort((a, b) => {
-      const da = dirty(e.list[a]) ? 1 : 0, db = dirty(e.list[b]) ? 1 : 0;
-      return style === 'greedy' ? db - da : da - db;
-    });
-  for (let n = 0; n < Math.min(4, order.length); n++){
-    if (style !== 'greedy' && dirty(e.list[order[n]])) break;
-    ctx.Slots.toggle(it.uid, order[n]);
-  }
-}
-
-function playOne(ctx, seed, style){
-  ctx.newGame({ seed, origin: ['xds','bgg','xz'][seed % 3] });
-  ctx.npcInit();
-  const G = () => ctx.G;
-  let guard = 0, overCount = 0, doneTotal = 0, months = 0;
-  while (!G().ending && G().month <= 80 && guard++ < 500){
-    months++;
-    // 随便办：天数够就办，随机挑一条
-    let inner = 0;
-    while (inner++ < 30){
-      const live = G().queue.filter(q => !q.done && q.due !== 'plan');
-      if (!live.length) break;
-      const it = live[Math.floor(Math.random() * live.length)];
-      const e = ctx.EV(it.id);
-      if (e.mats) e.mats.forEach(m => ctx.Dossier.read(it.uid, m.id));
-      if (e.acts) ctx.Cards.forMeeting(it, e).filter(c => c.type === 'info' || Math.random() < 0.3).forEach(c => { ctx.Cards.play(it.uid, c.id); STAT.mplay++; });
-      if (e.slot && !it.slotDone){
-        pickSlots(ctx, it, e, style);
-        ctx.Slots.confirm(it.uid);
-      }
-      const idx = chooseIdx(ctx, e, style, it);
-      if (idx < 0) break;
-      const before = G().queue.filter(q => q.done).length;
-      ctx.Desk.choose(it.uid, idx);
-      if (G().ending) break;
-      if (G().queue.filter(q => q.done).length === before) break; // 天数不够了
-    }
-    if (G().ending) break;
-    doneTotal += G().done.length;
-    overCount += G().queue.filter(q => !q.done && q.due !== 'plan').length;
-    const infos = ctx.Cards.all().filter(c => c.type === 'info');
-    if (infos.length && Math.random() < 0.35 && ctx.Cards.tell(infos[0].id)) STAT.tell++;
-    if (G().promo != null){ STAT.promo.push(G().promo + '@' + G().month); G().promo = null; }
-    const nights = ['rest','fam','ot','msz'];
-    ctx.Desk.endMonth(nights[Math.floor(Math.random() * 4)]);
-    if (G().days < 0) throw new Error('天数变负：第' + G().month + '月');
-    if (G().month > 61) throw new Error('月份没停：' + G().month);
-  }
-  if (!G().ending) throw new Error('打到 ' + G().month + ' 月还没有结局');
-  (G().rankLog||[]).forEach((x,i)=>{ (STAT.city[i]=STAT.city[i]||[]).push(x.r); });
-  STAT.echo += Object.keys(G().echoed||{}).length; STAT.pave += Object.keys(G().flags).filter(k=>k.indexOf('pave_')===0).length;
-  STAT.proj += (G().proj.oldtown+G().proj.invest+G().proj.qingchuan)/3;
-  STAT.rank[G().rank] = (STAT.rank[G().rank] || 0) + 1;
-  STAT.got += G().cardGot || 0; STAT.used += G().cardUsed || 0;
-  STAT.praise += G().flags.praised || 0; STAT.clean += G().flags.cleanAll || 0;
-  STAT.trust += G().stats.trust; STAT.even += G().owe.length; STAT.n++;
-  const fac = G().fac || {};
-  STAT.pulled += ctx.Fac.pulledN(); STAT.turned += ctx.Fac.turnedN();
-  if (fac.mayor) STAT.mayor++;
-  const hidKnown = (fac.hid || []).filter(h => fac.mark && fac.mark[h]).length;
-  STAT.hidKnown += hidKnown; STAT.clr += Object.keys(fac.clr || {}).length;
-  STAT.heatMax = Math.max(STAT.heatMax, fac.heat || 0);
-  ['jw','hr','cw','gray'].forEach(w => { Object.keys(fac.pulled || {}).forEach(k => { if (fac.pulled[k].way === w) STAT.ways[w] = (STAT.ways[w] || 0) + 1; }); });
-  STAT.fb += Object.keys(fac.fb || {}).filter(k => fac.fb[k]).length;
-  return { end: G().ending, month: G().month, over: overCount / Math.max(1, months),
-           doneAvg: doneTotal / Math.max(1, months), merit: G().archive.merit.length,
-           fault: G().archive.fault.length, lead: G().hidden.lead,
-           dark: G().hidden.dark.length, remarks: G().archive.remarks.length };
-}
-
-let STAT;
-function resetStat(){ STAT = { calls:0, mplay:0, tell:0, promo:[], rank:{}, city:[], echo:0, pave:0, proj:0, got:0, used:0, praise:0, clean:0, trust:0, even:0, n:0,
-  pulled:0, turned:0, mayor:0, hidKnown:0, clr:0, heatMax:0, ways:{}, fb:0 }; }
-resetStat();
-const N = parseInt(process.argv[2] || '200', 10);
-const ctx = mkCtx();
-(process.argv[3] ? [process.argv[3]] : ['clean','rare','mid','greedy']).forEach(style => {
-  resetStat();
-  const tally = {}; let leadHit = 0, sumRemark = 0, sumFault = 0, sumOver = 0, sumDone = 0;
-  for (let i = 0; i < N; i++){
-    const r = playOne(ctx, 1000 + i, style);
-    tally[r.end] = (tally[r.end] || 0) + 1;
-    if (r.lead >= 35) leadHit++;
-    sumRemark += r.remarks; sumFault += r.fault; sumOver += r.over; sumDone += r.doneAvg;
-  }
-  const n = STAT.n, f = x => (x / n).toFixed(1);
-  const pm = {}; STAT.promo.forEach(x => { const [k, m] = x.split('@'); (pm[k] = pm[k] || []).push(+m); });
-  const pmS = Object.keys(pm).map(k => k + '级:' + pm[k].length + '局/均第' + (pm[k].reduce((a,b)=>a+b,0)/pm[k].length).toFixed(0) + '月').join('  ');
-  var extra = '   牌：到手 ' + f(STAT.got) + ' 用掉 ' + f(STAT.used) + '（电话 ' + f(STAT.calls) + ' 会上 ' + f(STAT.mplay) + ' 提一句 ' + f(STAT.tell) + '）\n' +
-    '   被夸 ' + f(STAT.praise) + ' 回　桌面清空 ' + f(STAT.clean) + ' 个月　局末信任 ' + f(STAT.trust) + '\n' +
-    '   省里排名（逐年均值）' + STAT.city.map(a => (a.reduce((x,y)=>x+y,0)/a.length).toFixed(1)).join(' → ') + '　局末三件事均值 ' + f(STAT.proj) + '　回响 ' + f(STAT.echo) + '　铺路 ' + f(STAT.pave) + '\n' +
-    '   职级分布 ' + JSON.stringify(STAT.rank) + '　' + pmS + '\n' +
-    '   拔钉子：拔掉 ' + f(STAT.pulled) + ' 换边 ' + f(STAT.turned) + '　市长走掉的局 ' + (STAT.mayor*100/n).toFixed(0) + '%　暗桩认出 ' + f(STAT.hidKnown) + '/2　查清白 ' + f(STAT.clr) + '　路子 ' + JSON.stringify(STAT.ways) + '　反扑阈值 ' + f(STAT.fb);
-  const label = { clean:'从不伸手', rare:'偶尔伸手', mid:'随便点', greedy:'见灰就选' }[style];
-  console.log('\n【' + label + '】' + N + ' 局，没有报错');
-  Object.keys(tally).sort((a,b) => tally[b]-tally[a]).forEach(k => {
-    console.log('   ' + (ctx.ENDINGS[k] ? ctx.ENDINGS[k].n : k).padEnd(11, '　') +
-      String(tally[k]).padStart(4) + '  ' + (tally[k]*100/N).toFixed(0) + '%');
+/* 无头跑局：node test/sim.js [局数] */
+var fs = require('fs'), path = require('path'), vm = require('vm');
+var root = path.join(__dirname, '..', 'src');
+var code = '';
+['data', 'js'].forEach(function(d){
+  fs.readdirSync(path.join(root, d)).sort().forEach(function(f){
+    if (!/\.js$/.test(f) || /^(80|95)-/.test(f)) return;
+    code += fs.readFileSync(path.join(root, d, f), 'utf8') + '\n';
   });
-  console.log('   线索到 35 的局 ' + (leadHit*100/N).toFixed(0) + '%　平均过 ' +
-    (sumFault/N).toFixed(1) + ' 条');
-  console.log('   每月办掉 ' + (sumDone/N).toFixed(1) + ' 件，月末还剩 ' +
-    (sumOver/N).toFixed(1) + ' 件没办');
-  console.log(extra);
 });
+var ctx = { console: console, Math: Math, JSON: JSON, Object: Object, Date: Date };
+vm.createContext(ctx);
+vm.runInContext(code + '\nthis.api={newGame:newGame,ACTS:ACTS,Month:Month,Act:Act,Props:Props,Grip:Grip,SCENES:SCENES,P:P,shi:shi,vacancies:vacancies,own:own,tierOf:tierOf,isStanding:isStanding,POST_BY_ID:POST_BY_ID,WANT_BY_ID:WANT_BY_ID,getG:function(){return G;},camp:camp,seenCamp:seenCamp,Meeting:Meeting,BATTLES:BATTLES};', ctx);
+var A = ctx.api;
 
-/* 十个结局都得判得出来 */
-{
-  const c4 = mkCtx();
-  function setup(f){
-    c4.newGame({ seed: 1 }); c4.npcInit(); c4.Pool.init(); c4.Private.init();
-    c4.G.month = 60;
-    f(c4.G);
+function rndOf(a){ return a[Math.floor(Math.random() * a.length)]; }
+
+function play(style, seed){
+  A.newGame({ seed: seed });
+  var G = A.getG();
+  var guard = 0;
+  while (!G.ending && guard++ < 60){
+    /* 场景 */
+    var sc = A.SCENES[G.scene];
+    if (sc && !G.sceneDone){
+      var ok = sc.opts.map(function(o, i){ return (!o.req || o.req()) ? i : -1; }).filter(function(i){ return i >= 0; });
+      var pickI = ok[0];
+      if (style === 'random') pickI = rndOf(ok);
+      if (style === 'dirty'){ var g = ok.filter(function(i){ return sc.opts[i].gray; }); pickI = g.length ? g[0] : rndOf(ok); }
+      if (style === 'smart'){ pickI = ok[Math.floor(Math.random() * ok.length)]; var g2 = ok.filter(function(i){ return !sc.opts[i].gray; }); if (g2.indexOf(pickI) < 0) pickI = g2[0]; }
+      A.Month.choose(pickI);
+    }
+    var s2 = A.SCENES[G.scene2];
+    if (s2 && !G.scene2Done){
+      var ok2 = s2.opts.map(function(o, i){ return (!o.req || o.req()) ? i : -1; }).filter(function(i){ return i >= 0; });
+      var p2 = style === 'dirty' ? (ok2.filter(function(i){ return s2.opts[i].gray; })[0]) : null;
+      if (p2 == null) p2 = style === 'smart' ? ok2.filter(function(i){ return !s2.opts[i].gray; })[Math.floor(Math.random() * ok2.filter(function(i){ return !s2.opts[i].gray; }).length)] : rndOf(ok2);
+      if (p2 == null) p2 = ok2[0];
+      A.Month.choose(p2, 2);
+    }
+    if (style !== 'idle') bot(style, G);
+    A.Month.end();
   }
-  const cases = [
-    ['rise',     g => { g.flags.road='follow'; g.stats.trust=80; c4.Fac.init(); g.fac.pulled={a:1,b:1,c:1}; },            () => c4.Endings.settle()],
-    ['province', g => { g.flags.road='province'; g.stats.guanxi=70; },         () => c4.Endings.settle()],
-    ['outpost',  g => { g.flags.road='outpost'; g.stats.rep=60; },             () => c4.Endings.settle()],
-    ['stay',     g => { g.stats.trust=50; g.stats.rep=40; g.stats.guanxi=30; },() => c4.Endings.settle()],
-    ['cold',     g => { g.stats.rep=30; g.stats.trust=50; },                   () => c4.Endings.bossLeave()],
-    ['replaced', g => { g.stats.trust=20; g.flags.trustLow=2; },               () => c4.Endings.tick()],
-    ['clear',    g => { g.hidden.bossRisk=75; g.archive.coop=2; },             () => c4.Endings.patrol()],
-    ['together', g => { g.hidden.bossRisk=75;
-                        g.archive.fault.push({m:10,t:'x',rule:'gift'}); },     () => c4.Endings.patrol()],
-    ['self_out', g => { g.hidden.lead=75; },                                   () => c4.Endings.patrol()],
-    ['report',   g => {},                                                      () => c4.Endings.trigger('report')],
-    ['yunzhou',  g => { c4.Fac.init(); g.fac.mayor = 'move'; },                 () => c4.Endings.settle()],
-    ['struck',   g => { g.hidden.lead=60; },     () => { const it = { res:{} }; c4.Fac.strike(it, {}); }]
-  ];
-  const bad = [];
-  cases.forEach(function(c){
-    setup(c[1]);
-    c[2]();
-    if (c4.G.ending !== c[0]) bad.push(c[0] + ' → ' + (c4.G.ending || '没判出来'));
-  });
-  if (bad.length) throw new Error('结局判定不对：' + bad.join('；'));
-  console.log('十二个结局都判得出来');
+  return G;
 }
 
-/* 五个页签都渲染一遍：这类错 node --check 查不出来 */
-{
-  const c3 = mkCtx();
-  c3.newGame({ seed: 11 }); c3.npcInit(); c3.Pool.init();
-  for (let m = 0; m < 6; m++){
-    const live = c3.G.queue.filter(q => !q.done && q.due !== 'plan');
-    if (live.length) c3.Desk.choose(live[0].uid, 0);
-    c3.Desk.endMonth('rest');
+function bot(style, G){
+  if (style === 'random'){
+    for (var i = 0; i < 5 && G.acts > 0; i++){
+      var a = rndOf(['modi','dihua','xia','kao','hui','wa','hu','pei']);
+      var t = A.Act.targets(a); if (t.length) A.Act.run(a, rndOf(t), { hot: Math.random() < 0.3 });
+    }
+    var ks = ['talk','nom','give','grip','prov'];
+    for (var j = 0; j < 4 && A.Props.left() > 0; j++){
+      var k = rndOf(ks);
+      if (k === 'talk'){ var tt = A.Props.talkTargets(); if (tt.length) A.Props.submit('talk', rndOf(tt)); }
+      if (k === 'nom'){ var v = A.vacancies(); if (!v.length) continue; var post = rndOf(v); var ns = A.Props.nominees(post); if (ns.length) A.Props.submit('nom', rndOf(ns), post); }
+      if (k === 'give'){ var gv = A.Props.gives().filter(function(w){ return w.kind !== 'money' || G.money >= A.Props.moneyCost(w); }); if (gv.length) A.Props.submit('give', rndOf(gv).id); }
+      if (k === 'grip' && !A.Grip.busy()){ var gl = A.Grip.list().filter(function(id){ return A.Grip.ways(id).length; }); if (gl.length){ var id = rndOf(gl); A.Props.submit('grip', id, rndOf(A.Grip.ways(id)).w); } }
+      if (k === 'prov' && A.Props.canProv()) A.Props.submit('prov');
+    }
+    return;
   }
-  c3.Pool.addHeat('p_mayor_boss', 60);
-  c3.Pool.reveal('keshang');
-  c3.G.sel = (c3.G.queue[0] || {}).uid || null;
-  ['desk','ban','qx','home','file'].forEach(function(tb){
-    c3.G.tab = tb;
-    const html = c3.UI.tabBody();
-    if (typeof html !== 'string' || html.length < 10) throw new Error(tb + ' 页签渲染不出来');
-  });
-  c3.UI.stats(); c3.UI.datebar(); c3.UI.tabs(); c3.UI.docPane();
-  console.log('五个页签都能渲染');
+  /* smart / dirty */
+  var voteSoon = false;
+  for (var b in A.BATTLES){ var mo = A.BATTLES[b].mo; if (mo === G.month || mo === G.month + 1) voteSoon = true; }
+  var hr = [2,5,8,11,14,17,20,23,26,29,32,35].indexOf(G.month) >= 0;
+  var guard = 0;
+  while (G.acts > 0 && guard++ < 10){
+    var done = false;
+    if (G.heat >= 55 && A.Act.targets('hu').length){ A.Act.run('hu', 'self'); continue; }
+    if (G.acts === 3 && !G.flags.peiAt || G.flags.peiAt !== G.month && G.trust < 60){ var pt = A.Act.targets('pei'); if (pt.length){ A.Act.run('pei', rndOf(pt)); continue; } }
+    /* 知道诉求 */
+    var unk = G.stand.filter(function(id){ return id !== 'mayor' && id !== 'boss' && !A.P(id).gone && ((ctx.api.getG().people[id] && true)) && (require_w(id)); });
+    if (unk.length && Math.random() < 0.6){ A.Act.run('modi', unk[0]); continue; }
+    /* 挖 */
+    var wt = A.Act.targets('wa').filter(function(id){ return A.camp(id) === -1; });
+    if (wt.length && Math.random() < 0.55){ A.Act.run('wa', wt.indexOf('mayor') >= 0 && Math.random() < 0.5 ? 'mayor' : rndOf(wt), {}); continue; }
+    var hu = A.Act.targets('hui').filter(function(id){ return A.P(id).loyal < 45; });
+    if (hu.length){ A.Act.run('hui', hu[0]); continue; }
+    var kt = A.Act.targets('kao').filter(function(id){ return !A.P(id).post || A.P(id).by !== 'boss'; });
+    if (kt.length && Math.random() < 0.5){ A.Act.run('kao', rndOf(kt)); continue; }
+    var xt = A.Act.targets('xia');
+    A.Act.run('xia', rndOf(xt));
+  }
+  /* 拟办 */
+  var g2 = 0;
+  if (voteSoon){
+    var sw = G.stand.filter(function(id){ var s = A.P(id).side; return s > -30 && s < 25 && id !== 'mayor' && id !== 'boss'; });
+    sw.sort(function(a, b){ return A.P(b).side - A.P(a).side; });
+    for (var q = 0; q < sw.length && A.Props.left() > 0 && q < 2; q++) A.Props.submit('talk', sw[q]);
+  }
+  while (A.Props.left() > 0 && g2++ < 6){
+    if (!A.Grip.busy()){
+      var gl = A.Grip.list().filter(function(id){ return A.Grip.ways(id).length && (id === 'mayor' || A.camp(id) === -1 || A.isStanding(id)); });
+      if (gl.length){
+        var id = gl[0]; var ws = A.Grip.ways(id).map(function(w){ return w.w; });
+        var w = ws.indexOf('jw') >= 0 ? 'jw' : (style === 'dirty' && ws.indexOf('ji') >= 0 ? 'ji' : (ws.indexOf('bi') >= 0 && A.isStanding(id) ? 'bi' : (ws.indexOf('diao') >= 0 && G.prestige >= 50 ? 'diao' : null)));
+        if (w){ A.Props.submit('grip', id, w); continue; }
+      }
+    }
+    var v = A.vacancies().filter(function(p){ return !G.noms[p]; });
+    if (v.length){
+      var post = v[0];
+      var hotn = A.Props.nominees(post).filter(function(x){ return A.Props.wantedBy(x, post); });
+      if (hotn.length && Math.random() < 0.7){ A.Props.submit('nom', hotn[0], post); continue; }
+      var ns = A.Props.nominees(post).filter(function(x){ var p = A.P(x); return (p.known.side ? p.side >= 15 : p.show >= 15) && !A.Props.poGe(x, post) && p.by !== 'boss'; });
+      ns.sort(function(a, b){ return A.P(b).cap - A.P(a).cap; });
+      if (ns.length){ A.Props.submit('nom', ns[0], post); continue; }
+    }
+    var gv = A.Props.gives().filter(function(w){ return w.kind !== 'money' || G.money >= A.Props.moneyCost(w); });
+    gv = gv.filter(function(w){ return !(w.pkey === 'mayor_seat' && G.promises.some(function(x){ return x.key === 'mayor_seat'; })); });
+    if (gv.length){ A.Props.submit('give', gv[0].id); continue; }
+    if (A.Props.canProv() && (G.feud > 50 || A.shi() >= 66)){ A.Props.submit('prov'); continue; }
+    break;
+  }
 }
+function require_w(id){
+  var G = A.getG(); var ws = (ctx.PEOPLE_DEF || []).filter(function(d){ return d.id === id; })[0];
+  ws = ws && ws.wants || [];
+  return ws.some(function(w){ return !G.wk[w.id]; });
+}
+ctx.PEOPLE_DEF = vm.runInContext('PEOPLE_DEF', ctx);
 
-/* 单局细看：存档往返 */
-const c2 = mkCtx();
-c2.newGame({ seed: 7 }); c2.npcInit();
-c2.Desk.endMonth('rest');
-c2.save();
-const snapshot = JSON.stringify(c2.G);
-c2.G = null;
-if (!c2.load()) throw new Error('存档读不回来');
-if (c2.G.month !== 2) throw new Error('存档月份不对');
-console.log('存档往返 ok，第', c2.G.month, '月');
+var N = +process.argv[2] || 100;
+['idle', 'random', 'smart', 'dirty'].forEach(function(st){
+  var ends = {}, mo = 0, shiS = 0, rm = 0, err = 0, dropped = 0, won = 0;
+  for (var i = 0; i < N; i++){
+    try {
+      var G = play(st, 1000 + i);
+      ends[G.ending] = (ends[G.ending] || 0) + 1; mo += G.month; shiS += A.shi(); rm += G.removed.length; dropped += G.dropped; won += G.won;
+    } catch (e){ err++; if (err < 3) console.log(st, e.stack.split('\n').slice(0, 4).join('\n')); }
+  }
+  var wins = ['mayor_fall','mayor_gone','mayor_moved','mayor_out'].reduce(function(a, k){ return a + (ends[k] || 0); }, 0);
+  console.log('\n[' + st + '] 赢 ' + Math.round(wins / N * 100) + '%  平均月 ' + (mo / N).toFixed(1) + '  势 ' + (shiS / N).toFixed(0) + '  拿掉 ' + (rm / N).toFixed(1) + '  胜仗 ' + (won / N).toFixed(1) + '  弃子 ' + (dropped / N).toFixed(2) + '  报错 ' + err);
+  console.log('  ' + Object.keys(ends).sort().map(function(k){ return k + ' ' + Math.round(ends[k] / N * 100) + '%'; }).join('  '));
+});

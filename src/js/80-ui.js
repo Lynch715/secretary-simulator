@@ -4,7 +4,7 @@ var CAMP_CLS = { '1':'c-boss', '0':'c-mid', '-1':'c-mayor' };
 var TIER_CLS = { '2':'t2', '1':'t1', '0':'t0', '-1':'tm1', '-2':'tm2' };
 
 function face(id, cls){
-  var f = faceOf(id), p = P(id) || { n: ({ wife:'周雪', sister:'刘敏', dev_a:'赵', me: G ? G.name : '刘' })[id] || '?' };
+  var f = faceOf(id), p = P(id) || { n: ({ wife:'周雪', sister: fill('{SUR}敏'), dev_a:'赵', me: G ? G.name : '刘' })[id] || '?' };
   if (f) return '<span class="face ' + (cls || '') + '"><img src="assets/p_' + f + '.webp" alt="" onerror="this.parentNode.classList.add(\'noimg\');this.remove()"><b>' + esc(p.n.charAt(0)) + '</b></span>';
   return '<span class="face noimg ' + (cls || '') + '"><b>' + esc(p.n.charAt(0)) + '</b></span>';
 }
@@ -32,15 +32,16 @@ var UI = {
       '<div class="cover"><img src="assets/cover.webp" alt="" onerror="this.parentNode.remove()"></div>' +
       '<h2 class="gname">大　秘</h2>' +
       '<div class="tp-text"><p>书记是外省空降来的，班子里没有一个自己人。</p><p>市长在云州干了十四年。</p><p>你是书记的秘书。书记不能出面的事，你去。</p></div>' +
-      '<div class="namerow">你叫　刘 <input id="nm" maxlength="2" value="峥"></div>' +
+      '<div class="namerow">你叫 <input id="nm" maxlength="4" value="刘峥" autocomplete="off"></div><div class="namehint" id="nmh"></div>' +
       '<div class="tp-btns">' + (hasSave() ? '<button class="btn red" data-go="cont">接着干</button>' : '') +
       '<button class="btn ' + (hasSave() ? '' : 'red') + '" data-go="new">到任</button>' +
       '<label class="btn ghost">导入存档<input type="file" id="imp" accept=".json" hidden></label></div>' +
       (n ? '<div class="tp-dex">打出过的结局：' + n + ' / ' + Object.keys(ENDINGS).length + '</div>' : '') +
       '</div>';
     on($('[data-go="new"]'), 'click', function(){
-      var nm = ($('#nm').value || '峥').replace(/\s/g, '').slice(0, 2) || '峥';
-      newGame({ name: '刘' + nm }); save(); UI.render();
+      var nm = ($('#nm').value || '').replace(/[^\u4e00-\u9fa5]/g, '').slice(0, 4);
+      if (nm.length < 2){ $('#nmh').textContent = '两到四个汉字'; return; }
+      newGame({ name: nm }); save(); UI.render();
     });
     on($('[data-go="cont"]'), 'click', function(){ if (load()) UI.render(); });
     on($('#imp'), 'change', function(e){ var f = e.target.files[0]; if (f) importSave(f, function(ok){ if (ok) UI.render(); }); });
@@ -128,7 +129,7 @@ var UI = {
     var txt = sc.textFn ? sc.textFn() : sc.text;
     var h = '<div class="panel doc' + (slot === 2 ? ' side' : '') + '">' + banner(slot === 2 ? null : sc.img) + '<div class="docin">' +
       (sc.who ? face(sc.who, 'docface') : '') +
-      '<div class="no">' + esc(label) + '</div><h2>' + esc(sc.title) + '</h2>' +
+      '<div class="no">' + esc(label) + '</div><h2>' + esc(fill(sc.title)) + '</h2>' +
       '<div class="prose">' + paras(txt) + '</div>';
     var key = slot === 2 ? 'data-opt2' : 'data-opt';
     if (!done){
@@ -443,7 +444,7 @@ var UI = {
     UI.root.innerHTML = '<div class="endpage"><div class="letterhead"><h1>云州市委办公室</h1><div class="rule"></div><div class="rule2"></div></div>' +
       (e.img ? '<div class="endimg"><img src="assets/' + e.img + '.webp" alt="" onerror="this.parentNode.remove()"></div>' : '') +
       '<div class="docno">云委办〔' + (START_Y + Math.floor((G.month - 1) / 12)) + '〕结字</div><h2>' + esc(e.n) + '</h2>' +
-      '<div class="prose">' + paras(e.t) + (coda ? '<p>' + esc(coda) + '</p>' : '') + '<p class="after">' + esc(e.after) + '</p></div>' +
+      '<div class="prose">' + paras(e.t) + (coda ? '<p>' + esc(coda) + '</p>' : '') + '<p class="after">' + esc(fill(e.after)) + '</p></div>' +
       '<div class="panel"><h3>这三年</h3><div class="flist">' +
       '<div>第 ' + G.month + ' 个月　赢了 ' + G.won + ' 仗，输了 ' + G.lost + ' 仗</div>' +
       '<div>拿掉的人：' + (removed.length ? removed.map(function(r){ return esc(pn(r.id)); }).join('、') : '—') + '</div>' +

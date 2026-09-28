@@ -203,7 +203,7 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 .gname{font-family:var(--song);font-size:40px;text-align:center;margin:18px 0 8px;letter-spacing:.2em}
 .tp-text p{font-family:var(--song);text-align:center;margin:4px 0;color:var(--ink2)}
 .namerow{text-align:center;font-family:var(--song);font-size:18px;margin:22px 0}
-.namerow input{width:3.2em;font-family:var(--song);font-size:18px;border:0;border-bottom:1px solid var(--ink);background:none;text-align:center;padding:2px}
+.namerow input{width:5em;font-family:var(--song);font-size:18px;border:0;border-bottom:1px solid var(--ink);background:none;text-align:center;padding:2px}
 .tp-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0}
 .tp-dex,.tp-foot{text-align:center;font-size:13px;color:var(--ink3);margin-top:8px}
 .tp-foot a{color:var(--ink3)}
@@ -317,13 +317,14 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 .tile.op b em{font-style:normal;font-size:10px;color:var(--red);border:1px solid var(--red);padding:0 3px;margin-left:4px;vertical-align:2px}
 .tile.op.gray{border-left:3px solid var(--red)}
 @media (max-width:480px){ .deptbox .tiles{grid-template-columns:1fr 1fr} }
+.namehint{text-align:center;color:var(--red);font-size:13px;min-height:18px;margin-top:-12px}
 
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-/* 大秘 build 2026-09-28 03:27 */
+/* 大秘 build 2026-09-28 06:09 */
 "use strict";
 /* === data/d10-people.js === */
 /* ── 人：常委十一个 + 干部池。
@@ -631,7 +632,7 @@ var SCENES = {
 
 /* ════ 第 1 个月 ════ */
 s_open: { title:'到任', img:'s_car', who:'boss',
-  text:'周维安到云州那天下着小雨。\n车从高速口下来，他一路没说话，看着窗外。过城关区那座老桥的时候，他忽然问你：「这桥哪年修的？」\n你愣了一下。「八几年，具体的我回去查。」\n「不用查。」他把车窗摇下一条缝，「桥墩上有字。」\n你扭头去看，车已经开过去了。\n市委大院门口站了一排人。陈立群站在最前面，伞没打，头发上挂着一层细水珠。他先伸的手。\n「周书记，一路辛苦。云州这个天，算是给你接风了。」\n「陈市长客气。」周维安握着他的手没松，「雨不大，正好醒醒脑子。」\n两个人都笑了。后面那一排人也跟着笑，笑声停得很齐。\n晚上九点，你把第二天的日程送到他房间。他在看云州去年的财政决算，眼镜推在额头上。\n「小刘。」他没抬头，「今天门口那一排，你认得几个？」\n「都认得。」\n「那你说说，谁的伞是自己打的。」\n你想了一会儿。高振邦的伞是秘书举着的。韩树声没带伞，站在陈立群身后半步，陪着一起淋。吴敬之的伞最大，一直往书记这边偏。\n你说了。他点点头，把决算翻过一页。\n「明天开始，你替我记个本子。」',
+  text:'周维安到云州那天下着小雨。\n车从高速口下来，他一路没说话，看着窗外。过城关区那座老桥的时候，他忽然问你：「这桥哪年修的？」\n你愣了一下。「八几年，具体的我回去查。」\n「不用查。」他把车窗摇下一条缝，「桥墩上有字。」\n你扭头去看，车已经开过去了。\n市委大院门口站了一排人。陈立群站在最前面，伞没打，头发上挂着一层细水珠。他先伸的手。\n「周书记，一路辛苦。云州这个天，算是给你接风了。」\n「陈市长客气。」周维安握着他的手没松，「雨不大，正好醒醒脑子。」\n两个人都笑了。后面那一排人也跟着笑，笑声停得很齐。\n晚上九点，你把第二天的日程送到他房间。他在看云州去年的财政决算，眼镜推在额头上。\n「小{SUR}。」他没抬头，「今天门口那一排，你认得几个？」\n「都认得。」\n「那你说说，谁的伞是自己打的。」\n你想了一会儿。高振邦的伞是秘书举着的。韩树声没带伞，站在陈立群身后半步，陪着一起淋。吴敬之的伞最大，一直往书记这边偏。\n你说了。他点点头，把决算翻过一页。\n「明天开始，你替我记个本子。」',
   opts:[
     { t:'「记什么？」', fx:{ trust:1 }, res:'「记谁跟谁站在一起。」他说，「过三个月，你再拿出来看。」' },
     { t:'点头，什么也没问', fx:{ trust:3 }, res:'他看了你一眼，接着看他的决算。你出门的时候，他说了一句：「门带上。」' },
@@ -640,19 +641,19 @@ s_open: { title:'到任', img:'s_car', who:'boss',
 
 /* ════ 第一仗：预算 ════ */
 b1_rise: { title:'第一份预算', img:'s_office', who:'vice1', battle:'b1',
-  text:'高振邦的办公室在市政府五楼，朝南，一整面墙的书，大半没拆塑封。\n他亲手给你泡茶，茶叶放了小半杯。\n「周书记那三件事，我都支持。」他把杯子推过来，「旧改、招商、化工园，哪一件不是云州该办的？」\n「那预算里……」\n「预算是预算。」他坐回去，「盘子就这么大。小刘，你是笔杆子出身，你算算。旧改要四个亿，今年挤出一个半，已经是把二中的扩建往后推了。你让我怎么跟方部长交代？」\n说到「方部长」三个字，他看着你。\n你听明白了。二中是方静仪爱人管的那一片。旧改的钱多一分，二中就少一分，到时候在常委会上替二中说话的，不会是高振邦。\n他站起来送你，手搭在你肩上，一直送到电梯口。\n「替我向周书记问好。」电梯门关上之前，他说，「周书记刚到云州，情况还要慢慢熟悉。我们做具体工作的，多担待一些。」',
+  text:'高振邦的办公室在市政府五楼，朝南，一整面墙的书，大半没拆塑封。\n他亲手给你泡茶，茶叶放了小半杯。\n「周书记那三件事，我都支持。」他把杯子推过来，「旧改、招商、化工园，哪一件不是云州该办的？」\n「那预算里……」\n「预算是预算。」他坐回去，「盘子就这么大。小{SUR}，你是笔杆子出身，你算算。旧改要四个亿，今年挤出一个半，已经是把二中的扩建往后推了。你让我怎么跟方部长交代？」\n说到「方部长」三个字，他看着你。\n你听明白了。二中是方静仪爱人管的那一片。旧改的钱多一分，二中就少一分，到时候在常委会上替二中说话的，不会是高振邦。\n他站起来送你，手搭在你肩上，一直送到电梯口。\n「替我向周书记问好。」电梯门关上之前，他说，「周书记刚到云州，情况还要慢慢熟悉。我们做具体工作的，多担待一些。」',
   opts:[
     { t:'「高市长考虑得周全，我回去跟书记汇报。」', fx:{ side:{ vice1:2 } },
       res:'书记听完只问了一句：「他提没提二中？」你说提了。书记没再问。' },
     { t:'回去把「方部长」那句原样说给书记听', fx:{ trust:3, reveal:['fang_hus'] },
       res:'书记把笔帽扣上了。「方部长。」他重复了一遍，「他倒是会找人。」' },
     { t:'先去宣传部坐一坐，看方静仪知不知道', fx:{ side:{ xuanchuan:8 }, reveal:['fang_hus'], bmod:{ b1:{ xuanchuan:10 } } },
-      res:'方静仪不知道。她听完，拧开保温杯喝了一口，半天没说话。\n「二中那边，我一直以为是住建卡着。」她把杯子放下，「谢谢你啊，小刘。」\n那一声「小刘」，她叫得比平时慢。' },
+      res:'方静仪不知道。她听完，拧开保温杯喝了一口，半天没说话。\n「二中那边，我一直以为是住建卡着。」她把杯子放下，「谢谢你啊，小{SUR}。」\n那一声「小{SUR}」，她叫得比平时慢。' },
     { t:'找财政局预算科要一份二中扩建的原始表', req:function(){ return own('caizheng') || P('ouym').met; },
       no:'财政局那边，你现在一个说得上话的人也没有',
       fx:{ grip:{ vice1:2 }, bmod:{ b1:{ xuanchuan:12 } }, heat:2 },
       fn:function(){ if (G.moles.indexOf('ouym') >= 0){ G.bmods.b1 = G.bmods.b1 || {}; G.bmods.b1.tongzhan = (G.bmods.b1.tongzhan || 0) - 10; } },
-      res:'表是欧阳明发过来的，深夜十一点。二中扩建那一栏，高振邦报上去的数，是施工方预算的两倍。\n你回了个谢谢。他秒回：「刘秘书客气，以后常联系。」' }
+      res:'表是欧阳明发过来的，深夜十一点。二中扩建那一栏，高振邦报上去的数，是施工方预算的两倍。\n你回了个谢谢。他秒回：「{SUR}秘书客气，以后常联系。」' }
   ] },
 
 b1_fight: { title:'发言提纲', img:'s_night', who:'boss', battle:'b1',
@@ -670,7 +671,7 @@ b1_fight: { title:'发言提纲', img:'s_night', who:'boss', battle:'b1',
 /* ════ 第二仗：公安局长 ════ */
 b2_rise: { title:'公安局长', img:'s_mishu', who:'zhengfa', battle:'b2',
   fn:function(){ var h = holder('gongan'); if (h && h === 'gongan'){ P('gongan').gone = 'up'; vacate('gongan'); } G.mnoms.gongan = 'guozc'; P('guozc').met = true; },
-  text:'童大勇调省公安厅，任命文件还没到，韩树声已经在走廊里跟人握手了。\n「老童走了，公安这一摊得有人接。」他在楼梯口拦住你，嗓门大得半层楼都听得见，「振川跟了我十五年，破案子是一把好手。小刘，你跟周书记说一声，这事就跟抓人一样，得快。」\n郭振川这个名字，你在书记桌上的材料里见过一次。那是一份信访件，被人用铅笔划掉了。',
+  text:'童大勇调省公安厅，任命文件还没到，韩树声已经在走廊里跟人握手了。\n「老童走了，公安这一摊得有人接。」他在楼梯口拦住你，嗓门大得半层楼都听得见，「振川跟了我十五年，破案子是一把好手。小{SUR}，你跟周书记说一声，这事就跟抓人一样，得快。」\n郭振川这个名字，你在书记桌上的材料里见过一次。那是一份信访件，被人用铅笔划掉了。',
   opts:[
     { t:'「韩书记的意思，我一定带到。」', fx:{ side:{ zhengfa:4 } },
       res:'韩树声拍了拍你的肩膀，拍得很重。' },
@@ -704,10 +705,10 @@ b3_rise: { title:'老城', img:'s_petition', who:'chengguan', battle:'b3',
   ] },
 
 b3_fight: { title:'两家开发商', img:'s_hotel', who:'dev_a', battle:'b3',
-  text:'两家开发商，一个上午，一个下午。\n上午来的是鼎盛的赵总，带着规划图，讲了四十分钟容积率。走的时候他把一个纸袋留在了沙发边上，说是老家的茶。\n下午来的是华茂的钱总，没带图，也没带茶。他只说了一句话：\n「刘秘书，城关那块地的评估报告，你们看到的是第二版。第一版在卢局长那儿。」',
+  text:'两家开发商，一个上午，一个下午。\n上午来的是鼎盛的赵总，带着规划图，讲了四十分钟容积率。走的时候他把一个纸袋留在了沙发边上，说是老家的茶。\n下午来的是华茂的钱总，没带图，也没带茶。他只说了一句话：\n「{SUR}秘书，城关那块地的评估报告，你们看到的是第二版。第一版在卢局长那儿。」',
   opts:[
     { t:'追出去，把纸袋还给赵总', fx:{ trust:1 },
-      res:'赵总在电梯口接过纸袋，脸上还是笑的：「刘秘书讲规矩。」\n这话后来传到了邵国栋耳朵里，一个字没变。' },
+      res:'赵总在电梯口接过纸袋，脸上还是笑的：「{SUR}秘书讲规矩。」\n这话后来传到了邵国栋耳朵里，一个字没变。' },
     { t:'纸袋交机关纪委登记，然后去找卢志高要第一版', fx:{ grip:{ zhujian:2 }, heat:3 },
       res:'卢志高说第一版早作废了，碎了。\n他说「碎了」的时候，看了一眼身后的文件柜。' },
     { t:'纸袋收下', gray:1, fx:{ heat:9, grip:{ chengguan:3 }, flag:'took_bag' },
@@ -717,7 +718,7 @@ b3_fight: { title:'两家开发商', img:'s_hotel', who:'dev_a', battle:'b3',
   ] },
 
 b3_fight2: { title:'我签不了字', img:'s_door', who:'mayor', battle:'b3',
-  text:'陈立群是自己上楼来的，没让秘书通报。\n他跟书记在里间谈了四十分钟。你在外间，听不见说什么，只听见中间有一次陈立群笑了，笑得很响。\n出来的时候，他在你桌边停了一下。\n「小刘，」他说，「城关那片老房子，我当区长那会儿一户一户走过。那时候你还在上小学。」\n他拍了拍你桌上那摞文件，走了。\n书记在里间喊你。「他说他签不了字。」他说，「你怎么看？」',
+  text:'陈立群是自己上楼来的，没让秘书通报。\n他跟书记在里间谈了四十分钟。你在外间，听不见说什么，只听见中间有一次陈立群笑了，笑得很响。\n出来的时候，他在你桌边停了一下。\n「小{SUR}，」他说，「城关那片老房子，我当区长那会儿一户一户走过。那时候你还在上小学。」\n他拍了拍你桌上那摞文件，走了。\n书记在里间喊你。「他说他签不了字。」他说，「你怎么看？」',
   opts:[
     { t:'「那就不要他签。上常委会。」', fx:{ flag:'b3_force', feud:6 },
       res:'书记说：「好。」\n他把那摞文件抽出来，最上面一份是城关旧改方案，市长签字那一栏空着。' },
@@ -742,7 +743,7 @@ b4_rise: { title:'第三十七次', img:'s_petition', who:null, battle:'b4',
 
 b4_fight: { title:'少了两页', img:'s_archive', who:null, battle:'b4',
   fn:function(){ P('lihb').met = true; },
-  text:'当年那份事故报告，县里的版本十一页，市里备案的版本九页。少了的两页是现场勘查。\n青川县公安局的李海滨，那天晚上第一个到的现场。他现在管着县局，不怎么说话。\n你托人约他。他来了，坐下第一句是：\n「刘秘书，那两页不是我撕的。」',
+  text:'当年那份事故报告，县里的版本十一页，市里备案的版本九页。少了的两页是现场勘查。\n青川县公安局的李海滨，那天晚上第一个到的现场。他现在管着县局，不怎么说话。\n你托人约他。他来了，坐下第一句是：\n「{SUR}秘书，那两页不是我撕的。」',
   opts:[
     { t:'「那是谁？」', fx:{ grip:{ qingchuan:2, lvhq:2 }, heat:4, side:{ lihb:20 }, meet:['lvhq'] },
       res:'他沉默了很久，说了一个名字，又说：「我没说过。」\n那个名字是吕宏泉，马汉江的常务副县长。' },
@@ -753,7 +754,7 @@ b4_fight: { title:'少了两页', img:'s_archive', who:null, battle:'b4',
   ] },
 
 b4_fight2: { title:'我弟弟不是小偷', img:'s_night', who:'xuanchuan', battle:'b4',
-  text:'帖子是半夜发出来的，标题叫《我弟弟不是小偷》。一千四百字，没有一个脏字，配了一张三年前的照片。\n到早上七点，转发过了两万。\n方静仪七点二十打来电话，声音压得很低：「刘秘书，这个帖子，周书记知道了吗？」\n她不是在问周书记知不知道。她在问，要不要删。',
+  text:'帖子是半夜发出来的，标题叫《我弟弟不是小偷》。一千四百字，没有一个脏字，配了一张三年前的照片。\n到早上七点，转发过了两万。\n方静仪七点二十打来电话，声音压得很低：「{SUR}秘书，这个帖子，周书记知道了吗？」\n她不是在问周书记知不知道。她在问，要不要删。',
   opts:[
     { t:'「方部长，让它挂着。」', fx:{ side:{ xuanchuan:-8 }, flag:'b4_open', feud:5 },
       res:'她那边停了几秒。「好。出了事，我这边要有个说法。」\n你说书记会给。挂了电话你才想起来，这句话你没问过书记。' },
@@ -806,7 +807,7 @@ b7_rise: { title:'十四个月', img:'s_chemical', who:'gangkou', battle:'b7',
     { t:'查那家外地公司', fx:{ grip:{ gangkou:2, vice1:1 }, heat:3 },
       res:'公司的法人是个七十一岁的老太太，住在邻省一个县城里。你打电话过去，接电话的是她孙子，说奶奶不认字。' },
     { t:'把签字日期的事先拿给邱仲华看', fx:{ side:{ mishuzhang:5 }, flag:'b7_qiu' },
-      res:'邱仲华看了很久，把材料还给你。「小刘，谢谢你先拿给我看。」\n「先」字他说得重了一点。' },
+      res:'邱仲华看了很久，把材料还给你。「小{SUR}，谢谢你先拿给我看。」\n「先」字他说得重了一点。' },
     { t:'先放着，等方案上会', fx:{},
       res:'方案在你桌上压了五天。第六天，国资委打电话来问书记看了没有。' }
   ] },
@@ -823,7 +824,7 @@ b7_fight: { title:'黑皮本子', img:'s_dinner', who:'gangkou', battle:'b7',
   ] },
 
 b7_fight2: { title:'灯', img:'s_mishu', who:'mishuzhang', battle:'b7',
-  text:'邱仲华在你下班前叫住了你。\n他的办公室没开灯，他坐在暗处，桌上一杯凉了的茶。\n「小刘，我干秘书那会儿，也有人给过我一个本子。」他说，「我没接。不是因为我干净。接了，这辈子你就是那个本子的人了。」\n他站起来，把灯打开。\n「港口改制那一票，我投什么，你心里有数了吧？」',
+  text:'邱仲华在你下班前叫住了你。\n他的办公室没开灯，他坐在暗处，桌上一杯凉了的茶。\n「小{SUR}，我干秘书那会儿，也有人给过我一个本子。」他说，「我没接。不是因为我干净。接了，这辈子你就是那个本子的人了。」\n他站起来，把灯打开。\n「港口改制那一票，我投什么，你心里有数了吧？」',
   opts:[
     { t:'「秘书长，本子的事，书记不知道。」', req:function(){ return !!G.flags.b7_book; }, no:'本子不在你手上',
       fx:{ side:{ mishuzhang:12 }, trust:-2 },
@@ -841,7 +842,7 @@ b8_rise: { title:'考察组', img:'s_hotel', who:null, battle:'b8',
     { t:'去三楼，给洪启年送一份云州这三年的材料', fx:{ flag:'b8_mat', bmod:{ b8:{ depsec:4, zuzhi:4 } } },
       res:'洪启年接过材料，翻都没翻：「放这儿吧，我们自己会看。」\n你出门的时候，看见下一个来送材料的是苏晓东。' },
     { t:'去一楼，陪陈立群吃那碗面', fx:{ heat:-6, feud:-5, flag:'b8_noodle' },
-      res:'他看见你，没意外，让服务员再下一碗。\n吃到一半他说：「小刘，我在云州干了十四年。」\n吃完他付的账。两碗面，十六块。' },
+      res:'他看见你，没意外，让服务员再下一碗。\n吃到一半他说：「小{SUR}，我在云州干了十四年。」\n吃完他付的账。两碗面，十六块。' },
     { t:'回家。这几天什么也别做', fx:{ heat:-4 },
       res:'周雪说你难得回来这么早。你陪孩子搭了一晚上积木，他搭的是一座桥。' }
   ] },
@@ -903,11 +904,11 @@ f_visit: { title:'老同学', img:'s_office', who:null, once:1,
   text:'大学同学打电话来，说有个人想见你。「人不错，」他说，「你见见。」\n见了面，是个比你大几岁的人，说话不急不慢，你问一句他答一句，每一句都答在点子上。\n临走他说，以后有用得着的地方，打个电话就行。',
   opts:[
     { t:'留个电话', fx:{}, resFn:function(){ var w = G.flags.visitWho; return w ? '他叫' + pn(w) + '，' + P(w).p + '。\n你后来问了两个人，两个人都说他好。说得一模一样。' : '他的名片你放进了抽屉。'; } },
-    { t:'客客气气送走', fx:{ heat:-1 }, resFn:function(){ var w = G.flags.visitWho; return w ? '他叫' + pn(w) + '。走到门口，他回头说：「刘秘书，我等你电话。」' : '人走了，茶还是满的。'; } }
+    { t:'客客气气送走', fx:{ heat:-1 }, resFn:function(){ var w = G.flags.visitWho; return w ? '他叫' + pn(w) + '。走到门口，他回头说：「{SUR}秘书，我等你电话。」' : '人走了，茶还是满的。'; } }
   ] },
 
 f_qiu: { title:'你还年轻', img:'s_mishu', who:'mishuzhang', once:1,
-  text:'邱仲华在食堂跟你坐了一桌。他吃得很慢，一粒米都不剩。\n「小刘，你还年轻。周书记是干大事的，你跟着好好学。」他放下筷子，「港口那个崔延平，当年跟着老书记，也是天天夹着个本子。后来老书记高升了。」\n他站起来，把餐盘端走了。',
+  text:'邱仲华在食堂跟你坐了一桌。他吃得很慢，一粒米都不剩。\n「小{SUR}，你还年轻。周书记是干大事的，你跟着好好学。」他放下筷子，「港口那个崔延平，当年跟着老书记，也是天天夹着个本子。后来老书记高升了。」\n他站起来，把餐盘端走了。',
   opts:[
     { t:'「秘书长的话，我记下了。」', fx:{ side:{ mishuzhang:4 }, reveal:['qiu_cui'] },
       res:'他在门口回过头来。「记下没用，」他说，「要记住。」' },
@@ -919,7 +920,7 @@ f_ji: { title:'商会', img:'s_dinner', who:'tongzhan', once:1,
   text:'纪守望请你参加商会的一个座谈会。会开了四十分钟，饭吃了三个钟头。\n散场的时候，物流园那个项目的老板追到停车场，塞给你一个信封，说是会务费。\n纪守望站在台阶上，看着这边。',
   opts:[
     { t:'信封当场退回去', fx:{ side:{ tongzhan:-3 }, reveal:['ji_shh'] },
-      res:'老板愣了一下，把信封揣回兜里。纪守望从台阶上下来，说：「小刘，人家也是好意。」' },
+      res:'老板愣了一下，把信封揣回兜里。纪守望从台阶上下来，说：「小{SUR}，人家也是好意。」' },
     { t:'收下', gray:1, fx:{ heat:8, side:{ tongzhan:10 }, reveal:['ji_shh'] }, fn:function(){ G.flags.gray = (G.flags.gray || 0) + 1; },
       res:'信封不厚。回去的路上，纪守望给你发了条短信：「物流园的事，拜托了。」' },
     { t:'「纪部长，物流园的事我记着。」', fx:{ side:{ tongzhan:4 }, reveal:['ji_shh'] },
@@ -927,7 +928,7 @@ f_ji: { title:'商会', img:'s_dinner', who:'tongzhan', once:1,
   ] },
 
 f_bridge: { title:'桥墩', img:'s_car', who:'boss', once:1,
-  text:'车又过了城关那座老桥。\n书记让司机停一下。他下了车，走到桥头，弯腰看桥墩上那几个字。\n「一九八七年。」他说，「修了三十几年，没大修过。」\n他站了一会儿，回到车上。\n「小刘，你说，一个人在一个地方待多少年，就会觉得这地方是他的？」',
+  text:'车又过了城关那座老桥。\n书记让司机停一下。他下了车，走到桥头，弯腰看桥墩上那几个字。\n「一九八七年。」他说，「修了三十几年，没大修过。」\n他站了一会儿，回到车上。\n「小{SUR}，你说，一个人在一个地方待多少年，就会觉得这地方是他的？」',
   opts:[
     { t:'「十四年。」', fx:{ trust:3 },
       res:'他笑出了声。那是你跟他这么久，头一回听他笑出声。' },
@@ -947,12 +948,12 @@ f_wife: { title:'十一点', img:'s_home', who:'wife',
   ] },
 
 f_fang: { title:'会不会上网', img:'s_office', who:'xuanchuan',
-  text:'方静仪在常委会散会后留了一下。\n「刘秘书，」她说，「最近会上吵得有点多。外面已经有人在传了，说云州的班子不团结。」\n她把手机屏幕转过来给你看，是一个本地论坛的帖子，标题只有五个字：书记和市长。',
+  text:'方静仪在常委会散会后留了一下。\n「{SUR}秘书，」她说，「最近会上吵得有点多。外面已经有人在传了，说云州的班子不团结。」\n她把手机屏幕转过来给你看，是一个本地论坛的帖子，标题只有五个字：书记和市长。',
   opts:[
     { t:'「方部长费心了。我跟书记说一声。」', fx:{ side:{ xuanchuan:4 }, feud:-4, trust:1 },
       res:'书记听完说：「她怕的不是班子不团结。她怕的是自己站错。」' },
     { t:'「帖子是谁发的，查得到吗？」', fx:{ side:{ xuanchuan:-3 }, heat:2 },
-      res:'她把手机收了回去。「刘秘书，我是提醒你，不是请你查人。」' }
+      res:'她把手机收了回去。「{SUR}秘书，我是提醒你，不是请你查人。」' }
   ] },
 
 f_prov: { title:'省里的电话', img:'s_office', who:'boss',
@@ -965,12 +966,12 @@ f_prov: { title:'省里的电话', img:'s_office', who:'boss',
   ] },
 
 f_han: { title:'走廊', img:'s_office', who:'zhengfa',
-  text:'韩树声在走廊上拦住你，笑呵呵的。\n「小刘，你们那位新局长，挺能干啊。」他拍拍你的胳膊，「上任一个月，把我手底下三个人调去了派出所。」\n他凑近了一点。「抓人抓得快的，往往是被人抓得也快的。」',
+  text:'韩树声在走廊上拦住你，笑呵呵的。\n「小{SUR}，你们那位新局长，挺能干啊。」他拍拍你的胳膊，「上任一个月，把我手底下三个人调去了派出所。」\n他凑近了一点。「抓人抓得快的，往往是被人抓得也快的。」',
   opts:[
     { t:'「韩书记说笑了。」', fx:{ heat:2 },
       res:'他哈哈笑了两声，走了。那两声笑，整条走廊都听见了。' },
     { t:'回去让新局长这阵子收着点', fx:{ side:{ zhengfa:4 }, heat:-2 },
-      res:'新局长说：「刘秘书，我收着，他们可不收着。」' }
+      res:'新局长说：「{SUR}秘书，我收着，他们可不收着。」' }
   ] },
 
 /* ════ 反扑 ════ */
@@ -1004,12 +1005,12 @@ h50: { title:'一封信', img:'s_archive', who:'jiwei',
 
 h70: { title:'档案室', img:'s_home', who:'sister',
   fn:function(){ if (!own('gongan')) applyFx({ bossRisk: 8 }); },
-  text:'刘敏从展陈科调去了档案室。\n她在电话里说没事，就是清闲点，以后周末能陪妈打麻将了。\n你问是谁定的。她说局里研究的。',
+  text:'{SUR}敏从展陈科调去了档案室。\n她在电话里说没事，就是清闲点，以后周末能陪妈打麻将了。\n你问是谁定的。她说局里研究的。',
   opts:[
     { t:'去文旅局问一问', fx:{ heat:4 },
-      res:'局长请你喝了杯茶，说是正常轮岗。送你出门的时候，他说：「刘秘书，我也是没办法。」' },
+      res:'局长请你喝了杯茶，说是正常轮岗。送你出门的时候，他说：「{SUR}秘书，我也是没办法。」' },
     { t:'算了', fx:{},
-      res:'周末你回了趟家。刘敏在跟妈打麻将，赢了四十块，很高兴。' },
+      res:'周末你回了趟家。{SUR}敏在跟妈打麻将，赢了四十块，很高兴。' },
     { t:'让公安的人查查是谁打的招呼', req:function(){ return own('gongan'); }, no:'公安那边，你一个人也叫不动',
       fx:{ grip:{ chengguan:2 }, heat:2 },
       res:'查出来了。打招呼的人你不认识，他的领导你认识，他领导的领导，每周在常委会上坐你对面。' }
@@ -1081,7 +1082,7 @@ b6_fight: { title:'调研组', img:'s_car', who:'vice1', battle:'b6',
   ] },
 
 b6_fight2: { title:'三千四百个名字', img:'s_petition', who:'xuanchuan', battle:'b6',
-  text:'一份三千四百人签名的联名信送到了市委信访窗口，题目是《恳请高铁站落户老城》。签名一页一页订在一起，有好几页是同一个笔迹。\n邵国栋在区里开了动员会，说这是老城最后的机会。\n方静仪打来电话，只问了一句：「刘秘书，这封信，要不要上报纸？」',
+  text:'一份三千四百人签名的联名信送到了市委信访窗口，题目是《恳请高铁站落户老城》。签名一页一页订在一起，有好几页是同一个笔迹。\n邵国栋在区里开了动员会，说这是老城最后的机会。\n方静仪打来电话，只问了一句：「{SUR}秘书，这封信，要不要上报纸？」',
   opts:[
     { t:'「方部长，老百姓的心意，照登。」', fx:{ side:{ xuanchuan:2 }, bmod:{ b6:{ xuanchuan:-8, tongzhan:-4 } } },
       res:'报纸登了半版。登出来那天，城关好几个路口挂出了横幅。' },
@@ -1100,7 +1101,7 @@ b9_rise: { title:'动员会', img:'s_changwei', who:null, battle:'b9',
     { t:'先报书记，问要不要先看一遍', fx:{ trust:2, heat:3 },
       res:'书记翻了翻单子。「全部交，一张也不要少。」他说完又补了一句：「你先看一遍，心里有个数。」' },
     { t:'「市政府那边的单子，是不是一样长？」', fx:{}, fn:function(){ Grip.add('mayor', 1); },
-      res:'联络员笑了一下：「刘秘书，每家都一样。」\n后来你看见了市政府那张单子，比你这张多两页。' }
+      res:'联络员笑了一下：「{SUR}秘书，每家都一样。」\n后来你看见了市政府那张单子，比你这张多两页。' }
   ] },
 
 b9_fight: { title:'第二十一分钟', img:'s_office', who:null, battle:'b9',
@@ -1140,14 +1141,14 @@ b9_fight3: { title:'反馈会前一晚', img:'s_night', who:'boss', battle:'b9',
 
 /* ════ 梅岭撤县设区 ════ */
 b10_rise: { title:'四十万人', img:'s_county', who:null, battle:'b10',
-  text:'省政府同意梅岭撤县设区的批复下来了，只有一件事没定：梅岭并进来以后，归城关托管，还是归高新托管。\n这不是一块地的事。梅岭四十万人、一条旅游环线、一片生态红线，归了谁，谁的盘子就大一圈。\n梅岭县长袁晓岚来市委送材料，在你办公室门口站了一会儿。\n「刘秘书，梅岭的干部都想知道，以后该往哪边跑。」',
+  text:'省政府同意梅岭撤县设区的批复下来了，只有一件事没定：梅岭并进来以后，归城关托管，还是归高新托管。\n这不是一块地的事。梅岭四十万人、一条旅游环线、一片生态红线，归了谁，谁的盘子就大一圈。\n梅岭县长袁晓岚来市委送材料，在你办公室门口站了一会儿。\n「{SUR}秘书，梅岭的干部都想知道，以后该往哪边跑。」',
   opts:[
     { t:'「袁县长，这要常委会定。」', fx:{},
       res:'她点点头，把材料放下，走了。走到楼梯口，又回头看了一眼书记办公室的门。' },
     { t:'带她去见书记', fx:{ side:{ ml_xz:20 }, bmod:{ b10:{ tongzhan:4, xuanchuan:4 } } },
       res:'书记跟她谈了半个钟头。你后来才知道，书记只问了她一件事：那条环线修了几年。\n她说七年。' },
     { t:'「归高新。环线要招商，高新会招商。」', fx:{ side:{ ml_xz:8, chengguan:-4 } },
-      res:'她没接话，过了一会儿说：「刘秘书这话，我记下了。」' }
+      res:'她没接话，过了一会儿说：「{SUR}秘书这话，我记下了。」' }
   ] },
 
 b10_fight: { title:'老乡', img:'s_dinner', who:null, battle:'b10',
@@ -1155,7 +1156,7 @@ b10_fight: { title:'老乡', img:'s_dinner', who:null, battle:'b10',
   text:'梅岭县委副书记何青松请你吃饭，在梅岭县城一家做山菌的馆子。\n菜上到一半，他说他跟邵国栋是一个镇出来的，小学同班。\n「梅岭要是归了城关，」他给你倒了杯酒，「县里的班子，邵书记说了，一个都不动。」\n临走，他往你车后座放了两箱山货，说是自家亲戚种的。',
   opts:[
     { t:'山货当场搬下来还给他', fx:{ side:{ heqs:-10 } },
-      res:'何青松站在路边，看着两箱山货搬回馆子里。他说：「刘秘书，你这是看不起梅岭。」' },
+      res:'何青松站在路边，看着两箱山货搬回馆子里。他说：「{SUR}秘书，你这是看不起梅岭。」' },
     { t:'收下山货，回去把他那句话讲给书记', gray:1, fx:{ heat:5, trust:2, bmod:{ b10:{ jiwei:5 } }, grip:{ heqs:2 } }, fn:function(){ G.flags.gray = (G.flags.gray || 0) + 1; },
       res:'书记听完问：「山货呢？」\n你说在车上。他说：「送机关食堂。」' },
     { t:'「何书记，这顿饭我来结。」', fx:{ side:{ heqs:-3 } },
@@ -1393,7 +1394,7 @@ d3b: { title:'导师的同学', img:'s_hotel', who:null, dark:1,
     { t:'信封退回去，报告书记', fx:{ trust:3, bossRisk:-4 },
       res:'书记当着你的面给儿子打了个电话。电话里他只说了一句：以后有人找你，报我名字的，一个都不要见。' },
     { t:'信封退回去，不跟书记说', fx:{ bossRisk:3 },
-      res:'老板收回信封的时候笑了一下：「刘秘书讲规矩。」' },
+      res:'老板收回信封的时候笑了一下：「{SUR}秘书讲规矩。」' },
     { t:'收下', gray:1, fx:{ heat:10, bossRisk:8 }, fn:function(){ G.flags.gray = (G.flags.gray || 0) + 1; },
       res:'信封里是一张购物卡。你一直没用，放在抽屉的最里面。' }
   ] },
@@ -1503,7 +1504,7 @@ d7a: { title:'一封信', img:'s_office', who:null, dark:1,
   ] },
 
 d7b: { title:'黑板报', img:'s_county', who:null, dark:1,
-  text:'青川县一中的校长来市里开会，散会以后找到你，说学校黑板报上有一篇文章，题目叫《我的舅舅》，全校都传着看。\n写文章的就是那个孩子。文章最后一段，写的是化工园那天晚上。\n校长问：「刘秘书，这篇文章，要不要撤下来？」',
+  text:'青川县一中的校长来市里开会，散会以后找到你，说学校黑板报上有一篇文章，题目叫《我的舅舅》，全校都传着看。\n写文章的就是那个孩子。文章最后一段，写的是化工园那天晚上。\n校长问：「{SUR}秘书，这篇文章，要不要撤下来？」',
   opts:[
     { t:'「不用撤。」', fx:{},
       res:'校长点点头。走的时候他说，那孩子数学很好，想考省城的大学。' },
@@ -1512,7 +1513,7 @@ d7b: { title:'黑板报', img:'s_county', who:null, dark:1,
   ] },
 
 d7c: { title:'放榜', img:'s_office', who:null, dark:1,
-  text:'高考放榜那天，你收到一条短信，陌生号码：刘叔叔，我考上了。省城那所大学，学的是安全工程。\n你把短信给书记看。书记看了很久，说了一句：「安全工程。」',
+  text:'高考放榜那天，你收到一条短信，陌生号码：{SUR}叔叔，我考上了。省城那所大学，学的是安全工程。\n你把短信给书记看。书记看了很久，说了一句：「安全工程。」',
   opts:[
     { t:'回一句', fx:{ trust:1 },
       res:'你回了四个字：好好念书。发出去以后又看了一遍，觉得应该多写几句。' }
@@ -1620,7 +1621,7 @@ f_classmate: { title:'老同学', img:'s_dinner', who:null, cd:14,
   ] },
 
 f_spring: { title:'团拜会', img:'s_changwei', who:null, cd:11, cm:[1, 2],
-  text:'春节团拜会，市四套班子都到了。书记讲话讲了八分钟，陈市长主持。\n散场的时候，陈市长在门口跟每个人握手，握到你的时候，他说：「小刘，过年回老家吗？替我问你父亲好。」\n他记得你父亲。',
+  text:'春节团拜会，市四套班子都到了。书记讲话讲了八分钟，陈市长主持。\n散场的时候，陈市长在门口跟每个人握手，握到你的时候，他说：「小{SUR}，过年回老家吗？替我问你父亲好。」\n他记得你父亲。',
   opts:[
     { t:'「谢谢市长。」', fx:{},
       res:'他点点头，握下一个人的手去了。' },
@@ -1628,8 +1629,8 @@ f_spring: { title:'团拜会', img:'s_changwei', who:null, cd:11, cm:[1, 2],
       res:'书记说：「他记性好。」\n过了一会儿又说：「这种人，你别跟他单独吃饭。」' }
   ] },
 
-f_sister: { title:'刘敏', img:'s_home', who:'sister', cd:14,
-  text:'刘敏打电话来，说单位里有人给她介绍对象，是城关区住建局的一个科长。\n「妈说挺好，」她说，「我就想问问你，城关区那边……你们是不是不太对付？」\n她说完，自己先笑了。',
+f_sister: { title:'{SUR}敏', img:'s_home', who:'sister', cd:14,
+  text:'{SUR}敏打电话来，说单位里有人给她介绍对象，是城关区住建局的一个科长。\n「妈说挺好，」她说，「我就想问问你，城关区那边……你们是不是不太对付？」\n她说完，自己先笑了。',
   opts:[
     { t:'「你自己喜欢就行，别管我这边。」', fx:{ heat:-1 },
       res:'她说：「那我先见见。」挂电话前她又说：「哥，你别太累。」' },
@@ -1656,7 +1657,7 @@ f_reporter: { title:'省报记者', img:'s_hotel', who:'xuanchuan', once:1,
   ] },
 
 f_driver: { title:'老孙', img:'s_car', who:null, once:1,
-  text:'给书记开车的老孙到龄了，下个月退休。他开了三十一年车，给四任书记开过。\n最后一天，他把车擦了一遍，擦得很慢。擦完他跟你说：「刘秘书，我跟你说个事。前两任书记坐我的车，打电话从来不避我。周书记也不避。」\n他停了一下。「新来的司机，你留个心。」',
+  text:'给书记开车的老孙到龄了，下个月退休。他开了三十一年车，给四任书记开过。\n最后一天，他把车擦了一遍，擦得很慢。擦完他跟你说：「{SUR}秘书，我跟你说个事。前两任书记坐我的车，打电话从来不避我。周书记也不避。」\n他停了一下。「新来的司机，你留个心。」',
   opts:[
     { t:'「孙师傅，谢谢您。」', fx:{ heat:-3 },
       res:'他摆摆手，把车钥匙交到你手里。钥匙链上挂着一个褪了色的平安符。' },
@@ -1738,7 +1739,7 @@ var BATTLES = {
     mods:{ vice1:-10, zhengfa:-5, zuzhi:5, jiwei:3 },
     win:{ prestige:7, money:1, side:{ guazhi:20 } }, lose:{ prestige:-6 },
     winT:'白重远的任命是省里下的，比常委会晚了二十六天。他到任第一天先来市委这边拜码头，在书记办公室坐了十分钟。出来的时候跟你握了手，握得很用力。',
-    loseT:'卢志高当了副市长。他来市委送材料那天，在走廊上碰见你，先伸的手：「刘秘书，以后城建上的事，多沟通。」' },
+    loseT:'卢志高当了副市长。他来市委送材料那天，在走廊上碰见你，先伸的手：「{SUR}秘书，以后城建上的事，多沟通。」' },
 
   b7: { n:'港口改制', mo:30, topic:'港口区国有企业改制方案', tags:['cui'],
     mods:{ vice1:-10, mishuzhang:-10, jiwei:5, xuanchuan:5 },
@@ -1880,7 +1881,7 @@ var MODI_TXT = {
   jiwei: ['宋自强的办公室没有沙发，只有两把木椅子。你坐下，他问：「哪天来的云州？」你说是跟书记一起。他点点头：「那就是还不知道。」'],
   zuzhi: ['佟建民先喝了一口茶，才开口。他讲了二十分钟干部工作的程序，最后翻开抽屉，拿出一张两年前的考察表，上面两个名字，他用红笔圈过。'],
   xuanchuan: ['方静仪把手机倒扣在桌上，才跟你说话。说到一半，手机震了，她翻过来看了一眼，又扣回去。'],
-  mishuzhang: ['邱仲华说：「小刘，我干秘书那会儿，书记办公室的门是不关的。」他看着你，等你问为什么。你没问。'],
+  mishuzhang: ['邱仲华说：「小{SUR}，我干秘书那会儿，书记办公室的门是不关的。」他看着你，等你问为什么。你没问。'],
   tongzhan: ['纪守望的办公室里摆着一艘红木的帆船模型，底座上刻着一个商会的名字。他说那是人家送的，退不回去，只好摆着。'],
   zhengfa: ['韩树声请你在机关食堂吃饭，自己端了两碗面。「查案子跟吃面一样，」他说，「先挑面，汤最后喝。」他没说汤是什么。'],
   vice1: ['高振邦给你续了三回茶。他讲的全是数，讲到后来你才听出来，这些数里只有一个是他真关心的。']
@@ -2125,7 +2126,7 @@ var ENDINGS = {
     t:'消息是早上六点多传过来的，打电话的是市政府办值班室的人。他在电话里没说那个字，说的是「陈市长出事了」。\n你赶到的时候，那栋楼下已经拉了警戒线。景国梁站在线外，手里拿着一件外套，一直没放下。\n书记到的时候，你在楼门口等他。他下车，看了一眼，什么也没说，上车走了。',
     after:'后来你去过一次城关那家私房菜馆。老板说，陈市长以前常来，一个人，点一碗面。' },
   mayor_moved: { n:'调走', win:1, img:'e_rise',
-    t:'调令是省委组织部直接下的：陈立群同志另有任用。另有任用是省政协的一个专委会副主任，正厅级，算是平调。\n他在云州的最后一个会，讲了二十分钟，讲的全是城关区那座桥。\n散会以后他来了一趟市委，跟书记握了手，又走到你桌前。「小刘，」他说，「你比我当年的秘书强。」',
+    t:'调令是省委组织部直接下的：陈立群同志另有任用。另有任用是省政协的一个专委会副主任，正厅级，算是平调。\n他在云州的最后一个会，讲了二十分钟，讲的全是城关区那座桥。\n散会以后他来了一趟市委，跟书记握了手，又走到你桌前。「小{SUR}，」他说，「你比我当年的秘书强。」',
     after:'后来你在省城开会，碰见过他一次。他胖了一点，拎着一个菜篮子，冲你点了点头。' },
   mayor_out: { n:'换届', win:1, img:'e_stay',
     t:'新一届市委常委名单公布的那天，云州下了第一场雪。名单上十一个名字，没有陈立群。\n他去了市人大，当主任。人大主任的办公室在另一栋楼，朝北，冬天要开暖气开到下午五点。\n他搬家那天，没叫市政府办的人帮忙，是自己的司机一趟一趟搬的。',
@@ -2137,7 +2138,7 @@ var ENDINGS = {
     t:'省纪委的通报只有三行。周维安的名字后面跟着四个字：严重违纪。\n他被带走的那天早上，还在批文件。最后一份，批的是青川化工园整改的验收报告，批了一个「阅」字。\n你被叫去谈了九次。每一次他们都问同一个问题：那套房子，你知不知道。',
     after:'后来你调去了市档案馆。你负责整理的那一批，是云州那三年的常委会纪要。' },
   you_dropped: { n:'弃子', win:0, img:'e_replaced',
-    t:'你第二次从党校回来的时候，书记办公室外间的桌子，已经坐了别人。\n新秘书比你小三岁，叫高亚峰，是你带过的人。他站起来叫你「刘主任」，叫得很恭敬。\n你的新岗位是市委办调研室，一间屋子，两张桌子，窗户对着食堂的烟囱。',
+    t:'你第二次从党校回来的时候，书记办公室外间的桌子，已经坐了别人。\n新秘书比你小三岁，叫高亚峰，是你带过的人。他站起来叫你「{SUR}主任」，叫得很恭敬。\n你的新岗位是市委办调研室，一间屋子，两张桌子，窗户对着食堂的烟囱。',
     after:'后来书记在走廊上碰见你，停下来问了一句：「党校的饭，还吃得惯吗？」' },
   you_fall: { n:'他们先动了手', win:0, img:'e_struck',
     t:'车停在省城一家宾馆的后门。房间在六楼，窗户只能推开一掌宽。\n他们问得很细。那个纸袋是什么颜色，那封信在哪个邮局寄的，那天晚上你跟陈市长吃的什么菜。你答到一半才明白，他们要的不是你。\n书记那边，你一句也没说。你不知道这算不算什么。',
@@ -2198,12 +2199,15 @@ function ymText(month){
 }
 function calMonth(month){ return (month - 1) % 12 + 1; }
 
+/* 姓：复姓认前两个字 */
+var FUXING = ['欧阳','司马','上官','诸葛','东方','皇甫','尉迟','公孙','慕容','长孙','宇文','司徒','夏侯','令狐','独孤','端木','轩辕','南宫','西门','百里','呼延','澹台','万俟','闻人','申屠','太史','钟离','宗政','濮阳','第五'];
+function surname(n){ n = n || '刘峥'; return (n.length >= 3 && FUXING.indexOf(n.slice(0, 2)) >= 0) ? n.slice(0, 2) : n.charAt(0); }
 /* 正文里的占位符 */
 function fill(s){
   if (!s) return '';
   return String(s)
     .replace(/\{ME\}/g, G ? G.name : '刘峥')
-    .replace(/\{SUR\}/g, '刘')
+    .replace(/\{SUR\}/g, surname(G ? G.name : '刘峥'))
     .replace(/\{P:([a-z_0-9]+)\}/g, function(_, id){ return pn(id); });
 }
 
@@ -2479,7 +2483,7 @@ var Act = {
       addSide(id, 12); applyFx({ heat: 7, feud: 3 });
       return { t: '你把书记的意思带到了，又多加了一句：市长那边已经在省里提过他的名字，不是什么好话。' + p.n + '没接茬，送你到门口的时候，手在你肩上多停了一下。' };
     }
-    if (p.side <= -45){ return { t: p.n + '听你说完，笑了一下：「小刘，这话你带回去，就说我听到了。」' }; }
+    if (p.side <= -45){ return { t: p.n + '听你说完，笑了一下：「小{SUR}，这话你带回去，就说我听到了。」' }; }
     addSide(id, 5);
     return { t: '话带到了。' + p.n + '说：「替我谢谢周书记。」谢什么，他没说。' };
   },
@@ -2959,8 +2963,8 @@ function checkPromises(){
     var who = P(pr.who);
     if (!who || who.gone){ pr.st = 'void'; return; }
     if (pr.key === 'keep_cui' && P('gangkou').gone){ pr.st = 'broken'; addSide(pr.who, -40); applyFx({ prestige: -5 }); report(pn(pr.who) + '知道崔延平的事了。他在常委会上一句话没说，散会的时候，从你身边走过去，没看你。'); }
-    if (pr.key === 'no_qc' && G.battles.b4 === 'win'){ pr.st = 'broken'; addSide(pr.who, -40); applyFx({ prestige: -5 }); report('韩树声在走廊里叫住你：「小刘，青川的事，周书记那边是怎么考虑的？我前面听到的，好像不是这个意思。」他没等你回答，笑了笑，走了。'); }
-    if (pr.key === 'place' && G.month - pr.m > 15){ pr.st = 'broken'; addSide(pr.who, -Math.ceil(WANT_BY_ID[pr.w].gain * 1.5)); applyFx({ prestige: -3 }); report(pn(pr.who) + '在走廊上碰见你，笑着问了一句：「小刘，最近忙吧？」别的什么也没问。'); }
+    if (pr.key === 'no_qc' && G.battles.b4 === 'win'){ pr.st = 'broken'; addSide(pr.who, -40); applyFx({ prestige: -5 }); report('韩树声在走廊里叫住你：「小{SUR}，青川的事，周书记那边是怎么考虑的？我前面听到的，好像不是这个意思。」他没等你回答，笑了笑，走了。'); }
+    if (pr.key === 'place' && G.month - pr.m > 15){ pr.st = 'broken'; addSide(pr.who, -Math.ceil(WANT_BY_ID[pr.w].gain * 1.5)); applyFx({ prestige: -3 }); report(pn(pr.who) + '在走廊上碰见你，笑着问了一句：「小{SUR}，最近忙吧？」别的什么也没问。'); }
     if (pr.key === 'tong_rd' && G.month >= 30){ pr.st = shi() >= 45 ? 'kept' : 'broken'; if (pr.st === 'broken'){ addSide(pr.who, -30); } else report('佟建民去人大的事定了。他来办公室跟书记道别，带了一包他老家的茶。'); }
   });
   /* 两个人都许了市长的位子 */
@@ -3601,7 +3605,7 @@ var CAMP_CLS = { '1':'c-boss', '0':'c-mid', '-1':'c-mayor' };
 var TIER_CLS = { '2':'t2', '1':'t1', '0':'t0', '-1':'tm1', '-2':'tm2' };
 
 function face(id, cls){
-  var f = faceOf(id), p = P(id) || { n: ({ wife:'周雪', sister:'刘敏', dev_a:'赵', me: G ? G.name : '刘' })[id] || '?' };
+  var f = faceOf(id), p = P(id) || { n: ({ wife:'周雪', sister: fill('{SUR}敏'), dev_a:'赵', me: G ? G.name : '刘' })[id] || '?' };
   if (f) return '<span class="face ' + (cls || '') + '"><img src="assets/p_' + f + '.webp" alt="" onerror="this.parentNode.classList.add(\'noimg\');this.remove()"><b>' + esc(p.n.charAt(0)) + '</b></span>';
   return '<span class="face noimg ' + (cls || '') + '"><b>' + esc(p.n.charAt(0)) + '</b></span>';
 }
@@ -3629,15 +3633,16 @@ var UI = {
       '<div class="cover"><img src="assets/cover.webp" alt="" onerror="this.parentNode.remove()"></div>' +
       '<h2 class="gname">大　秘</h2>' +
       '<div class="tp-text"><p>书记是外省空降来的，班子里没有一个自己人。</p><p>市长在云州干了十四年。</p><p>你是书记的秘书。书记不能出面的事，你去。</p></div>' +
-      '<div class="namerow">你叫　刘 <input id="nm" maxlength="2" value="峥"></div>' +
+      '<div class="namerow">你叫 <input id="nm" maxlength="4" value="刘峥" autocomplete="off"></div><div class="namehint" id="nmh"></div>' +
       '<div class="tp-btns">' + (hasSave() ? '<button class="btn red" data-go="cont">接着干</button>' : '') +
       '<button class="btn ' + (hasSave() ? '' : 'red') + '" data-go="new">到任</button>' +
       '<label class="btn ghost">导入存档<input type="file" id="imp" accept=".json" hidden></label></div>' +
       (n ? '<div class="tp-dex">打出过的结局：' + n + ' / ' + Object.keys(ENDINGS).length + '</div>' : '') +
       '</div>';
     on($('[data-go="new"]'), 'click', function(){
-      var nm = ($('#nm').value || '峥').replace(/\s/g, '').slice(0, 2) || '峥';
-      newGame({ name: '刘' + nm }); save(); UI.render();
+      var nm = ($('#nm').value || '').replace(/[^\u4e00-\u9fa5]/g, '').slice(0, 4);
+      if (nm.length < 2){ $('#nmh').textContent = '两到四个汉字'; return; }
+      newGame({ name: nm }); save(); UI.render();
     });
     on($('[data-go="cont"]'), 'click', function(){ if (load()) UI.render(); });
     on($('#imp'), 'change', function(e){ var f = e.target.files[0]; if (f) importSave(f, function(ok){ if (ok) UI.render(); }); });
@@ -3725,7 +3730,7 @@ var UI = {
     var txt = sc.textFn ? sc.textFn() : sc.text;
     var h = '<div class="panel doc' + (slot === 2 ? ' side' : '') + '">' + banner(slot === 2 ? null : sc.img) + '<div class="docin">' +
       (sc.who ? face(sc.who, 'docface') : '') +
-      '<div class="no">' + esc(label) + '</div><h2>' + esc(sc.title) + '</h2>' +
+      '<div class="no">' + esc(label) + '</div><h2>' + esc(fill(sc.title)) + '</h2>' +
       '<div class="prose">' + paras(txt) + '</div>';
     var key = slot === 2 ? 'data-opt2' : 'data-opt';
     if (!done){
@@ -4040,7 +4045,7 @@ var UI = {
     UI.root.innerHTML = '<div class="endpage"><div class="letterhead"><h1>云州市委办公室</h1><div class="rule"></div><div class="rule2"></div></div>' +
       (e.img ? '<div class="endimg"><img src="assets/' + e.img + '.webp" alt="" onerror="this.parentNode.remove()"></div>' : '') +
       '<div class="docno">云委办〔' + (START_Y + Math.floor((G.month - 1) / 12)) + '〕结字</div><h2>' + esc(e.n) + '</h2>' +
-      '<div class="prose">' + paras(e.t) + (coda ? '<p>' + esc(coda) + '</p>' : '') + '<p class="after">' + esc(e.after) + '</p></div>' +
+      '<div class="prose">' + paras(e.t) + (coda ? '<p>' + esc(coda) + '</p>' : '') + '<p class="after">' + esc(fill(e.after)) + '</p></div>' +
       '<div class="panel"><h3>这三年</h3><div class="flist">' +
       '<div>第 ' + G.month + ' 个月　赢了 ' + G.won + ' 仗，输了 ' + G.lost + ' 仗</div>' +
       '<div>拿掉的人：' + (removed.length ? removed.map(function(r){ return esc(pn(r.id)); }).join('、') : '—') + '</div>' +

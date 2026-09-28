@@ -35,12 +35,15 @@ function ymText(month){
 }
 function calMonth(month){ return (month - 1) % 12 + 1; }
 
+/* 姓：复姓认前两个字 */
+var FUXING = ['欧阳','司马','上官','诸葛','东方','皇甫','尉迟','公孙','慕容','长孙','宇文','司徒','夏侯','令狐','独孤','端木','轩辕','南宫','西门','百里','呼延','澹台','万俟','闻人','申屠','太史','钟离','宗政','濮阳','第五'];
+function surname(n){ n = n || '刘峥'; return (n.length >= 3 && FUXING.indexOf(n.slice(0, 2)) >= 0) ? n.slice(0, 2) : n.charAt(0); }
 /* 正文里的占位符 */
 function fill(s){
   if (!s) return '';
   return String(s)
     .replace(/\{ME\}/g, G ? G.name : '刘峥')
-    .replace(/\{SUR\}/g, '刘')
+    .replace(/\{SUR\}/g, surname(G ? G.name : '刘峥'))
     .replace(/\{P:([a-z_0-9]+)\}/g, function(_, id){ return pn(id); });
 }
 

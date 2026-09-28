@@ -28,7 +28,7 @@ var BATTLES = {
     mods:{ vice1:-10, zhengfa:-5, zuzhi:5, jiwei:3 },
     win:{ prestige:7, money:1, side:{ guazhi:20 } }, lose:{ prestige:-6 },
     winT:'白重远的任命是省里下的，比常委会晚了二十六天。他到任第一天先来市委这边拜码头，在书记办公室坐了十分钟。出来的时候跟你握了手，握得很用力。',
-    loseT:'卢志高当了副市长。他来市委送材料那天，在走廊上碰见你，先伸的手：「刘秘书，以后城建上的事，多沟通。」' },
+    loseT:'卢志高当了副市长。他来市委送材料那天，在走廊上碰见你，先伸的手：「{SUR}秘书，以后城建上的事，多沟通。」' },
 
   b7: { n:'港口改制', mo:30, topic:'港口区国有企业改制方案', tags:['cui'],
     mods:{ vice1:-10, mishuzhang:-10, jiwei:5, xuanchuan:5 },

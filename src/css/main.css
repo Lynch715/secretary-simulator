@@ -186,7 +186,7 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 .gname{font-family:var(--song);font-size:40px;text-align:center;margin:18px 0 8px;letter-spacing:.2em}
 .tp-text p{font-family:var(--song);text-align:center;margin:4px 0;color:var(--ink2)}
 .namerow{text-align:center;font-family:var(--song);font-size:18px;margin:22px 0}
-.namerow input{width:3.2em;font-family:var(--song);font-size:18px;border:0;border-bottom:1px solid var(--ink);background:none;text-align:center;padding:2px}
+.namerow input{width:5em;font-family:var(--song);font-size:18px;border:0;border-bottom:1px solid var(--ink);background:none;text-align:center;padding:2px}
 .tp-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0}
 .tp-dex,.tp-foot{text-align:center;font-size:13px;color:var(--ink3);margin-top:8px}
 .tp-foot a{color:var(--ink3)}
@@ -300,3 +300,4 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 .tile.op b em{font-style:normal;font-size:10px;color:var(--red);border:1px solid var(--red);padding:0 3px;margin-left:4px;vertical-align:2px}
 .tile.op.gray{border-left:3px solid var(--red)}
 @media (max-width:480px){ .deptbox .tiles{grid-template-columns:1fr 1fr} }
+.namehint{text-align:center;color:var(--red);font-size:13px;min-height:18px;margin-top:-12px}

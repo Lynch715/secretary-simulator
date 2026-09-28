@@ -290,3 +290,13 @@ button{font-family:inherit;font-size:inherit;color:inherit}
   .doc h2{font-size:19px}
   .report p,.prose p{font-size:15px}
 }
+.panel.dept>h3{background:#EDE7DC;border-bottom-color:#D8D0C0}
+.deptwrap{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+.deptbox{border:1px solid var(--line2)}
+.deptn{padding:5px 10px;font-family:var(--song);font-size:14px;background:var(--paper2);border-bottom:1px solid var(--line2)}
+.deptn i{font-style:normal;font-size:11px;color:var(--ink3)}
+.deptbox .tiles{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));padding:8px}
+.tile.op{min-height:56px}
+.tile.op b em{font-style:normal;font-size:10px;color:var(--red);border:1px solid var(--red);padding:0 3px;margin-left:4px;vertical-align:2px}
+.tile.op.gray{border-left:3px solid var(--red)}
+@media (max-width:480px){ .deptbox .tiles{grid-template-columns:1fr 1fr} }

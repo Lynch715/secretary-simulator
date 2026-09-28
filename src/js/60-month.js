@@ -165,6 +165,7 @@ var Month = {
     if (G.ending) return Month.close();
 
     Month.drift();
+    fuFeed();
     checkPromises();
     RETIRE.forEach(function(r){ if (r.mo === G.month + 1){ var h = holder(r.post); if (h && h === POST_BY_ID[r.post].holder){ P(h).gone = 'retire'; vacate(r.post); G.nextReport.push(r.t); } } });
 

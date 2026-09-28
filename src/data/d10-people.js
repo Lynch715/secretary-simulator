@@ -123,6 +123,13 @@ var PEOPLE_DEF = [
   { id:'guozi', n:'尹立本', p:'国资委主任', lvl:3, side:0, cap:1, age:58, area:'shizhi', dirt:1, amb:1,
     line:'58 岁。港口国企厂长出身，任国资委主任九年' },
 
+  { id:'wanhz', n:'万海舟', p:'纪委常委', lvl:2, side:-25, cap:2, age:44, area:'zhengfa', dirt:0, amb:2,
+    line:'44 岁。公安转纪检，在政法委工作过六年，任纪委常委两年' },
+  { id:'yanlw', n:'严立文', p:'日报社总编辑', lvl:3, side:-35, cap:2, age:52, area:'shizhi', dirt:1, amb:1,
+    line:'52 岁。跑了十五年市政府口的记者，任日报社总编辑五年' },
+  { id:'zengf', n:'曾凡', p:'广电台长', lvl:3, side:0, cap:2, age:47, area:'shizhi', dirt:0, amb:2,
+    line:'47 岁。播音员出身，任广电台长三年' },
+
   /* ── 苗子（开局不在任何要害位子上） ── */
   { id:'keshang', n:'葛守业', p:'市委办综合科科长', lvl:2, side:10, cap:2, age:44, area:'shiwei', dirt:0, amb:2, cand:1,
     line:'44 岁。市委办综合科科长，你原来的科长' },

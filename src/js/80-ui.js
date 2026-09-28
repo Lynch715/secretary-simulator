@@ -86,6 +86,20 @@ var UI = {
         var n = Act.targets(a.id).length;
         return '<button class="tile" data-act="' + a.id + '"' + (G.acts <= 0 || !n ? ' disabled' : '') + '><b>' + a.n + '</b><span>' + a.d + '</span></button>';
       }).join('') + '</div>' + UI.doneList() + '</div>';
+    /* 能调动的部门 */
+    var depts = Ops.depts();
+    if (depts.length){
+      h += '<div class="panel dept"><h3><span class="ttl">手里的部门</span></h3><div class="deptwrap">';
+      depts.forEach(function(post){
+        var cool = Ops.cool(post);
+        h += '<div class="deptbox"><div class="deptn">' + esc(OP_DEPT_N[post]) + (cool ? '<i>（这两个月动过了）</i>' : '') + '</div><div class="tiles">' +
+          OPS[post].map(function(op){
+            var ok = !cool && Ops.targets(op).length;
+            return '<button class="tile op' + (op.gray ? ' gray' : '') + '" data-op="' + post + ':' + op.id + '"' + (ok ? '' : ' disabled') + '><b>' + op.n + (op.ask ? '<em>呈</em>' : '') + '</b><span>' + op.d + '</span></button>';
+          }).join('') + '</div></div>';
+      });
+      h += '</div></div>';
+    }
     var due = [];
     var vb = Month.voteDue(); if (vb) due.push('月底常委会：' + BATTLES[vb].topic);
     var tp = Month.topicDue(); if (tp) due.push('月底常委会：' + TOPIC_BY_ID[tp].topic + '<div class="tintro">' + esc(TOPIC_BY_ID[tp].intro) + '</div>');
@@ -148,6 +162,7 @@ var UI = {
       '<div class="cpj-row"><i>结果</i><span class="cpj-fin ' + st + '">' + esc(fin) + '</span></div></div>';
   },
   propName: function(r){
+    if (r.kind === 'op'){ var op = OPS[r.post].filter(function(o){ return o.id === r.opId; })[0]; return OP_DEPT_N[r.post] + '·' + op.n + (r.t && r.t !== '_' && r.t.indexOf('area:') < 0 ? '：' + pn(r.t) : (r.t && r.t.indexOf('area:') === 0 ? '：' + AREAS.filter(function(a){ return 'area:' + a.id === r.t; })[0].n : '')); }
     if (r.kind === 'talk') return '请书记找' + pn(r.a) + '谈一次';
     if (r.kind === 'nom') return '提名' + pn(r.a) + '任' + POST_BY_ID[r.b].n;
     if (r.kind === 'give'){ var w = WANT_BY_ID[r.a]; return (w.kind === 'money' ? '给' + pn(w.who) + '批钱：' : '答应' + pn(w.who) + '：') + w.t; }
@@ -299,6 +314,39 @@ var UI = {
     save(); UI.render();
   },
 
+  doOp: function(post, opId){
+    var op = OPS[post].filter(function(o){ return o.id === opId; })[0];
+    var ts = Ops.targets(op);
+    if (op.tg === 'none'){ UI.runOp(post, opId, '_', op); return; }
+    var items = ts.map(function(t){
+      if (t.indexOf('area:') === 0){ var a = AREAS.filter(function(x){ return 'area:' + x.id === t; })[0]; return { v: t, n: a.n }; }
+      return { v: t, n: pn(t), s: UI.personSub(t), face: t };
+    });
+    var title = OP_DEPT_N[post] + '·' + op.n + (op.ask ? '（要书记点头）' : '');
+    UI.pickList(title, items, function(it){ UI.runOp(post, opId, it.v, op); });
+  },
+  runOp: function(post, opId, t, op){
+    UI.close();
+    if (op.ask){
+      /* 走呈批件：书记批不批 */
+      var ok = Props.left() > 0 && rnd() < ({ steady:0.55, strong:0.8, shrewd:0.68 }[G.bossType] + (G.trust - 55) / 90 - (op.gray ? 0.2 : 0));
+      if (Props.left() <= 0){ UI.toast('这个月的拟办已经用完了'); return; }
+      G.props.push({ kind:'op', post: post, opId: opId, t: t, ok: ok, m: G.month, no: (G.propNo = (G.propNo || 0) + 1) });
+      var rec = G.props[G.props.length - 1];
+      G.propLog = G.propLog || []; G.propLog.push(rec);
+      if (!ok){ rec.remark = pick(REJ_OP[G.bossType]); G.remarks.push({ m: G.month, t: rec.remark }); save(); UI.render(); return; }
+      rec.remark = pick(OK_OP[G.bossType]);
+      G.remarks.push({ m: G.month, t: rec.remark });
+      var r = Ops.run(post, opId, t);
+      rec.act = r.t; rec.fin = r.got || '办了'; rec.opGot = r.got;
+      save(); UI.render(); return;
+    }
+    var rr = Ops.run(post, opId, t);
+    G.actLog = (G.actLog || []).filter(function(x){ return G.month - x.m < 2; });
+    G.actLog.push({ m: G.month, n: OP_DEPT_N[post] + '·' + op.n, t: rr.t, got: rr.got, bad: rr.bad });
+    save(); UI.render();
+  },
+
   doProp: function(k){
     if (k === 'talk'){
       UI.pickList('请书记找谁谈', Props.talkTargets().map(function(id){ return { v: id, n: pn(id), s: UI.personSub(id), face: id }; }), function(it){ UI.runProp('talk', it.v); });
@@ -413,6 +461,7 @@ var UI = {
     $$('[data-opt]').forEach(function(b){ b.onclick = function(){ Month.choose(+b.dataset.opt); save(); UI.render(); }; });
     $$('[data-opt2]').forEach(function(b){ b.onclick = function(){ Month.choose(+b.dataset.opt2, 2); save(); UI.render(); }; });
     $$('[data-act]').forEach(function(b){ b.onclick = function(){ UI.doAct(b.dataset.act); }; });
+    $$('[data-op]').forEach(function(b){ b.onclick = function(){ var x = b.dataset.op.split(':'); UI.doOp(x[0], x[1]); }; });
     $$('[data-prop]').forEach(function(b){ b.onclick = function(){ UI.doProp(b.dataset.prop); }; });
     $$('[data-who]').forEach(function(b){ b.onclick = function(){ UI.showPerson(b.dataset.who); }; });
     $$('[data-post]').forEach(function(b){ b.onclick = function(){ UI.showPost(b.dataset.post); }; });

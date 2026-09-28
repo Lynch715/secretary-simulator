@@ -307,13 +307,23 @@ button{font-family:inherit;font-size:inherit;color:inherit}
   .doc h2{font-size:19px}
   .report p,.prose p{font-size:15px}
 }
+.panel.dept>h3{background:#EDE7DC;border-bottom-color:#D8D0C0}
+.deptwrap{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+.deptbox{border:1px solid var(--line2)}
+.deptn{padding:5px 10px;font-family:var(--song);font-size:14px;background:var(--paper2);border-bottom:1px solid var(--line2)}
+.deptn i{font-style:normal;font-size:11px;color:var(--ink3)}
+.deptbox .tiles{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));padding:8px}
+.tile.op{min-height:56px}
+.tile.op b em{font-style:normal;font-size:10px;color:var(--red);border:1px solid var(--red);padding:0 3px;margin-left:4px;vertical-align:2px}
+.tile.op.gray{border-left:3px solid var(--red)}
+@media (max-width:480px){ .deptbox .tiles{grid-template-columns:1fr 1fr} }
 
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-/* 大秘 build 2026-09-27 23:08 */
+/* 大秘 build 2026-09-28 03:27 */
 "use strict";
 /* === data/d10-people.js === */
 /* ── 人：常委十一个 + 干部池。
@@ -441,6 +451,13 @@ var PEOPLE_DEF = [
   { id:'guozi', n:'尹立本', p:'国资委主任', lvl:3, side:0, cap:1, age:58, area:'shizhi', dirt:1, amb:1,
     line:'58 岁。港口国企厂长出身，任国资委主任九年' },
 
+  { id:'wanhz', n:'万海舟', p:'纪委常委', lvl:2, side:-25, cap:2, age:44, area:'zhengfa', dirt:0, amb:2,
+    line:'44 岁。公安转纪检，在政法委工作过六年，任纪委常委两年' },
+  { id:'yanlw', n:'严立文', p:'日报社总编辑', lvl:3, side:-35, cap:2, age:52, area:'shizhi', dirt:1, amb:1,
+    line:'52 岁。跑了十五年市政府口的记者，任日报社总编辑五年' },
+  { id:'zengf', n:'曾凡', p:'广电台长', lvl:3, side:0, cap:2, age:47, area:'shizhi', dirt:0, amb:2,
+    line:'47 岁。播音员出身，任广电台长三年' },
+
   /* ── 苗子（开局不在任何要害位子上） ── */
   { id:'keshang', n:'葛守业', p:'市委办综合科科长', lvl:2, side:10, cap:2, age:44, area:'shiwei', dirt:0, amb:2, cand:1,
     line:'44 岁。市委办综合科科长，你原来的科长' },
@@ -535,6 +552,20 @@ var POSTS = [
     use:'手里的东西能坐实' },
   { id:'jw_fu',  n:'纪委副书记',       grp:'政法', lvl:3, holder:'jw_fu',
     use:'宋自强办案的那只手。交上去的东西结得快，也能坐实' },
+  /* 政法副职：正职在谁手里，副职就是另一只眼睛 */
+  { id:'ga_fu',  n:'公安局常务副局长', grp:'政法', lvl:2, holder:'guozc', fu:'gongan',
+    use:'正职做什么，他都知道。正职要是对面的人，他能拖一拖，也能把正职的东西一点点攒起来' },
+  { id:'jc_fu',  n:'副检察长',         grp:'政法', lvl:2, holder:'zhangyn', fu:'jcz',
+    use:'检察院的案子从谁手上过，他看得见' },
+  { id:'jw_cw',  n:'纪委常委',         grp:'政法', lvl:2, holder:'wanhz', fu:'jw_fu',
+    use:'纪委里的另一张嘴。交上去的东西走到哪一步，他知道' },
+  { id:'sj_fu',  n:'审计局副局长',     grp:'政法', lvl:2, holder:'qianwj', fu:'shenji',
+    use:'审计组派谁、审谁，他说得上话' },
+  /* 宣传 */
+  { id:'rb',     n:'日报社总编辑',     grp:'宣传', lvl:3, holder:'yanlw',
+    use:'版面给谁。还能往省里递内参' },
+  { id:'gd',     n:'广电台长',         grp:'宣传', lvl:3, holder:'zengf',
+    use:'晚间新闻头条是谁的镜头' },
   /* 市直 */
   { id:'caizheng', n:'财政局长',       grp:'市直', lvl:3, holder:'caizheng',
     use:'每年开春，书记手里能许出去的钱有多少，看他' },
@@ -2010,6 +2041,80 @@ var PR = {
   }
 };
 
+var OK_OP = { steady: ['「按程序办。」', '「可，稳妥些。」'], strong: ['「办。」', '「不要拖。」'], shrewd: ['「办。你盯着，别让别人插手。」', '「可以。做干净点。」'] };
+var REJ_OP = { steady: ['「这把刀，不要轻易动。」', '「再看看。」'], strong: ['「时机不对。」', '「等等。」'], shrewd: ['「动了这个，省里会怎么看？」', '「你想清楚，谁来收场。」'] };
+
+/* === data/d46-ops.js === */
+/* ── 能调动的部门：一把手是自己人，这里的事才办得了。都是虚构剧情文本。
+   tg：选什么（area 区县 / foe 对面的人 / any 见过的干部 / case 手里有两档东西的非常委 / head 局长或区县长 / none）
+   ask：要不要书记点头；gray：程序上站不住 ── */
+var OPS = {
+  gongan: [
+    { id:'zx', n:'专项整治', d:'治安整治，挑一片', tg:'area' },
+    { id:'dl', n:'调取记录', d:'某人的行程、通话', tg:'foe', ask:1, gray:1 }
+  ],
+  jcz: [
+    { id:'la', n:'立案侦查', d:'手里有东西的，直接立案', tg:'case', ask:1 }
+  ],
+  jw_fu: [
+    { id:'th', n:'谈话函询', d:'请一个人来说清楚', tg:'any' },
+    { id:'lh', n:'初核转立案', d:'一个月见结果', tg:'case', ask:1 }
+  ],
+  shenji: [
+    { id:'sj', n:'专项审计', d:'审一个局长或区县长', tg:'head' }
+  ],
+  xinfang: [
+    { id:'zb', n:'转办举报', d:'把压着的信转出去', tg:'area' }
+  ],
+  rb: [
+    { id:'fb', n:'头版', d:'给书记的事一个整版', tg:'none' },
+    { id:'nc', n:'内参', d:'往省里递一份材料', tg:'none', ask:1 }
+  ],
+  gd: [
+    { id:'jt', n:'镜头', d:'晚间新闻给谁', tg:'none' }
+  ]
+};
+var OP_DEPT_N = { gongan:'公安局', jcz:'检察院', jw_fu:'纪委', shenji:'审计局', xinfang:'信访局', rb:'日报社', gd:'广电台' };
+
+var OP_TXT = {
+  zx_hit: ['整治搞了三个晚上，在{A}排查了十一家场子。有一家的实际老板，是{N}的小舅子。\n笔录第二十七页上，有{N}的名字。',
+           '{A}的整治收网那天是周五凌晨。带回来的人里有一个包工头，在车上就开了口，说的是{N}那两年的事。'],
+  zx_none: ['整治在{A}搞了一个礼拜，一条跟上面沾边的线也没有。\n本地论坛上有人发帖，说市里搞运动。方静仪打电话来问了一句。'],
+  dl: ['记录调出来了。{N}每个礼拜四晚上都会去同一个地方，待两个钟头。',
+       '通话记录里，{N}跟一个号码三个月打了一百四十次。那个号码登记在一家公司名下。'],
+  dl_clean: ['记录调出来了，干干净净。\n一个礼拜后，{N}在常委会上说，最近有人在查他的通话。他没说是谁，眼睛看着书记这边。'],
+  la: ['检察院立了案，案号贴在公告栏上。{N}那天照常上班，下午四点被请走了。'],
+  th: ['纪委的函上午送到，{N}下午就来了，带着一个笔记本，说得很细。', '{N}在谈话室坐了一个半钟头。出来的时候，衬衫后背湿了一片。'],
+  th_turn: ['{N}说完正事，又加了一句：以后市委这边有什么需要，他随叫随到。'],
+  lh: ['初核一个月，转了立案。{N}被带走那天，办公室的窗户开着，桌上的茶还是热的。'],
+  sj: ['审计组进驻二十天。{N}那一摊的账，有三笔对不上。', '审计报告初稿七十页。第四十一页那一段，{N}看了以后，一整天没出办公室。'],
+  sj_clean: ['审计组进驻二十天，账是平的。{N}在报告上签字的时候，笑了一下：「欢迎你们常来。」'],
+  zb: ['信访局把压了半年的几封举报信转到了纪委。其中一封，举报的是{N}。', '转出去的信里，有一封按了七个手印。被举报的人是{N}。'],
+  zb_none: ['信访局把{A}的积案翻了一遍，都是些邻里纠纷，跟谁也不沾边。'],
+  fb: ['日报头版整版，标题是书记讲话里的一句话。市政府办订的那几份报纸，第二天才送到。', '头版登了高新区的一组照片，版面下角市政府的会议消息只有三行。'],
+  nc: ['内参一千八百字，送到了省委办公厅。一个礼拜后，省里一位领导在上面批了一行字。'],
+  jt: ['晚间新闻头条是书记在白沙看搬迁点，一分四十秒。陈市长那天的招商会，排在第六条。']
+};
+
+/* 市长用他手里的部门做的动作，你看见的样子 */
+var MOP_TXT = {
+  gongan: '有人去你老家县城，查了你父亲的档案。',
+  jcz: '检察院把你放上去的{N}叫去「了解情况」，谈了四个钟头。',
+  jw_fu: '你交上去的那份东西，在纪委走得比平时慢。',
+  shenji: '审计组进了{N}那个单位，说是例行审计。',
+  xinfang: '一封告你的信到了信访局，当天就被转去了纪委。',
+  rb: '日报登了一篇评论，不点名，说的是「个别领导好大喜功」。配图是高新区一片空地。',
+  gd: '晚间新闻头条给了陈市长的招商会，两分半。书记的调研排在第五条。'
+};
+/* 副职顶回去以后 */
+var MOP_BLOCK = {
+  gongan: '你父亲的档案没调成。派出所的人说，手续不全。',
+  jcz: '检察院那边把人放回来了，谈话记录压在副检察长手里，没往上报。',
+  jw_fu: '材料在纪委走得比往常快。有人在里头替你说了话。',
+  shenji: '审计组撤了。副局长说，这个单位去年刚审过。',
+  xinfang: '那封告你的信没转出去。信访局压下来了。'
+};
+
 /* === data/d50-endings.js === */
 /* ── 结局。每个三段，最后一句「后来」。不写道理 ── */
 var ENDINGS = {
@@ -2057,7 +2162,7 @@ var CODA = {
 
 /* === js/00-core.js === */
 /* ── 00-core：随机、工具、存档 ── */
-var VER = '2.1.0';
+var VER = '2.2.0';
 var SAVE_KEY = 'dami_save_v21';
 var DEX_KEY = 'dami_dex_v2';
 var START_Y = 2027, TERM = 60;
@@ -2249,7 +2354,7 @@ function placeIn(postId, id, by){
   var pl = POST_BY_ID[postId].lvl;
   if (p.lvl < pl){ p.lvl = pl; p.yrs = 0; }
   p.p = POST_BY_ID[postId].n;
-  if (by === 'boss'){ p.by = 'boss'; p.loyal = 85; addSide(id, 30); }
+  if (by === 'boss'){ p.by = 'boss'; p.loyal = 85; p.byAt = G.month; addSide(id, 30); }
   if (by === 'mayor'){ p.by = 'mayor'; addSide(id, -25); }
 }
 function vacate(postId){
@@ -2506,6 +2611,7 @@ var Grip = {
     var b = 0;
     if (own('shenji') && GOV.indexOf(id) >= 0) b++;
     if (own('gongan')) b++;
+    if (own('jcz') || own('jw_fu')) b++;
     if (own('xinfang') && LOCAL.indexOf(id) >= 0) b++;
     if ((own('fb_zr') || own('sz_ms')) && (id === 'mayor' || id === 'vice1')) b++;
     if (own('zhujian') && (id === 'zhujian' || id === 'chengguan' || id === 'mayor')) b++;
@@ -2867,6 +2973,96 @@ function checkPromises(){
   }
 }
 
+/* === js/35-ops.js === */
+/* ── 35-ops：能调动的部门。正职自己人 → 打对手；副职自己人 → 顶市长、架空正职 ── */
+var Ops = {
+  /* 手里能调动的部门（正职是自己人的） */
+  depts: function(){
+    return Object.keys(OPS).filter(function(post){ return own(post); });
+  },
+  cool: function(post){ return G.opCool && G.opCool[post] && G.month - G.opCool[post] < 2; },
+
+  targets: function(op){
+    switch (op.tg){
+      case 'area': return AREAS.filter(function(a){ return ['shizhi', 'shifu', 'shiwei'].indexOf(a.id) < 0; }).map(function(a){ return 'area:' + a.id; });
+      case 'foe': return Object.keys(G.people).filter(function(id){ return P(id).met && !P(id).gone && seenCamp(id) < 0 && id !== 'mayor'; });
+      case 'any': return Object.keys(G.people).filter(function(id){ var p = P(id); return p.met && !p.gone && !isStanding(id) && p.dirt; });
+      case 'head': return Object.keys(G.people).filter(function(id){ var p = P(id); return p.met && !p.gone && p.dirt && seenCamp(id) <= 0 && /局长|区长|县长|区委书记|县委书记|主任/.test(p.p); });
+      case 'case': return Grip.list().filter(function(id){ return id !== 'mayor' && !isStanding(id) && Grip.level(id) >= 2; });
+      case 'none': return ['_'];
+    }
+    return [];
+  },
+
+  run: function(post, opId, t){
+    var op = OPS[post].filter(function(o){ return o.id === opId; })[0];
+    G.opCool = G.opCool || {}; G.opCool[post] = G.month;
+    var area = (t || '').indexOf('area:') === 0 ? t.replace('area:', '') : null;
+    var an = area ? AREAS.filter(function(a){ return a.id === area; })[0].n : '';
+    var who = (t && t !== '_' && !area) ? t : null;
+    var wn = who ? pn(who) : '';
+    var r = { t: '', got: '' };
+
+    if (opId === 'zx'){
+      var foes = Object.keys(G.people).filter(function(id){ var d = PDEF[id]; return d && d.area === area && seenCamp(id) < 0 && P(id).dirt && !P(id).gone; });
+      if (foes.length){ var v = pick(foes); Grip.add(v, 2); applyFx({ heat: 3 }); r.t = pick(OP_TXT.zx_hit).replace(/\{A\}/g, an).replace(/\{N\}/g, pn(v)); r.got = '拿到了' + pn(v) + '的东西'; }
+      else { applyFx({ heat: 4, prestige: -2, side: { xuanchuan: -3 } }); r.t = OP_TXT.zx_none[0].replace(/\{A\}/g, an); }
+    } else if (opId === 'dl'){
+      applyFx({ heat: 6 });
+      if (P(who).dirt){ Grip.add(who, 2); r.t = pick(OP_TXT.dl).replace(/\{N\}/g, wn); r.got = wn + '的东西 +1'; }
+      else { P(who).clean = 1; P(who).known.dirt = 1; addSide(who, -6); applyFx({ heat: 4, feud: 4 }); r.t = OP_TXT.dl_clean.replace(/\{N\}/g, wn); r.bad = 1; }
+    } else if (opId === 'la' || opId === 'lh'){
+      G.pending.push({ k: 'pull', id: who, w: 'diao', mo: G.month + (opId === 'lh' ? 1 : 2) });
+      applyFx({ heat: opId === 'la' ? 6 : 5, feud: 4 });
+      r.t = (opId === 'la' ? OP_TXT.la : OP_TXT.lh)[0].replace(/\{N\}/g, wn);
+      r.got = '立案了，' + (opId === 'lh' ? '一个月' : '两个月') + '后有结果';
+    } else if (opId === 'th'){
+      P(who).known.dirt = 1;
+      if (P(who).side < 20 && P(who).cap <= 2 && seenCamp(who) <= 0 && rnd() < 0.5){ addSide(who, 25); r.t = pick(OP_TXT.th) + '\n' + OP_TXT.th_turn[0]; r.got = wn + '往书记这边靠了一大步'; }
+      else { addSide(who, 6); Grip.add(who, 1); r.t = pick(OP_TXT.th).replace(/\{N\}/g, wn); r.got = wn + '的底露了一层'; }
+      r.t = r.t.replace(/\{N\}/g, wn);
+    } else if (opId === 'sj'){
+      applyFx({ heat: 3 });
+      if (P(who).dirt){ Grip.add(who, 3); r.t = pick(OP_TXT.sj).replace(/\{N\}/g, wn); r.got = wn + '的账翻出来了'; }
+      else { addSide(who, -5); applyFx({ feud: 3 }); r.t = OP_TXT.sj_clean.replace(/\{N\}/g, wn); r.bad = 1; }
+    } else if (opId === 'zb'){
+      var fs = Object.keys(G.people).filter(function(id){ var d = PDEF[id]; return d && d.area === area && seenCamp(id) < 0 && P(id).dirt && !P(id).gone; });
+      if (fs.length){ var vv = pick(fs); Grip.add(vv, 1); r.t = pick(OP_TXT.zb).replace(/\{A\}/g, an).replace(/\{N\}/g, pn(vv)); r.got = '添了' + pn(vv) + '一笔'; }
+      else r.t = OP_TXT.zb_none[0].replace(/\{A\}/g, an);
+    } else if (opId === 'fb' || opId === 'jt'){
+      applyFx({ prestige: 3, feud: 3, side: { mayor: 0 } });
+      r.t = (opId === 'fb' ? pick(OP_TXT.fb) : OP_TXT.jt[0]); r.got = '书记的声势起来了';
+    } else if (opId === 'nc'){
+      applyFx({ prestige: 3, feud: -6, bossRisk: -4 }); G.provAt = G.month - 3;
+      r.t = OP_TXT.nc[0]; r.got = '省里那边动了一动';
+    }
+    return r;
+  },
+
+  /* 市长动手，副职能不能顶回去 */
+  mayorHit: function(dept){
+    var fu = { gongan: 'ga_fu', jcz: 'jc_fu', jw_fu: 'jw_cw', shenji: 'sj_fu' }[dept];
+    if (fu && own(fu)) return MOP_BLOCK[dept] || null;
+    return MOP_TXT[dept] || null;
+  }
+};
+
+/* 副职架空正职：坐满半年，每两个月送一次正职的东西 */
+function fuFeed(){
+  ['ga_fu', 'jc_fu', 'jw_cw', 'sj_fu'].forEach(function(fp){
+    if (!own(fp)) return;
+    var pdef = POST_BY_ID[fp], zp = pdef.fu;
+    var zid = holder(zp);
+    if (!zid || camp(zid) >= 0 || P(zid).gone) return;
+    var fid = holder(fp);
+    if (P(fid).by !== 'boss' || G.month - (P(fid).byAt || G.month) < 6) return;
+    if ((G.month - (P(fid).byAt || 0)) % 2 !== 0) return;
+    if (P(zid).dirt && Grip.add(zid, 2)){
+      G.nextReport.push(pn(fid) + '把' + pn(zid) + '的一份东西送到了你手上。他没多说，只说了一句：这个位子，他坐得不干净。');
+    }
+  });
+}
+
 /* === js/40-mayor.js === */
 /* ── 40-mayor：市长也在下棋。同一套动作，他挑最划算的 ── */
 var Mayor = {
@@ -2921,8 +3117,17 @@ var Mayor = {
     } else {
       var d = own('xinfang') || own('gongan') ? 2 : 4;
       if (own('sw_fu')) d -= 1;
-      applyFx({ heat: d, bossRisk: s >= 55 ? 2.5 : 0.8 });
-      Mayor.seen('dig', pick(ML_TXT.dig));
+      /* 市长手里有哪些部门，随机用一个来打你，副职是自己人能顶回去 */
+      var mdept = ['gongan', 'jcz', 'jw_fu', 'shenji', 'xinfang', 'rb', 'gd'].filter(function(dp){ return mayors(dp); });
+      if (mdept.length && rnd() < 0.6){
+        var dep = pick(mdept), line = Ops.mayorHit(dep);
+        var blocked = line === (MOP_BLOCK[dep] || null) && MOP_BLOCK[dep];
+        applyFx({ heat: blocked ? 1 : d, bossRisk: (s >= 55 ? 2.5 : 0.8) * (blocked ? 0.4 : 1) });
+        Mayor.seen('dig', line.replace(/\{N\}/g, (function(){ var m = Object.keys(G.people).filter(function(id){ return P(id).by === 'boss' && P(id).post && !P(id).gone; }); return m.length ? pn(pick(m)) : '你的人'; })()));
+      } else {
+        applyFx({ heat: d, bossRisk: s >= 55 ? 2.5 : 0.8 });
+        Mayor.seen('dig', pick(ML_TXT.dig));
+      }
     }
   },
   /* 每个空出来的位子，他都报一个人 */
@@ -3240,6 +3445,7 @@ var Month = {
     if (G.ending) return Month.close();
 
     Month.drift();
+    fuFeed();
     checkPromises();
     RETIRE.forEach(function(r){ if (r.mo === G.month + 1){ var h = holder(r.post); if (h && h === POST_BY_ID[r.post].holder){ P(h).gone = 'retire'; vacate(r.post); G.nextReport.push(r.t); } } });
 
@@ -3477,6 +3683,20 @@ var UI = {
         var n = Act.targets(a.id).length;
         return '<button class="tile" data-act="' + a.id + '"' + (G.acts <= 0 || !n ? ' disabled' : '') + '><b>' + a.n + '</b><span>' + a.d + '</span></button>';
       }).join('') + '</div>' + UI.doneList() + '</div>';
+    /* 能调动的部门 */
+    var depts = Ops.depts();
+    if (depts.length){
+      h += '<div class="panel dept"><h3><span class="ttl">手里的部门</span></h3><div class="deptwrap">';
+      depts.forEach(function(post){
+        var cool = Ops.cool(post);
+        h += '<div class="deptbox"><div class="deptn">' + esc(OP_DEPT_N[post]) + (cool ? '<i>（这两个月动过了）</i>' : '') + '</div><div class="tiles">' +
+          OPS[post].map(function(op){
+            var ok = !cool && Ops.targets(op).length;
+            return '<button class="tile op' + (op.gray ? ' gray' : '') + '" data-op="' + post + ':' + op.id + '"' + (ok ? '' : ' disabled') + '><b>' + op.n + (op.ask ? '<em>呈</em>' : '') + '</b><span>' + op.d + '</span></button>';
+          }).join('') + '</div></div>';
+      });
+      h += '</div></div>';
+    }
     var due = [];
     var vb = Month.voteDue(); if (vb) due.push('月底常委会：' + BATTLES[vb].topic);
     var tp = Month.topicDue(); if (tp) due.push('月底常委会：' + TOPIC_BY_ID[tp].topic + '<div class="tintro">' + esc(TOPIC_BY_ID[tp].intro) + '</div>');
@@ -3539,6 +3759,7 @@ var UI = {
       '<div class="cpj-row"><i>结果</i><span class="cpj-fin ' + st + '">' + esc(fin) + '</span></div></div>';
   },
   propName: function(r){
+    if (r.kind === 'op'){ var op = OPS[r.post].filter(function(o){ return o.id === r.opId; })[0]; return OP_DEPT_N[r.post] + '·' + op.n + (r.t && r.t !== '_' && r.t.indexOf('area:') < 0 ? '：' + pn(r.t) : (r.t && r.t.indexOf('area:') === 0 ? '：' + AREAS.filter(function(a){ return 'area:' + a.id === r.t; })[0].n : '')); }
     if (r.kind === 'talk') return '请书记找' + pn(r.a) + '谈一次';
     if (r.kind === 'nom') return '提名' + pn(r.a) + '任' + POST_BY_ID[r.b].n;
     if (r.kind === 'give'){ var w = WANT_BY_ID[r.a]; return (w.kind === 'money' ? '给' + pn(w.who) + '批钱：' : '答应' + pn(w.who) + '：') + w.t; }
@@ -3690,6 +3911,39 @@ var UI = {
     save(); UI.render();
   },
 
+  doOp: function(post, opId){
+    var op = OPS[post].filter(function(o){ return o.id === opId; })[0];
+    var ts = Ops.targets(op);
+    if (op.tg === 'none'){ UI.runOp(post, opId, '_', op); return; }
+    var items = ts.map(function(t){
+      if (t.indexOf('area:') === 0){ var a = AREAS.filter(function(x){ return 'area:' + x.id === t; })[0]; return { v: t, n: a.n }; }
+      return { v: t, n: pn(t), s: UI.personSub(t), face: t };
+    });
+    var title = OP_DEPT_N[post] + '·' + op.n + (op.ask ? '（要书记点头）' : '');
+    UI.pickList(title, items, function(it){ UI.runOp(post, opId, it.v, op); });
+  },
+  runOp: function(post, opId, t, op){
+    UI.close();
+    if (op.ask){
+      /* 走呈批件：书记批不批 */
+      var ok = Props.left() > 0 && rnd() < ({ steady:0.55, strong:0.8, shrewd:0.68 }[G.bossType] + (G.trust - 55) / 90 - (op.gray ? 0.2 : 0));
+      if (Props.left() <= 0){ UI.toast('这个月的拟办已经用完了'); return; }
+      G.props.push({ kind:'op', post: post, opId: opId, t: t, ok: ok, m: G.month, no: (G.propNo = (G.propNo || 0) + 1) });
+      var rec = G.props[G.props.length - 1];
+      G.propLog = G.propLog || []; G.propLog.push(rec);
+      if (!ok){ rec.remark = pick(REJ_OP[G.bossType]); G.remarks.push({ m: G.month, t: rec.remark }); save(); UI.render(); return; }
+      rec.remark = pick(OK_OP[G.bossType]);
+      G.remarks.push({ m: G.month, t: rec.remark });
+      var r = Ops.run(post, opId, t);
+      rec.act = r.t; rec.fin = r.got || '办了'; rec.opGot = r.got;
+      save(); UI.render(); return;
+    }
+    var rr = Ops.run(post, opId, t);
+    G.actLog = (G.actLog || []).filter(function(x){ return G.month - x.m < 2; });
+    G.actLog.push({ m: G.month, n: OP_DEPT_N[post] + '·' + op.n, t: rr.t, got: rr.got, bad: rr.bad });
+    save(); UI.render();
+  },
+
   doProp: function(k){
     if (k === 'talk'){
       UI.pickList('请书记找谁谈', Props.talkTargets().map(function(id){ return { v: id, n: pn(id), s: UI.personSub(id), face: id }; }), function(it){ UI.runProp('talk', it.v); });
@@ -3804,6 +4058,7 @@ var UI = {
     $$('[data-opt]').forEach(function(b){ b.onclick = function(){ Month.choose(+b.dataset.opt); save(); UI.render(); }; });
     $$('[data-opt2]').forEach(function(b){ b.onclick = function(){ Month.choose(+b.dataset.opt2, 2); save(); UI.render(); }; });
     $$('[data-act]').forEach(function(b){ b.onclick = function(){ UI.doAct(b.dataset.act); }; });
+    $$('[data-op]').forEach(function(b){ b.onclick = function(){ var x = b.dataset.op.split(':'); UI.doOp(x[0], x[1]); }; });
     $$('[data-prop]').forEach(function(b){ b.onclick = function(){ UI.doProp(b.dataset.prop); }; });
     $$('[data-who]').forEach(function(b){ b.onclick = function(){ UI.showPerson(b.dataset.who); }; });
     $$('[data-post]').forEach(function(b){ b.onclick = function(){ UI.showPost(b.dataset.post); }; });

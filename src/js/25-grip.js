@@ -36,6 +36,7 @@ var Grip = {
     var b = 0;
     if (own('shenji') && GOV.indexOf(id) >= 0) b++;
     if (own('gongan')) b++;
+    if (own('jcz') || own('jw_fu')) b++;
     if (own('xinfang') && LOCAL.indexOf(id) >= 0) b++;
     if ((own('fb_zr') || own('sz_ms')) && (id === 'mayor' || id === 'vice1')) b++;
     if (own('zhujian') && (id === 'zhujian' || id === 'chengguan' || id === 'mayor')) b++;

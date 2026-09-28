@@ -15,6 +15,20 @@ var POSTS = [
     use:'手里的东西能坐实' },
   { id:'jw_fu',  n:'纪委副书记',       grp:'政法', lvl:3, holder:'jw_fu',
     use:'宋自强办案的那只手。交上去的东西结得快，也能坐实' },
+  /* 政法副职：正职在谁手里，副职就是另一只眼睛 */
+  { id:'ga_fu',  n:'公安局常务副局长', grp:'政法', lvl:2, holder:'guozc', fu:'gongan',
+    use:'正职做什么，他都知道。正职要是对面的人，他能拖一拖，也能把正职的东西一点点攒起来' },
+  { id:'jc_fu',  n:'副检察长',         grp:'政法', lvl:2, holder:'zhangyn', fu:'jcz',
+    use:'检察院的案子从谁手上过，他看得见' },
+  { id:'jw_cw',  n:'纪委常委',         grp:'政法', lvl:2, holder:'wanhz', fu:'jw_fu',
+    use:'纪委里的另一张嘴。交上去的东西走到哪一步，他知道' },
+  { id:'sj_fu',  n:'审计局副局长',     grp:'政法', lvl:2, holder:'qianwj', fu:'shenji',
+    use:'审计组派谁、审谁，他说得上话' },
+  /* 宣传 */
+  { id:'rb',     n:'日报社总编辑',     grp:'宣传', lvl:3, holder:'yanlw',
+    use:'版面给谁。还能往省里递内参' },
+  { id:'gd',     n:'广电台长',         grp:'宣传', lvl:3, holder:'zengf',
+    use:'晚间新闻头条是谁的镜头' },
   /* 市直 */
   { id:'caizheng', n:'财政局长',       grp:'市直', lvl:3, holder:'caizheng',
     use:'每年开春，书记手里能许出去的钱有多少，看他' },

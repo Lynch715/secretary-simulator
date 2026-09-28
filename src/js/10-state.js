@@ -106,7 +106,7 @@ function placeIn(postId, id, by){
   var pl = POST_BY_ID[postId].lvl;
   if (p.lvl < pl){ p.lvl = pl; p.yrs = 0; }
   p.p = POST_BY_ID[postId].n;
-  if (by === 'boss'){ p.by = 'boss'; p.loyal = 85; addSide(id, 30); }
+  if (by === 'boss'){ p.by = 'boss'; p.loyal = 85; p.byAt = G.month; addSide(id, 30); }
   if (by === 'mayor'){ p.by = 'mayor'; addSide(id, -25); }
 }
 function vacate(postId){

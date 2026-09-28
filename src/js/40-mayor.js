@@ -51,8 +51,17 @@ var Mayor = {
     } else {
       var d = own('xinfang') || own('gongan') ? 2 : 4;
       if (own('sw_fu')) d -= 1;
-      applyFx({ heat: d, bossRisk: s >= 55 ? 2.5 : 0.8 });
-      Mayor.seen('dig', pick(ML_TXT.dig));
+      /* 市长手里有哪些部门，随机用一个来打你，副职是自己人能顶回去 */
+      var mdept = ['gongan', 'jcz', 'jw_fu', 'shenji', 'xinfang', 'rb', 'gd'].filter(function(dp){ return mayors(dp); });
+      if (mdept.length && rnd() < 0.6){
+        var dep = pick(mdept), line = Ops.mayorHit(dep);
+        var blocked = line === (MOP_BLOCK[dep] || null) && MOP_BLOCK[dep];
+        applyFx({ heat: blocked ? 1 : d, bossRisk: (s >= 55 ? 2.5 : 0.8) * (blocked ? 0.4 : 1) });
+        Mayor.seen('dig', line.replace(/\{N\}/g, (function(){ var m = Object.keys(G.people).filter(function(id){ return P(id).by === 'boss' && P(id).post && !P(id).gone; }); return m.length ? pn(pick(m)) : '你的人'; })()));
+      } else {
+        applyFx({ heat: d, bossRisk: s >= 55 ? 2.5 : 0.8 });
+        Mayor.seen('dig', pick(ML_TXT.dig));
+      }
     }
   },
   /* 每个空出来的位子，他都报一个人 */

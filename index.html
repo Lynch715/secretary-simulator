@@ -329,7 +329,7 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 <body>
 <div id="app"></div>
 <script>
-/* 大秘 build 2026-09-28 13:52 */
+/* 大秘 build 2026-09-28 13:57 */
 "use strict";
 /* === data/d10-people.js === */
 /* ── 人：常委十一个 + 干部池。
@@ -1985,7 +1985,7 @@ t_culture: { rise:'tr_culture',
 t_land: { rise:'tr_land',
   boss:'「地是云州最后一点家底。卖给谁，要看二十年以后。」',
   mayor:'陈立群在政府常务会上说：「城关是老城，老百姓等改造等了十几年。地不给城关，旧改的钱从哪儿来？」',
-  hid:'城关报的九宗地里，有三宗挨着老货场。老货场那块地，上个月刚让立民建设拿走了。',
+  hid:'城关报的九宗地里，有三宗挨着老货场。老货场那块地，前些日子让立民建设拿走了。',
   why:{ vice1:'土地出让计划是高振邦牵头编的。', gaoxin:'高新区扩区的那两千亩地，就在这份计划里。' },
   echo:{ win:{ t:'高新区东边那片地挂牌那天，来了四家企业竞拍，价钱一路往上走。老货场那边的围墙，又刷了一遍。', fx:{ money:1 } },
          lose:{ t:'城关九宗地拍出去七宗，有四宗是同一家公司拿的，都是底价。那半年，吴敬之没来过市委。', fx:{ prestige:-1, side:{ gaoxin:-3 } } } } },
@@ -2148,7 +2148,7 @@ tr_land: { title:'一张图', img:'s_city', who:null, topic:'t_land',
     { t:'去高新区东边那两千亩地上走一走', fx:{ side:{ gaoxin:5 } },
       res:'地里种着玉米，田埂边上插着一排新木桩。吴敬之的司机说，桩子是吴书记自己带人去插的。' },
     { t:'查查城关那九宗地挨着什么', fx:{ heat:2, flag:'hid_t_land' },
-      res:'有三宗挨着老货场。老货场那块地，上个月刚过户，新主人是立民建设。' }
+      res:'有三宗挨着老货场。老货场那块地，前些日子刚过户，新主人是立民建设。' }
   ] },
 
 tr_pension: { title:'活动室', img:'s_county', who:'gangkou', topic:'t_pension',
@@ -2173,6 +2173,10 @@ tr_rule: { title:'半个钟头', img:'s_changwei', who:'mishuzhang', topic:'t_ru
       res:'邱仲华答应了。碰头会上他讲了十分钟，讲他当秘书那会儿，常委会的材料要提前一个礼拜送。' }
   ] }
 });
+
+/* 议题按月份排定，一局一轮，不抽签。12、30 月是交锋开会，不排 */
+var TOPIC_SCHEDULE = { 3:'t_invest', 6:'t_adj', 9:'t_rule', 15:'t_env', 18:'t_school', 21:'t_petition', 24:'t_land', 27:'t_pension',
+  33:'t_river', 36:'t_hospital', 39:'t_cadre', 42:'t_culture', 45:'t_safety', 48:'t_debt', 51:'t_oldhouse', 54:'t_org' };
 
 /* === data/d40-text.js === */
 /* ── 行动、批示、战报的零碎文字。按文笔规范 v2 写 ── */
@@ -3682,11 +3686,7 @@ var Month = {
   pickTopic: function(m){
     if (m % 3 !== 0 || m >= TERM) return null;
     for (var k in BATTLES){ var b = BATTLES[k]; if (b.mo === m && !b.kind && !G.battles[k]) return null; }
-    G.tUsed = G.tUsed || {};
-    var c = TOPICS.filter(function(t){ return !G.tUsed[t.id] || m - G.tUsed[t.id] > 20; });
-    if (!c.length) return null;
-    var t = pick(c); G.tUsed[t.id] = m;
-    return t.id;
+    return TOPIC_SCHEDULE[m] || null;
   },
   topicDue: function(){ return G.topic && !G.topicDone ? G.topic : null; },
   topicResult: function(tid, pass){

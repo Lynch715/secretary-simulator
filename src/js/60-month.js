@@ -74,11 +74,7 @@ var Month = {
   pickTopic: function(m){
     if (m % 3 !== 0 || m >= TERM) return null;
     for (var k in BATTLES){ var b = BATTLES[k]; if (b.mo === m && !b.kind && !G.battles[k]) return null; }
-    G.tUsed = G.tUsed || {};
-    var c = TOPICS.filter(function(t){ return !G.tUsed[t.id] || m - G.tUsed[t.id] > 20; });
-    if (!c.length) return null;
-    var t = pick(c); G.tUsed[t.id] = m;
-    return t.id;
+    return TOPIC_SCHEDULE[m] || null;
   },
   topicDue: function(){ return G.topic && !G.topicDone ? G.topic : null; },
   topicResult: function(tid, pass){

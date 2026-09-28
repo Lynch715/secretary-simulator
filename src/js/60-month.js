@@ -1,6 +1,12 @@
 /* ── 60-month：一个月怎么走 ── */
 /* 戏里要用的人，组织部不挪 */
 var ROT_KEEP = ['gangkou', 'chengguan', 'qingchuan', 'zhujian', 'sz_ms', 'fb_zr', 'cg_quzhang', 'qc_xianzhang', 'ml_xz', 'gx_qz'];
+/* 硬拍板拍下来的事，底下执行打对折 */
+function halfGain(fx){
+  var o = {};
+  for (var k in fx){ var v = fx[k]; o[k] = (typeof v === 'number' && v > 0) ? Math.floor(v / 2) : v; }
+  return o;
+}
 var Month = {
   start: function(first){
     G.acts = G.school ? 0 : 3;
@@ -15,8 +21,15 @@ var Month = {
     G.scene2 = Month.pickDark(); G.scene2Done = false; G.scene2Res = null;
     var sc2 = SCENES[G.scene2];
     if (sc2 && sc2.fn) sc2.fn();
-    G.topic = Month.pickTopic(); G.topicDone = false;
-    if (G.school){ G.sceneDone = true; G.scene2Done = true; }
+    /* 常规议题：前一个月定题，来由的戏在前一个月演 */
+    G.topic = (G.topicNext && G.topicNext.m === G.month) ? G.topicNext.id : (G.topicNext === undefined ? Month.pickTopic(G.month) : null);
+    G.topicDone = false;
+    G.topicNext = null; G.scene3 = null; G.scene3Done = false; G.scene3Res = null;
+    var nt = Month.pickTopic(G.month + 1);
+    if (nt){ G.topicNext = { id: nt, m: G.month + 1 }; G.scene3 = TOPIC_BY_ID[nt].rise || null; }
+    /* 回响：过去的事落了地 */
+    G.echoes = (G.echoes || []).filter(function(e){ if (e.m > G.month) return true; G.report.push(fill(e.t)); applyFx(e.fx); return false; });
+    if (G.school){ G.sceneDone = true; G.scene2Done = true; G.scene3Done = true; }
   },
 
   pickScene: function(){
@@ -58,25 +71,39 @@ var Month = {
   },
 
   /* 常规常委会：每季度一次，交锋开会那个月不另开 */
-  pickTopic: function(){
-    if (G.month % 3 !== 0 || G.month >= TERM || Month.voteDue()) return null;
+  pickTopic: function(m){
+    if (m % 3 !== 0 || m >= TERM) return null;
+    for (var k in BATTLES){ var b = BATTLES[k]; if (b.mo === m && !b.kind && !G.battles[k]) return null; }
     G.tUsed = G.tUsed || {};
-    var c = TOPICS.filter(function(t){ return !G.tUsed[t.id] || G.month - G.tUsed[t.id] > 20; });
+    var c = TOPICS.filter(function(t){ return !G.tUsed[t.id] || m - G.tUsed[t.id] > 20; });
     if (!c.length) return null;
-    var t = pick(c); G.tUsed[t.id] = G.month;
+    var t = pick(c); G.tUsed[t.id] = m;
     return t.id;
   },
   topicDue: function(){ return G.topic && !G.topicDone ? G.topic : null; },
   topicResult: function(tid, pass){
     var t = TOPIC_BY_ID[tid];
     G.topicDone = true;
-    applyFx(pass ? t.win : t.lose);
+    var hard = G.hardNow; G.hardNow = false;
+    applyFx(hard ? halfGain(t.win) : (pass ? t.win : t.lose));
+    if (t.echo){ var e = pass ? t.echo.win : t.echo.lose; G.echoes = G.echoes || []; G.echoes.push({ m: G.month + 2 + ri(2), t: e.t, fx: e.fx }); }
     if (pass) G.tWin = (G.tWin || 0) + 1; else G.tLose = (G.tLose || 0) + 1;
     logIt('常委会·' + t.topic + '：' + (pass ? '过了' : '没过') + '。');
     G.nextReport.push(pass ? t.winT : t.loseT);
   },
 
   choose: function(i, slot){
+    if (slot === 3){
+      var s3 = SCENES[G.scene3]; if (!s3 || G.scene3Done) return null;
+      var o3 = s3.opts[i];
+      if (o3.req && !o3.req()) return null;
+      var got3 = applyFx(o3.fx || {});
+      if (o3.fn) o3.fn();
+      G.scene3Done = true;
+      G.scene3Res = { i: i, t: fill(o3.res), got: got3 };
+      G.chose = G.chose || {}; G.chose[G.scene3] = i;
+      return G.scene3Res;
+    }
     if (slot === 2){
       var s2 = SCENES[G.scene2]; if (!s2 || G.scene2Done) return null;
       var o2 = s2.opts[i];
@@ -111,11 +138,12 @@ var Month = {
     var b = BATTLES[bid];
     G.battles[bid] = pass ? 'win' : 'lose';
     if (bid === 'b8') return;
+    var hard = G.hardNow; G.hardNow = false;
     var fx = pass ? b.win : b.lose;
     if (bid === 'b1' && G.flags.b1_soft) fx = { prestige: 4, money: 1, trust: 2 };
     if (bid === 'b3' && G.flags.b3_soft && pass) fx = { prestige: 5, trust: 2, side: { cg_quzhang: 10 } };
     if (bid === 'b3' && G.flags.b3_force && pass) fx = Object.assign({}, fx, { prestige: 11 });
-    applyFx(fx);
+    applyFx(hard ? halfGain(fx) : fx);
     if (pass){ G.won++; G.streak++; } else { G.lost++; G.streak = 0; }
     G.cwWins.push(pass ? 1 : 0);
     logIt(b.n + '：' + (pass ? '赢了' : '输了') + '。');

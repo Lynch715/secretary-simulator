@@ -1,5 +1,5 @@
 /* ── 00-core：随机、工具、存档 ── */
-var VER = '2.2.0';
+var VER = '2.3.0';
 var SAVE_KEY = 'dami_save_v21';
 var DEX_KEY = 'dami_dex_v2';
 var START_Y = 2027, TERM = 60;

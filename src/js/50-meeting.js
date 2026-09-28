@@ -39,12 +39,21 @@ var Meeting = {
     return { bid: bid, topic: b.topic, rows: rows, yes: yes, pass: yes >= 6 };
   },
 
+  /* 硬拍板：票输了，书记不认这个结果。差的票越多，代价越大 */
+  hardCost: function(yes){ return 6 + 3 * (6 - yes); },
+  canHard: function(yes){ return G.prestige >= Meeting.hardCost(yes) + 8; },
   hard: function(res){
+    var need = 6 - res.yes, cost = Meeting.hardCost(res.yes);
     res.pass = true; res.hard = true;
-    G.hard = (G.hard || 0) + 1;
-    applyFx({ prestige: -12, feud: 8, bossRisk: G.hard >= 3 ? 10 : 4 });
-    res.rows.forEach(function(r){ if (!r.yes) addSide(r.id, -4); });
-    logIt('书记在常委会上集中拍了板。');
+    G.hard = (G.hard || 0) + 1; G.hardNow = true;
+    applyFx({ prestige: -cost, feud: 6 + 2 * need, bossRisk: (G.hard >= 3 ? 8 : 2) + 2 * need });
+    res.rows.forEach(function(r){ if (!r.yes && r.id !== 'mayor') addSide(r.id, -6); });
+    logIt('书记在常委会上压下了 ' + (11 - res.yes) + ' 张反对票。');
+    var t = G.hard === 1 ? { t:'省委办公厅来了个电话，问云州常委会最近的议事情况。电话是打给邱仲华的，邱仲华挂了电话，在办公室坐了很久，没有来找书记。', fx:{ bossRisk: 2 } }
+      : (G.hard === 2 ? { t:'省委组织部的一位副部长来云州调研，行程上只有一项：跟市委常委逐个谈话。每人二十分钟。书记排在最后一个，谈了一个钟头。', fx:{ prestige: -4, bossRisk: 5 } }
+      : { t:'省委书记在全省的会上讲了一段话，没点名：「有的地方，一把手说了算，常委会成了举手会。」散会的时候，好几个地市的书记往周书记这边看了一眼。', fx:{ prestige: -6, bossRisk: 8 } });
+    G.echoes = G.echoes || []; G.echoes.push({ m: G.month + 1 + ri(2), t: t.t, fx: t.fx });
+    return { cost: cost, no: 11 - res.yes };
   },
 
   /* ── 调整会 ── */
@@ -66,27 +75,39 @@ var Meeting = {
   },
 
   hrRun: function(){
-    var rows = [];
+    var rows = [], tried = [];   /* 这次会上被否掉的人，组织部不会转手再安排 */
+    var open0 = vacancies();      /* 会上才空出来的位子，留到下一次调整会 */
     POSTS.forEach(function(po){
       var post = po.id;
+      if (vacant(post) && open0.indexOf(post) < 0) return;
       if (!vacant(post) && !G.noms[post]) return;
       if (!vacant(post)){ delete G.noms[post]; return; }
       var bN = G.noms[post], mN = G.mnoms[post];
       if (bN && (P(bN).gone || (P(bN).post && P(bN).post !== post && !vacant(P(bN).post) && false))) bN = null;
       var done = false;
-      [[bN, 'boss'], [mN, 'mayor']].forEach(function(pair){
+      /* 两边报的是同一个人：只上一次会，谁那边都算 */
+      var both = bN && bN === mN;
+      var pairs = both ? [[bN, 'both']] : [[bN, 'boss'], [mN, 'mayor']];
+      pairs.forEach(function(pair){
         var x = pair[0], s = pair[1];
         if (done || !x || P(x).gone || P(x).post === post) return;
-        var votes = G.stand.map(function(id){ return { id: id, yes: Meeting.support(id, x, s, post) > 0 }; });
+        if (s !== 'both') tried.push(x);
+        var votes = G.stand.map(function(id){ return { id: id, yes: s === 'both' ? (Meeting.support(id, x, 'boss', post) > 0 || Meeting.support(id, x, 'mayor', post) > 0) : Meeting.support(id, x, s, post) > 0 }; });
         var yes = votes.filter(function(v){ return v.yes; }).length;
         var pass = yes >= 6;
         rows.push({ post: post, x: x, s: s, votes: votes, yes: yes, pass: pass });
-        if (s === 'boss') propFin(function(r){ return r.kind === 'nom' && r.a === x && r.b === post; }, pass ? '调整会上通过，' + pn(x) + '任' + POST_BY_ID[post].n : '调整会上没过，' + yes + ' 比 ' + (11 - yes));
-        if (pass){ placeIn(post, x, s); done = true; Meeting.afterPlace(x, post, s); }
+        var ss = s === 'both' ? 'boss' : s;
+        if (ss === 'boss') propFin(function(r){ return r.kind === 'nom' && r.a === x && r.b === post; }, pass ? '调整会上通过，' + pn(x) + '任' + POST_BY_ID[post].n : '调整会上没过，' + yes + ' 比 ' + (11 - yes));
+        if (pass){
+          var from = P(x).post;
+          placeIn(post, x, s === 'both' ? null : s); done = true; Meeting.afterPlace(x, post, ss);
+          if (from && POST_BY_ID[from]) G.nextReport.push(pn(x) + '一走，' + POST_BY_ID[from].n + '的位子空了出来。组织部说下一次调整会上定。');
+        }
+        else if (s === 'both') tried.push(x);
       });
       if (!done){
         var pl = po.lvl;
-        var c = Object.keys(G.people).filter(function(id){ var p = P(id); return !p.gone && !p.post && !isStanding(id) && p.lvl >= pl - 1 && Math.abs(p.side) < 20 && PDEF[id]; });
+        var c = Object.keys(G.people).filter(function(id){ var p = P(id); return !p.gone && !p.post && !isStanding(id) && tried.indexOf(id) < 0 && p.lvl >= pl - 1 && Math.abs(p.side) < 20 && PDEF[id]; });
         if (c.length){ var z = pick(c); placeIn(post, z, null); rows.push({ post: post, x: z, s: 'zuzhi', pass: true }); }
       }
       if (bN) propFin(function(r){ return r.kind === 'nom' && r.a === bN && r.b === post; }, '没上会');

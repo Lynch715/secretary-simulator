@@ -38,6 +38,8 @@ function play(style, seed){
       if (p2 == null) p2 = ok2[0];
       A.Month.choose(p2, 2);
     }
+    var s3 = A.SCENES[G.scene3];
+    if (s3 && !G.scene3Done){ var ok3 = s3.opts.map(function(o, i){ return (!o.req || o.req()) ? i : -1; }).filter(function(i){ return i >= 0; }); A.Month.choose(rndOf(ok3), 3); }
     if (style !== 'idle') bot(style, G);
     A.Month.end();
   }

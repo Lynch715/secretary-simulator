@@ -62,7 +62,7 @@ var UI = {
       '<div class="votes">' + votes + '</div>';
   },
   tabs: function(){
-    var canEnd = (G.sceneDone || !G.scene) && (G.scene2Done || !G.scene2);
+    var canEnd = (G.sceneDone || !G.scene) && (G.scene2Done || !G.scene2) && (G.scene3Done || !G.scene3);
     return '<div class="tabs"><div class="inner">' + TABS.map(function(t){
       return '<button class="tab' + (G.tab === t.k ? ' on' : '') + '" data-tab="' + t.k + '">' + t.n + '</button>';
     }).join('') + '<button class="endmo" data-end="1"' + (canEnd ? '' : ' disabled') + '>结束本月</button></div></div>';
@@ -75,6 +75,7 @@ var UI = {
       (G.report.length ? G.report.map(function(t){ return paras(t); }).join('<div class="sep"></div>') : '<p class="dim">—</p>') + '</div></div>';
     h += UI.sceneBox(1);
     h += UI.sceneBox(2);
+    h += UI.sceneBox(3);
     /* 呈书记 */
     h += '<div class="panel boss"><h3><span class="ttl">' + face('boss', 'sm') + '呈书记</span><span class="cnt">本月还能报 ' + Props.left() + ' 件</span></h3>' +
       '<div class="tiles t6">' + PROP_KINDS.map(function(k){
@@ -103,7 +104,8 @@ var UI = {
     }
     var due = [];
     var vb = Month.voteDue(); if (vb) due.push('月底常委会：' + BATTLES[vb].topic);
-    var tp = Month.topicDue(); if (tp) due.push('月底常委会：' + TOPIC_BY_ID[tp].topic + '<div class="tintro">' + esc(TOPIC_BY_ID[tp].intro) + '</div>');
+    var tp = Month.topicDue(); if (tp) due.push('月底常委会：' + TOPIC_BY_ID[tp].topic + UI.ctx(tp, false));
+    if (G.topicNext && !G.scene3) due.push('下个月常委会：' + TOPIC_BY_ID[G.topicNext.id].topic + UI.ctx(G.topicNext.id, false));
     if (Month.hrDue()){ var v = vacancies().length; due.push('月底调整会' + (v ? '，空着 ' + v + ' 个位子' : '')); }
     if (due.length) h += '<div class="due">' + due.join('<br>') + '</div>';
     return h;
@@ -116,7 +118,24 @@ var UI = {
     if (k === 'hrnow') return Props.canHr();
     if (k === 'prov') return Props.canProv();
   },
+  /* 议题的来龙去脉 */
+  ctx: function(bid, fold){
+    var t = TOPIC_BY_ID[bid] || BATTLES[bid]; if (!t) return '';
+    var ls = [];
+    if (t.intro) ls.push(esc(t.intro));
+    if (t.boss) ls.push('书记：' + esc(t.boss));
+    if (t.mayor) ls.push(esc(t.mayor));
+    if (t.hid && G.flags['hid_' + bid]) ls.push('<b>' + esc(t.hid) + '</b>');
+    if (t.why) for (var k in t.why) if (G.stand.indexOf(k) >= 0) ls.push(esc(t.why[k]));
+    if (!ls.length) return '';
+    var body = ls.map(function(x){ return '<p>' + x + '</p>'; }).join('');
+    return fold ? '<details class="ctx"><summary>来龙去脉</summary>' + body + '</details>' : '<div class="tintro">' + body + '</div>';
+  },
   sceneBox: function(slot){
+    if (slot === 3){
+      var s3 = SCENES[G.scene3]; if (!s3 || G.school) return '';
+      return UI.sceneCard(s3, G.scene3Done, G.scene3Res, 3, '下个月上会');
+    }
     if (slot === 2){
       var s2 = SCENES[G.scene2]; if (!s2 || G.school) return '';
       return UI.sceneCard(s2, G.scene2Done, G.scene2Res, 2, '另一件事');
@@ -131,7 +150,7 @@ var UI = {
       (sc.who ? face(sc.who, 'docface') : '') +
       '<div class="no">' + esc(label) + '</div><h2>' + esc(fill(sc.title)) + '</h2>' +
       '<div class="prose">' + paras(txt) + '</div>';
-    var key = slot === 2 ? 'data-opt2' : 'data-opt';
+    var key = slot === 3 ? 'data-opt3' : (slot === 2 ? 'data-opt2' : 'data-opt');
     if (!done){
       h += '<div class="opts">' + sc.opts.map(function(o, i){
         var ok = !o.req || o.req();
@@ -399,7 +418,7 @@ var UI = {
   meeting: function(bid){
     var b = BATTLES[bid] || TOPIC_BY_ID[bid];
     var pv = Meeting.preview();
-    var h = '<div class="mhead">常委会</div><h3>' + esc(b.topic) + '</h3><div class="mgrid">' + pv.map(function(x){
+    var h = '<div class="mhead">常委会</div><h3>' + esc(b.topic) + '</h3>' + UI.ctx(bid, true) + '<div class="mgrid">' + pv.map(function(x){
       return '<div class="mv ' + TIER_CLS[x.tier] + '" data-v="' + x.id + '">' + face(x.id, 'sm') + '<b>' + esc(pn(x.id)) + '</b><i>' + (x.id === 'boss' ? '书记' : (x.id === 'mayor' ? '市长' : TIER_TXT[x.tier])) + '</i></div>';
     }).join('') + '</div><div class="mres"></div><div class="mfoot"><button class="btn red" data-vote="1">表决</button></div>';
     var m = UI.modal(h, 'meet');
@@ -412,9 +431,14 @@ var UI = {
       setTimeout(function(){
         $('.mres', m).innerHTML = '<div class="vcount">' + r.yes + ' 比 ' + (11 - r.yes) + '，' + (r.pass ? '通过' : '没过') + '</div>';
         var f = $('.mfoot', m);
-        f.innerHTML = (!r.pass && G.prestige >= 20 ? '<button class="btn" data-hard="1">书记集中拍板</button>' : '') + '<button class="btn red" data-ok="1">散会</button>';
+        f.innerHTML = (!r.pass && Meeting.canHard(r.yes) ? '<button class="btn" data-hard="1">书记不散会</button>' : '') + '<button class="btn red" data-ok="1">散会</button>';
         var hb = $('[data-hard]', m);
-        if (hb) hb.onclick = function(){ Meeting.hard(r); $('.mres', m).innerHTML = '<div class="vcount">书记最后一个表态：「这件事，就这么定了。」</div>'; hb.remove(); };
+        if (hb) hb.onclick = function(){
+          var hc = Meeting.hard(r);
+          $('.mres', m).innerHTML = '<div class="vcount">' + (11 - hc.no) + ' 比 ' + hc.no + '，书记拍板</div><div class="prose hardt">' + paras('票数念完，书记没有宣布散会。他把茶杯往前推了推。\n「大家的意见，我都听到了。这件事市委担着，先干起来。出了问题，我向省委检讨。」\n会议室里没人说话。投反对的' + (hc.no > 6 ? '那几个人' : '人') + '，散会的时候一个接一个出了门，没有一个跟书记打招呼。') +
+            '<div class="got bad">威信 −' + hc.cost + '　投反对的人，这件事记下了</div><div class="got bad">这件事底下执行起来，要打折扣</div></div>';
+          hb.remove();
+        };
         $('[data-ok]', m).onclick = function(){ if (BATTLES[bid]) Month.battleResult(bid, r.pass); else Month.topicResult(bid, r.pass); UI.close(); UI.endMonth(); };
       }, 120 * r.rows.length + 300);
     };
@@ -423,7 +447,7 @@ var UI = {
     var rows = G.hrRes || [];
     if (!rows.length) return UI.finishMonth();
     var h = '<div class="mhead">调整会</div><div class="hrrows">' + rows.map(function(r){
-      var who = r.s === 'boss' ? '书记这边报的' : (r.s === 'mayor' ? '市长那边报的' : '组织部安排的');
+      var who = r.s === 'boss' ? '书记这边报的' : (r.s === 'mayor' ? '市长那边报的' : (r.s === 'both' ? '两边都报了他' : '组织部安排的'));
       return '<div class="hr ' + (r.pass ? 'ok' : 'fail') + '"><b>' + esc(POST_BY_ID[r.post].n) + '</b>' + face(r.x, 'sm') + '<span>' + esc(pn(r.x)) + '　<i>' + who + '</i></span><em>' + (r.votes ? r.yes + ':' + (11 - r.yes) + ' ' : '') + (r.pass ? '通过' : '没过') + '</em></div>';
     }).join('') + '</div><div class="mfoot"><button class="btn red" data-ok="1">散会</button></div>';
     var m = UI.modal(h, 'meet'); m.classList.add('lock');
@@ -461,6 +485,7 @@ var UI = {
     $$('[data-tab]').forEach(function(b){ b.onclick = function(){ G.tab = b.dataset.tab; UI.render(); window.scrollTo(0, 0); }; });
     $$('[data-opt]').forEach(function(b){ b.onclick = function(){ Month.choose(+b.dataset.opt); save(); UI.render(); }; });
     $$('[data-opt2]').forEach(function(b){ b.onclick = function(){ Month.choose(+b.dataset.opt2, 2); save(); UI.render(); }; });
+    $$('[data-opt3]').forEach(function(b){ b.onclick = function(){ Month.choose(+b.dataset.opt3, 3); save(); UI.render(); }; });
     $$('[data-act]').forEach(function(b){ b.onclick = function(){ UI.doAct(b.dataset.act); }; });
     $$('[data-op]').forEach(function(b){ b.onclick = function(){ var x = b.dataset.op.split(':'); UI.doOp(x[0], x[1]); }; });
     $$('[data-prop]').forEach(function(b){ b.onclick = function(){ UI.doProp(b.dataset.prop); }; });

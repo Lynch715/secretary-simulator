@@ -301,3 +301,8 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 .tile.op.gray{border-left:3px solid var(--red)}
 @media (max-width:480px){ .deptbox .tiles{grid-template-columns:1fr 1fr} }
 .namehint{text-align:center;color:var(--red);font-size:13px;min-height:18px;margin-top:-12px}
+
+.ctx{margin:8px 0 12px;font-family:var(--song);font-size:14px;line-height:1.75;color:var(--ink2);border-top:1px dashed var(--line,#ccc);border-bottom:1px dashed var(--line,#ccc);padding:6px 0}
+.ctx summary{cursor:pointer;color:var(--red);font-size:13px;letter-spacing:2px}
+.ctx p,.due .tintro p{margin:4px 0}
+.hardt{font-size:15px;margin-top:8px}

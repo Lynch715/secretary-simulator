@@ -27,9 +27,13 @@ var Act = {
   },
 
   run: function(a, t, opt){
-    if (G.acts <= 0) return null;
+    if (G.acts <= 0 || Act.targets(a).indexOf(t) < 0) return null;
     G.acts--;
+    if (a === 'modi' || a === 'dihua'){ G.contacts = G.contacts || {}; G.contacts[t] = G.month; }
     var r = Act['_' + a](t, opt || {});
+    var follow = Work.afterAction(a, t);
+    if (follow) r.t += '\n' + follow;
+    if ((a === 'modi' || a === 'hui') && P(t)){ var memory = Work.recall(t); if (memory) r.t += '\n' + memory; }
     G.done = G.done || [];
     return r;
   },
@@ -101,7 +105,7 @@ var Act = {
   _hui: function(id){
     var p = P(id);
     var wasTurned = p.side < 20;
-    p.loyal = 100;
+    p.loyal = Math.min(100, p.loyal + 35);
     if (wasTurned){
       p.known.side = 1; p.show = p.side;
       logIt(p.n + '已经不是这边的人了。');
@@ -145,9 +149,11 @@ var Act = {
   },
 
   _hu: function(){
-    applyFx({ heat: -9 });
+    G.huCount = G.flags.hu === G.month ? (G.huCount || 1) + 1 : 1;
+    var reduction = G.huCount === 1 ? 9 : G.huCount === 2 ? 5 : 2;
+    applyFx({ heat: -reduction });
     G.flags.hu = G.month;
-    return { t: pick(HU_TXT) };
+    return { t: pick(HU_TXT) + (G.huCount > 1 ? '\n这个月已经查过一轮。这回补查，能清掉的隐患比上回少。' : '') };
   }
 };
 

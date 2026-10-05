@@ -1,16 +1,18 @@
 /* ── 00-core：随机、工具、存档 ── */
-var VER = '2.3.0';
+var VER = '2.4.0';
 var SAVE_KEY = 'dami_save_v21';
 var DEX_KEY = 'dami_dex_v2';
 var START_Y = 2027, TERM = 60;
 
 function mulberry32(a){
-  return function(){
+  var generator = function(){
     a |= 0; a = a + 0x6D2B79F5 | 0;
     var t = Math.imul(a ^ a >>> 15, 1 | a);
     t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
   };
+  generator.state = function(){ return a | 0; };
+  return generator;
 }
 var RNG = mulberry32(Date.now() & 0x7fffffff);
 function rnd(){ return RNG(); }
@@ -49,8 +51,20 @@ function fill(s){
 
 var G = null;
 
+function savePayload(){
+  if (G) G.rngState = RNG.state();
+  return { v: VER, g: G };
+}
+function restoreGame(o){
+  if (!o || !o.g || !o.g.people || !Number.isInteger(o.g.month) || o.g.month < 1 || o.g.month > TERM) return false;
+  G = o.g;
+  RNG = mulberry32(Number.isInteger(G.rngState) ? G.rngState : (G.seed || 1) + G.month * 7919);
+  Work.ensure();
+  G.ver = VER;
+  return true;
+}
 function save(){
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify({ v: VER, g: G })); return true; }
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(savePayload())); return true; }
   catch (e){ return false; }
 }
 function load(){
@@ -58,10 +72,7 @@ function load(){
     var raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return false;
     var o = JSON.parse(raw);
-    if (!o || !o.g || !o.g.people) return false;
-    G = o.g;
-    RNG = mulberry32((G.seed || 1) + G.month * 7919);
-    return true;
+    return restoreGame(o);
   } catch (e){ return false; }
 }
 function hasSave(){ try { return !!localStorage.getItem(SAVE_KEY); } catch (e){ return false; } }
@@ -69,7 +80,7 @@ function wipe(){ try { localStorage.removeItem(SAVE_KEY); } catch (e){} }
 function dexGet(){ try { return JSON.parse(localStorage.getItem(DEX_KEY) || '{}'); } catch (e){ return {}; } }
 function dexAdd(k){ try { var d = dexGet(); d[k] = 1; localStorage.setItem(DEX_KEY, JSON.stringify(d)); } catch (e){} }
 function exportSave(){
-  var blob = new Blob([JSON.stringify({ v: VER, g: G })], { type: 'application/json' });
+  var blob = new Blob([JSON.stringify(savePayload())], { type: 'application/json' });
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = '大秘存档_' + ymText(G.month).replace(/[年月]/g, '') + '.json';
@@ -79,7 +90,7 @@ function exportSave(){
 function importSave(file, cb){
   var fr = new FileReader();
   fr.onload = function(){
-    try { var o = JSON.parse(fr.result); if (!o || !o.g || !o.g.people) throw 0; G = o.g; save(); cb(true); }
+    try { var o = JSON.parse(fr.result); if (!restoreGame(o)) throw 0; save(); cb(true); }
     catch (e){ cb(false); }
   };
   fr.readAsText(file);

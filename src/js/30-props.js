@@ -164,6 +164,7 @@ var Props = {
     G.wk[wid] = 1; G.wd[wid] = 1;
     var g = w.kind === 'place' ? Math.ceil(w.gain / 2) : w.gain;
     addSide(w.who, g);
+    Work.remember(w.who, 'promise_' + wid, '你把书记的承诺带给了他：' + w.t + '。', 0);
     G.promises.push({ w: wid, who: w.who, key: w.kind === 'place' ? 'place' : w.pkey, m: G.month, self: !!self, st: 'open' });
     logIt((self ? '你替书记' : '书记') + '许了' + pn(w.who) + '一句话。');
   },
@@ -219,12 +220,14 @@ function checkPromises(){
   });
   G.promises.forEach(function(pr){
     if (pr.st !== 'open') return;
+    var before = pr.st;
     var who = P(pr.who);
     if (!who || who.gone){ pr.st = 'void'; return; }
     if (pr.key === 'keep_cui' && P('gangkou').gone){ pr.st = 'broken'; addSide(pr.who, -40); applyFx({ prestige: -5 }); report(pn(pr.who) + '知道崔延平的事了。他在常委会上一句话没说，散会的时候，从你身边走过去，没看你。'); }
     if (pr.key === 'no_qc' && G.battles.b4 === 'win'){ pr.st = 'broken'; addSide(pr.who, -40); applyFx({ prestige: -5 }); report('韩树声在走廊里叫住你：「小{SUR}，青川的事，周书记那边是怎么考虑的？我前面听到的，好像不是这个意思。」他没等你回答，笑了笑，走了。'); }
     if (pr.key === 'place' && G.month - pr.m > 15){ pr.st = 'broken'; addSide(pr.who, -Math.ceil(WANT_BY_ID[pr.w].gain * 1.5)); applyFx({ prestige: -3 }); report(pn(pr.who) + '在走廊上碰见你，笑着问了一句：「小{SUR}，最近忙吧？」别的什么也没问。'); }
     if (pr.key === 'tong_rd' && G.month >= 30){ pr.st = shi() >= 45 ? 'kept' : 'broken'; if (pr.st === 'broken'){ addSide(pr.who, -30); } else report('佟建民去人大的事定了。他来办公室跟书记道别，带了一包他老家的茶。'); }
+    if (pr.st !== before) Work.remember(pr.who, pr.st + '_' + pr.w, pr.st === 'kept' ? '你带来的承诺，最后办成了。' : '你带来的承诺，最后没有兑现。', pr.st === 'kept' ? 2 : -3);
   });
   /* 两个人都许了市长的位子 */
   var ms = G.promises.filter(function(x){ return x.key === 'mayor_seat' && x.st === 'open'; });

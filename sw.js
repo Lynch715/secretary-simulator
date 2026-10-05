@@ -1,5 +1,5 @@
 /* 大秘 · 离线。代码走网络优先（上线就是新版），图片走缓存优先 */
-var VER = 'dami-v5';
+var VER = 'dami-v6';
 var SHELL = ['./', './index.html', './site.webmanifest', './favicon.ico',
              './icon/icon-192.png', './icon/icon-512.png'];
 

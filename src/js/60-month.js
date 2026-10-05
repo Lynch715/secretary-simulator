@@ -9,6 +9,7 @@ function halfGain(fx){
 }
 var Month = {
   start: function(first){
+    Work.ensure();
     G.acts = G.school ? 0 : 3;
     G.props = []; G.lobby = {};
     G.sceneDone = false; G.sceneRes = null;
@@ -29,6 +30,7 @@ var Month = {
     if (nt){ G.topicNext = { id: nt, m: G.month + 1 }; G.scene3 = TOPIC_BY_ID[nt].rise || null; }
     /* 回响：过去的事落了地 */
     G.echoes = (G.echoes || []).filter(function(e){ if (e.m > G.month) return true; G.report.push(fill(e.t)); applyFx(e.fx); return false; });
+    Work.start();
     if (G.school){ G.sceneDone = true; G.scene2Done = true; G.scene3Done = true; }
   },
 
@@ -59,7 +61,7 @@ var Month = {
       if (G.seen[d.id]) return;
       if (G.month > d.win[1]){ G.seen[d.id] = -1; return; }
       if (G.month < d.win[0]) return;
-      if (d.after && !G.seen[d.after]) return;
+      if (d.after && (!(G.seen[d.after] > 0) || !G.chose || G.chose[d.after] == null)) return;
       if (d.after && G.seen[d.after] > 0 && G.month - G.seen[d.after] < 3) return;
       if (d.c && !d.c()) return;
       if (!best || d.win[1] < best.win[1]) best = d;
@@ -98,6 +100,7 @@ var Month = {
       G.scene3Done = true;
       G.scene3Res = { i: i, t: fill(o3.res), got: got3 };
       G.chose = G.chose || {}; G.chose[G.scene3] = i;
+      Work.sceneMemory(G.scene3, o3);
       return G.scene3Res;
     }
     if (slot === 2){
@@ -109,6 +112,7 @@ var Month = {
       G.scene2Done = true;
       G.scene2Res = { i: i, t: fill(o2.resFn ? o2.resFn() : o2.res), got: got2 };
       G.chose = G.chose || {}; G.chose[G.scene2] = i;
+      Work.sceneMemory(G.scene2, o2);
       return G.scene2Res;
     }
     var sc = SCENES[G.scene]; if (!sc || G.sceneDone) return null;
@@ -120,6 +124,7 @@ var Month = {
     var res = o.resFn ? o.resFn() : o.res;
     G.sceneRes = { i: i, t: fill(res), got: got };
     G.chose = G.chose || {}; G.chose[G.scene] = i;
+      Work.sceneMemory(G.scene, o);
     return G.sceneRes;
   },
 
@@ -133,6 +138,7 @@ var Month = {
   battleResult: function(bid, pass){
     var b = BATTLES[bid];
     G.battles[bid] = pass ? 'win' : 'lose';
+    Work.battle(bid, pass);
     if (bid === 'b8') return;
     var hard = G.hardNow; G.hardNow = false;
     var fx = pass ? b.win : b.lose;
@@ -188,6 +194,7 @@ var Month = {
     });
     if (G.ending) return Month.close();
 
+    Work.end();
     Month.drift();
     fuFeed();
     checkPromises();

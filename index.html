@@ -324,12 +324,24 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 .ctx p,.due .tintro p{margin:4px 0}
 .hardt{font-size:15px;margin-top:8px}
 
+/* 督办单和人物记事沿用文件纸底 */
+.work-item{padding:12px 0;border-top:1px solid var(--line2)}
+.work-item:first-of-type{border-top:0}
+.work-head{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:space-between}
+.work-head span,.work-note{font-size:12px;color:var(--ink3)}
+.work-item p{margin:6px 0;font-family:var(--song)}
+.work-choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.work-choices .btn{font-size:13px;white-space:normal;text-align:left;max-width:100%}
+.person-memory{border-top:1px solid var(--line2);margin-top:8px;padding-top:5px;font-size:12px;color:var(--ink2);overflow-wrap:anywhere}
+.person-memory p{margin:5px 0}.person-memory i{font-style:normal;color:var(--ink3)}
+@media(max-width:600px){.work-choices{display:grid;grid-template-columns:1fr}.work-head span{width:100%}.work h3{flex-wrap:wrap}}
+
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-/* 大秘 build 2026-09-28 13:57 */
+/* 大秘 build 2026-10-05 14:05 */
 "use strict";
 /* === data/d10-people.js === */
 /* ── 人：常委十一个 + 干部池。
@@ -1497,7 +1509,9 @@ d6c: { title:'等得起', img:'s_office', who:'boss', dark:1,
 /* ════ 那个孩子 ════ */
 d7a: { title:'一封信', img:'s_office', who:null, dark:1,
   textFn:function(){
-    var s = '市委信箱里有一封手写的信，寄信人地址是青川县的一个村，收信人写的是：书记的秘书。\n信是那个孩子的姨写的，就是每个月来信访局坐一天的那个人。她说孩子中考考了全县第十一名，进了县一中。她说她不来信访局了。';
+    var s = '市委信箱里有一封手写的信，寄信人地址是青川县的一个村，收信人写的是：书记的秘书。\n信是那个孩子的姨写的，就是每个月来信访局坐一天的那个人。她说孩子中考考了全县第十一名，进了县一中。';
+    var casework = (G.work || []).filter(function(w){ return w.kind === 'qingchuan'; })[0];
+    s += casework ? (casework.st === 'done' && casework.method === 'family' && casework.pass ? '她说认定书收到了，以后不来信访局了。' : '她说孩子的书读得下去，事故那件事，她还会按程序问下去。') : G.battles.b4 === 'win' ? '她说她不来信访局了。' : '她说孩子的书读得下去，事故那件事，她还会按程序问下去。';
     if (G.chose && G.chose.b4_rise === 2) s += '\n信的最后一句是：谢谢你那天下车来问我。';
     return s;
   },
@@ -2470,18 +2484,20 @@ var CODA = {
 
 /* === js/00-core.js === */
 /* ── 00-core：随机、工具、存档 ── */
-var VER = '2.3.0';
+var VER = '2.4.0';
 var SAVE_KEY = 'dami_save_v21';
 var DEX_KEY = 'dami_dex_v2';
 var START_Y = 2027, TERM = 60;
 
 function mulberry32(a){
-  return function(){
+  var generator = function(){
     a |= 0; a = a + 0x6D2B79F5 | 0;
     var t = Math.imul(a ^ a >>> 15, 1 | a);
     t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
   };
+  generator.state = function(){ return a | 0; };
+  return generator;
 }
 var RNG = mulberry32(Date.now() & 0x7fffffff);
 function rnd(){ return RNG(); }
@@ -2520,8 +2536,20 @@ function fill(s){
 
 var G = null;
 
+function savePayload(){
+  if (G) G.rngState = RNG.state();
+  return { v: VER, g: G };
+}
+function restoreGame(o){
+  if (!o || !o.g || !o.g.people || !Number.isInteger(o.g.month) || o.g.month < 1 || o.g.month > TERM) return false;
+  G = o.g;
+  RNG = mulberry32(Number.isInteger(G.rngState) ? G.rngState : (G.seed || 1) + G.month * 7919);
+  Work.ensure();
+  G.ver = VER;
+  return true;
+}
 function save(){
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify({ v: VER, g: G })); return true; }
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(savePayload())); return true; }
   catch (e){ return false; }
 }
 function load(){
@@ -2529,10 +2557,7 @@ function load(){
     var raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return false;
     var o = JSON.parse(raw);
-    if (!o || !o.g || !o.g.people) return false;
-    G = o.g;
-    RNG = mulberry32((G.seed || 1) + G.month * 7919);
-    return true;
+    return restoreGame(o);
   } catch (e){ return false; }
 }
 function hasSave(){ try { return !!localStorage.getItem(SAVE_KEY); } catch (e){ return false; } }
@@ -2540,7 +2565,7 @@ function wipe(){ try { localStorage.removeItem(SAVE_KEY); } catch (e){} }
 function dexGet(){ try { return JSON.parse(localStorage.getItem(DEX_KEY) || '{}'); } catch (e){ return {}; } }
 function dexAdd(k){ try { var d = dexGet(); d[k] = 1; localStorage.setItem(DEX_KEY, JSON.stringify(d)); } catch (e){} }
 function exportSave(){
-  var blob = new Blob([JSON.stringify({ v: VER, g: G })], { type: 'application/json' });
+  var blob = new Blob([JSON.stringify(savePayload())], { type: 'application/json' });
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = '大秘存档_' + ymText(G.month).replace(/[年月]/g, '') + '.json';
@@ -2550,7 +2575,7 @@ function exportSave(){
 function importSave(file, cb){
   var fr = new FileReader();
   fr.onload = function(){
-    try { var o = JSON.parse(fr.result); if (!o || !o.g || !o.g.people) throw 0; G = o.g; save(); cb(true); }
+    try { var o = JSON.parse(fr.result); if (!restoreGame(o)) throw 0; save(); cb(true); }
     catch (e){ cb(false); }
   };
   fr.readAsText(file);
@@ -2755,9 +2780,13 @@ var Act = {
   },
 
   run: function(a, t, opt){
-    if (G.acts <= 0) return null;
+    if (G.acts <= 0 || Act.targets(a).indexOf(t) < 0) return null;
     G.acts--;
+    if (a === 'modi' || a === 'dihua'){ G.contacts = G.contacts || {}; G.contacts[t] = G.month; }
     var r = Act['_' + a](t, opt || {});
+    var follow = Work.afterAction(a, t);
+    if (follow) r.t += '\n' + follow;
+    if ((a === 'modi' || a === 'hui') && P(t)){ var memory = Work.recall(t); if (memory) r.t += '\n' + memory; }
     G.done = G.done || [];
     return r;
   },
@@ -2829,7 +2858,7 @@ var Act = {
   _hui: function(id){
     var p = P(id);
     var wasTurned = p.side < 20;
-    p.loyal = 100;
+    p.loyal = Math.min(100, p.loyal + 35);
     if (wasTurned){
       p.known.side = 1; p.show = p.side;
       logIt(p.n + '已经不是这边的人了。');
@@ -2873,9 +2902,11 @@ var Act = {
   },
 
   _hu: function(){
-    applyFx({ heat: -9 });
+    G.huCount = G.flags.hu === G.month ? (G.huCount || 1) + 1 : 1;
+    var reduction = G.huCount === 1 ? 9 : G.huCount === 2 ? 5 : 2;
+    applyFx({ heat: -reduction });
     G.flags.hu = G.month;
-    return { t: pick(HU_TXT) };
+    return { t: pick(HU_TXT) + (G.huCount > 1 ? '\n这个月已经查过一轮。这回补查，能清掉的隐患比上回少。' : '') };
   }
 };
 
@@ -3212,6 +3243,7 @@ var Props = {
     G.wk[wid] = 1; G.wd[wid] = 1;
     var g = w.kind === 'place' ? Math.ceil(w.gain / 2) : w.gain;
     addSide(w.who, g);
+    Work.remember(w.who, 'promise_' + wid, '你把书记的承诺带给了他：' + w.t + '。', 0);
     G.promises.push({ w: wid, who: w.who, key: w.kind === 'place' ? 'place' : w.pkey, m: G.month, self: !!self, st: 'open' });
     logIt((self ? '你替书记' : '书记') + '许了' + pn(w.who) + '一句话。');
   },
@@ -3267,12 +3299,14 @@ function checkPromises(){
   });
   G.promises.forEach(function(pr){
     if (pr.st !== 'open') return;
+    var before = pr.st;
     var who = P(pr.who);
     if (!who || who.gone){ pr.st = 'void'; return; }
     if (pr.key === 'keep_cui' && P('gangkou').gone){ pr.st = 'broken'; addSide(pr.who, -40); applyFx({ prestige: -5 }); report(pn(pr.who) + '知道崔延平的事了。他在常委会上一句话没说，散会的时候，从你身边走过去，没看你。'); }
     if (pr.key === 'no_qc' && G.battles.b4 === 'win'){ pr.st = 'broken'; addSide(pr.who, -40); applyFx({ prestige: -5 }); report('韩树声在走廊里叫住你：「小{SUR}，青川的事，周书记那边是怎么考虑的？我前面听到的，好像不是这个意思。」他没等你回答，笑了笑，走了。'); }
     if (pr.key === 'place' && G.month - pr.m > 15){ pr.st = 'broken'; addSide(pr.who, -Math.ceil(WANT_BY_ID[pr.w].gain * 1.5)); applyFx({ prestige: -3 }); report(pn(pr.who) + '在走廊上碰见你，笑着问了一句：「小{SUR}，最近忙吧？」别的什么也没问。'); }
     if (pr.key === 'tong_rd' && G.month >= 30){ pr.st = shi() >= 45 ? 'kept' : 'broken'; if (pr.st === 'broken'){ addSide(pr.who, -30); } else report('佟建民去人大的事定了。他来办公室跟书记道别，带了一包他老家的茶。'); }
+    if (pr.st !== before) Work.remember(pr.who, pr.st + '_' + pr.w, pr.st === 'kept' ? '你带来的承诺，最后办成了。' : '你带来的承诺，最后没有兑现。', pr.st === 'kept' ? 2 : -3);
   });
   /* 两个人都许了市长的位子 */
   var ms = G.promises.filter(function(x){ return x.key === 'mayor_seat' && x.st === 'open'; });
@@ -3391,8 +3425,48 @@ var Mayor = {
     var s = shi();
     var n = s >= 50 ? 3 : (s >= 36 ? 2 : 1);
     if (G.flags.mayorWeak && G.month - G.flags.mayorWeak < 4) n = 1;
-    for (var i = 0; i < n; i++) Mayor.move(s);
+    var planned = Mayor.planTurn(s);
+    for (var i = planned ? 1 : 0; i < n; i++) Mayor.move(s);
     Mayor.nominate();
+  },
+  /* 三个月围绕一件事行动，第一月给迹象，后两月落子。占用原有行动额度。 */
+  planTurn: function(s){
+    if (G.month < 3) return false;
+    var plan = G.mayorPlan;
+    if (plan && (G.month - plan.start > 2 || (plan.target && (!P(plan.target) || P(plan.target).gone)))) plan = null;
+    if (!plan){
+      var swing = G.stand.filter(function(id){return !(PDEF[id] || {}).fixed && !P(id).gone && !P(id).held && P(id).side > -40 && P(id).side < 60;});
+      var mine = Object.keys(G.people).filter(function(id){var p=P(id);return p.by === 'boss' && p.post && !p.gone && p.side >= 20 && p.loyal < 45 && id !== 'gaoxin';});
+      var kind = mine.length ? 'turn' : swing.length && rnd() < 0.65 ? 'pull' : 'dig';
+      plan = {kind:kind,target:kind === 'turn' ? pick(mine) : kind === 'pull' ? pick(swing) : null,start:G.month};
+      G.mayorPlan = plan;
+    }
+    if (plan.last === G.month) return true;
+    plan.last = G.month;
+    var phase = G.month - plan.start, id=plan.target, p=id ? P(id) : null;
+    if (phase === 0){
+      report(plan.kind === 'pull' ? '陈市长请' + pn(id) + '看了一个项目，说下个月还要单独听他的意见。' : plan.kind === 'turn' ? pn(id) + '最近两次去市政府汇报，都没有先到市委这边来。你上次回访他的日期，已经很远了。' : '市政府办公室在调几份旧材料，连报表上的签字页也要复印。来取材料的人说，下个月还要。');
+      return false;
+    }
+    if (plan.kind === 'pull'){
+      var resisted=(G.lobby[id] || 0) > 0 || (G.contacts || {})[id] === G.month || p.held;
+      addSide(id,resisted ? -3 : -6);
+      report(resisted ? pn(id) + '两边都去坐过。这回他没有顺着陈市长的话表态。' : phase === 1 ? '陈市长又请' + pn(id) + '去了一次，说的是上个月那个项目。' : pn(id) + '在会上接了陈市长的话。前两个月的几次见面，现在有了下文。');
+    } else if(plan.kind === 'turn'){
+      if (p.by !== 'boss' || !p.post || p.side < 20){ report(pn(id) + '的去向已经变了，市政府那边没有再约他。'); G.mayorPlan=null; return true; }
+      var safe=p.loyal >= 45;
+      if (!safe && phase === 2 && rnd() < 0.35){ p.side=-40; p.show=Math.max(p.show,25); G.mlog.push({m:G.month,k:'turn',t:pn(id)}); report('市政府给' + pn(id) + '单独安排了一项工作。他给市委送来的月报，开始只写一句「按市里要求落实」。'); }
+      else report(safe ? pn(id) + '把市政府找他谈的事告诉了你，说书记交代的事会接着办。' : pn(id) + '又去了市政府，说是协调经费。你的回访安排还没有送到他手里。');
+      if (safe) return false;
+    } else {
+      var protectedNow=G.flags.hu === G.month || own('sw_fu') || own('xinfang') || own('gongan');
+      var pressure = own('xinfang') || own('gongan') ? 2 : 4;
+      if (own('sw_fu')) pressure--;
+      if (G.flags.hu === G.month) pressure=Math.max(1,pressure-1);
+      applyFx({heat:pressure,bossRisk:(s >= 55 ? 2.5 : 0.8) * (protectedNow ? 0.7 : 1)});
+      report(protectedNow ? '旧材料查到签字页时，你这边补齐了手续。市政府送来的问题清单，少了两项。' : phase === 1 ? '上个月调走的报表，又补要了附件。办公室问你，那几笔数有没有原始凭据。' : '一份按时间排好的问题清单送到了省里。前两个月被调走的材料，都列在后面。');
+    }
+    return true;
   },
   move: function(s){
     var opts = [];
@@ -3487,6 +3561,7 @@ var Meeting = {
       else v = -30;
       if (p.held || p.turned) v += 20;
     } else if (p.held && v < 5) v = 5;
+    v += Work.voteMemory(id, b.id);
     v += (b.mods || {})[id] || 0;
     v += ((G.bmods[b.id] || {})[id]) || 0;
     v += (G.lobby[id] || 0) * 6;
@@ -3591,6 +3666,7 @@ var Meeting = {
 
   afterPlace: function(x, post, s){
     if (s !== 'boss') return;
+    Work.appoint(x, post);
     logIt(pn(x) + '任' + POST_BY_ID[post].n + '。');
     G.stand.forEach(function(sid){
       wantsOf(sid).forEach(function(w){
@@ -3598,7 +3674,7 @@ var Meeting = {
         var pr = G.promises.filter(function(q){ return q.w === w.id && q.st === 'open'; })[0];
         if (pr || !G.wd[w.id]){
           var g = pr ? w.gain - Math.ceil(w.gain / 2) : w.gain;
-          if (pr) pr.st = 'kept';
+          if (pr){ pr.st = 'kept'; Work.remember(sid, 'kept_' + w.id, '答应的人选到了任，你把任命文件亲手送给了他。', 2); }
           G.wd[w.id] = 1; G.wd[w.id + '_full'] = 1; G.wk[w.id] = 1; addSide(sid, g + 2);
           report(pn(sid) + '知道了' + pn(x) + '的事。那天常委会散会，' + pn(sid) + '等书记先走了，才起身。');
         }
@@ -3608,6 +3684,157 @@ var Meeting = {
   }
 };
 
+
+/* === js/55-work.js === */
+/* 持续待办：表决以后还要办事。沿用每月三次行动，不另开一套资源。 */
+var Work = {
+  ensure: function(){
+    G.work = G.work || [];
+    G.workSeen = G.workSeen || {};
+    G.memories = G.memories || {};
+  },
+  add: function(id, kind, who, post, pass){
+    Work.ensure();
+    if (G.workSeen[id]) return;
+    G.workSeen[id] = 1;
+    G.work.push({ id:id, kind:kind, who:who, post:post || null, pass:!!pass,
+      born:G.month, ready:G.month + 1, due:G.month + 4, stage:0, st:'open', method:null, t:'' });
+    G.nextReport.push(kind === 'appoint' ? pn(who) + '的任命文件发下去了。书记让你过一个月去看看，不只听汇报。' :
+      kind === 'oldcity' ? '城关旧改的表决结束了。书记把材料退给你：「会开完了，底下的事还得有人盯。」' :
+      '青川的通报到了。书记把信访登记放在通报旁边：「这两份东西，还得对上。」');
+  },
+  battle: function(bid, pass){
+    if (bid === 'b3') Work.add('oldcity', 'oldcity', holder('cg_qz') || 'cg_quzhang', 'cg_qz', pass);
+    if (bid === 'b4') Work.add('qingchuan', 'qingchuan', 'lihb', null, pass);
+  },
+  appoint: function(id, post){
+    Work.add('appoint_' + id + '_' + G.month, 'appoint', id, post, true);
+    Work.remember(id, 'appointed_' + G.month, '这个位子，是你报的人选。', 1);
+  },
+  active: function(){ return (G.work || []).filter(function(w){ return w.st === 'open' && w.ready <= G.month; }); },
+  title: function(w){ return w.kind === 'oldcity' ? '城关旧改·落地' : w.kind === 'qingchuan' ? '青川旧账·回访' : pn(w.who) + '·到任回访'; },
+  description: function(w){
+    if (w.stage === 1 || w.st === 'waiting') return w.t;
+    if (w.kind === 'oldcity') return w.pass ? '方案过了。补偿表还是旧的，住建和城关各说各的。先去现场，或者先问清承办人的口风。' : '方案没过。老教师又来了一趟，问下一步怎么办。先把争议摸清，才能知道该改哪一页。';
+    if (w.kind === 'qingchuan') return w.pass ? '事故性质改了，家属还没拿到更正后的认定书。李海滨说，县里仍有人压着旧卷宗。' : '原结论维持。家属又来登记了。李海滨愿意谈，但只肯谈他亲眼见到的那一段。';
+    return '任命已经一个月。' + pn(w.who) + '报来的材料很好看，书记要你核实：人到了，事有没有动。';
+  },
+  options: function(w){
+    if (w.stage === 0){
+      if (w.kind === 'oldcity') return [ {id:'field',n:'去城关核对补偿表',a:'xia',t:'area:chengguan'}, {id:'talk',n:'先找承办人打听',a:'modi',t:Work.cityWho()} ];
+      if (w.kind === 'qingchuan') return [ {id:'field',n:'去青川调研回访',a:'xia',t:'area:qingchuan'}, {id:'check',n:'考察李海滨，核实材料',a:'kao',t:w.who} ];
+      return [ {id:'visit',n:'回访本人，核实落实情况',a:'hui',t:w.who}, {id:'check',n:'考察本人，核实履历和底细',a:'kao',t:w.who} ];
+    }
+    if (w.kind === 'oldcity') return [ {id:'fund',n:'补一笔钱，修正补偿（盘子 −1）',cost:1}, {id:'revise',n:'逐户复核，缩小争议范围'}, {id:'press',n:'催进度，先按现有表推进（反扑会加重）'} ];
+    if (w.kind === 'qingchuan') return [ {id:'review',n:'把核实材料送纪委复核'}, {id:'family',n:'把书面答复送到家属手里'}, {id:'shelve',n:'按现有结论归档（家属仍会来）'} ];
+    return [ {id:'support',n:'协调一笔启动经费（盘子 −1）',cost:1}, {id:'correct',n:'定下整改期限，下个月核验'}, {id:'trust',n:'按他的汇报结案'} ];
+  },
+  cityWho: function(){ return holder('cg_qz') || holder('cg_sj') || 'cg_quzhang'; },
+  can: function(w, o){
+    if (!w || w.st !== 'open' || w.ready > G.month || G.school || G.acts <= 0 || w.touched === G.month) return false;
+    return o.a ? Act.targets(o.a).indexOf(o.t) >= 0 : G.money >= (o.cost || 0);
+  },
+  run: function(id, choice){
+    var w = (G.work || []).filter(function(x){ return x.id === id; })[0];
+    if (!w) return null;
+    var o = Work.options(w).filter(function(x){ return x.id === choice; })[0];
+    if (!o || !Work.can(w,o)) return null;
+    if (o.a) return Act.run(o.a,o.t);
+    G.acts--; G.money -= o.cost || 0; w.touched = G.month; w.method = choice; w.st = 'waiting'; w.resolve = G.month + 1;
+    w.plan = o.n.replace(/（.*）/, '');
+    w.t = '办理意见：' + w.plan + '。已经送出，下个月核验结果。';
+    logIt(Work.title(w) + '：' + o.n.replace(/（.*）/, '') + '。');
+    return {t:'你把办理意见写在材料最后一页，注明了核验的月份。',got:'下个月有结果；本月行动 −1'};
+  },
+  afterAction: function(a,t){
+    var hit = Work.active().filter(function(w){
+      if (w.stage !== 0 || w.touched === G.month) return false;
+      return Work.options(w).some(function(o){ return o.a === a && o.t === t; });
+    })[0];
+    if (!hit) return '';
+    var o = Work.options(hit).filter(function(o){ return o.a === a && o.t === t; })[0];
+    hit.stage = 1; hit.method = o.id; hit.touched = G.month; hit.ready = G.month + 1; hit.due = G.month + 3;
+    if (hit.kind === 'oldcity'){
+      hit.evidence = o.id === 'field' || own('zhujian') || own('cg_qz');
+      hit.t = hit.evidence ? '逐户核对后，有十七户的面积写错了。先复核补偿，还是先催施工，要你拿意见。' : '承办人只保证不会出事，没有拿出逐户核对表。下个月需要定下办理意见。';
+    } else if (hit.kind === 'qingchuan'){
+      hit.evidence = o.id === 'field' || Grip.level('qingchuan') >= 2 || G.flags.b4_pages || G.flags.b4_song;
+      hit.t = hit.pass ? '家属要的不是一句「已处理」，是盖章的认定书。县里还没有送到。' : '李海滨把现场时间重新排了一遍。' + (hit.evidence ? '旧报告有一处对不上，材料可以送去复核。' : '目前只有口述，直接要求翻案还缺材料。');
+    } else {
+      var p = P(hit.who);
+      hit.evidence = a === 'kao' || p.known.dirt;
+      hit.t = p.side < 20 && p.known.side ? '回访核实后，他已经换了边。经费和结案意见都不能只凭他的汇报，需要独立核验。' : p.dirt && hit.evidence ? '核实中发现，他把一笔费用放在了往来账里。需要整改，不能只拨钱。' : p.cap >= 2 ? '有两件事确实动了，另有一件卡在经费和部门协调上。' : '材料写得很满，现场进度落后。经费之外，还缺一个肯盯落实的人。';
+    }
+    logIt(Work.title(hit) + '：已经核实，下个月定办理意见。');
+    return '待办有了进展：' + hit.t;
+  },
+  start: function(){
+    (G.work || []).forEach(function(w){
+      if (G.school && w.st === 'open'){ w.due++; if(w.ready > G.month) w.ready++; }
+      if ((w.st === 'open' || w.st === 'waiting') && w.kind === 'appoint' && (!P(w.who) || P(w.who).gone || holder(w.post) !== w.who)){
+        Work.finish(w,'void','人已经离任。这份到任回访归档，原来的任命不再当作现任。',{}); return;
+      }
+      if (w.st === 'waiting' && w.resolve <= G.month) Work.resolve(w);
+    });
+  },
+  resolve: function(w){
+    var fx = {}, t, influence = 0;
+    if (w.kind === 'oldcity'){
+      var owner = Work.cityWho(); w.who = owner;
+      if (w.method === 'fund') { fx = {prestige:3,trust:1}; t = '补偿表重新核了一遍。十七户补了差额，老教师在签字前又问了一遍搬迁日期。'; influence = 2; }
+      if (w.method === 'revise') { var ok = w.evidence || own('zhujian') || own('cg_qz'); fx = ok ? {prestige:3,feud:-2} : {prestige:1}; t = ok ? '逐户复核表盖了章。争议缩到了三户，原定的施工日期往后推了半个月。' : '复核表只交来半份。施工没有强推，三户的争议记在督办单上，月底仍要反馈。'; influence = ok ? 2 : 0; }
+      if (w.method === 'press') { fx={prestige:1,heat:5,feud:3}; t='工期赶上了。老教师家那一户没有签字，信访局的新登记本上又出现了他的名字。'; influence=-2; }
+      if (!w.pass) t = '常委会没过的原方案没有开工。' + t + '修订后的补偿材料留给下一次议事，不能拿这份督办单当开工批文。';
+    } else if (w.kind === 'qingchuan'){
+      if (w.method === 'review') { var strong = w.evidence || own('jw_fu'); fx = strong ? {prestige:3,trust:2,heat:2} : {heat:2}; t = strong ? '宋自强收了补充材料，按程序补做核查。家属拿到了书面收件回执，旧报告的疑点列进了核查清单。' : '纪委退回一张补证清单。李海滨的口述记进了卷宗，原结论没有因此改变。'; influence = strong ? 2 : 0; }
+      if (w.method === 'family') { fx = w.pass ? {trust:2,prestige:2} : {trust:1}; t = w.pass ? '更正后的认定书送到了家属手里。她逐字看完，折好，放进装旧房产证的塑料袋。' : '你把现有结论和复核途径写清，亲手交给家属。她收下了，问下个月还能不能来。你说能。'; influence=2; }
+      if (w.method === 'shelve') { fx={prestige:-2}; t='卷宗按现有结论归档。下个月初，家属照样来了，登记的人换了一个，批转意见还是那一句。'; influence=-2; }
+    } else {
+      var p=P(w.who), bad=(p.dirt && (w.evidence || p.known.dirt)) || (p.side < 20 && p.known.side), turned=p.side < 20 && p.known.side;
+      if (w.method === 'support') { fx=bad ? {heat:3,bossRisk:2} : {prestige:p.cap >= 2 ? 3 : 1}; t=bad ? pn(w.who)+(turned ? '收了经费，却把落实工作交给市政府那边协调。你签过的经费意见留在了卷宗里。' : '收了经费，往来账仍没有解释清。你的协调意见也附进了材料。') : pn(w.who)+'报来了第一件办成的事。'+(p.cap >= 2 ? '经费之外，他把另一个部门也拉到了现场。' : '进度慢了一点，总算有一件能对上。'); influence=bad ? -1 : 2; }
+      if (w.method === 'correct') { fx={prestige:2,heat:bad ? -2 : 0}; t=pn(w.who)+(turned ? '交来一份落实表。你没有只听他的汇报，另请办公室核实，把未落实的两项列进整改清单。' : bad ? '补交了费用说明，往来账转给纪检核验。你没替他把问题压下去。' : '按期补交了整改表。你让办公室去现场对了一遍，才在督办单上签字。'); influence=1; }
+      if (w.method === 'trust') { fx=bad ? {prestige:-3,heat:4,bossRisk:2} : p.cap >= 2 ? {prestige:2} : {prestige:-2}; t=bad ? pn(w.who)+(turned ? '按市政府那边的安排办了。你签过的结案意见和现场情况对不上，也被调出来复核。' : '的那笔费用后来被问到了。你签过的结案意见也被调了出来。') : p.cap >= 2 ? pn(w.who)+'把事办成了，汇报里的数字和现场对得上。' : '核验的人回来，说'+pn(w.who)+'报的进度，现场只做了一半。'; influence=bad ? -2 : p.cap >= 2 ? 2 : -1; }
+      p.loyal=clamp(p.loyal+(influence > 0 ? 8 : -8),0,100);
+    }
+    Work.finish(w,'done',t,fx);
+    Work.remember(w.who,'work_'+w.id,t,influence,w.kind === 'oldcity' ? 'b3' : w.kind === 'qingchuan' ? 'b4' : null);
+  },
+  finish: function(w,st,t,fx){
+    w.st=st; w.closed=G.month; w.t=t; applyFx(fx);
+    report(Work.title(w)+'：'+t); logIt(Work.title(w)+'：'+t);
+  },
+  end: function(){
+    (G.work || []).forEach(function(w){
+      if (w.st !== 'open' || G.month < w.due) return;
+      var t = w.kind === 'oldcity' ? '办理期限到了，补偿争议仍没有核清。老教师又来登记，办公室把未办结情况报给了书记。' : w.kind === 'qingchuan' ? '回访期限到了，家属没有收到新的书面答复。信访登记又添了一页。' : pn(w.who)+'到任后的回访一直没有安排。书记问起落实情况，你手里只有他自己报的材料。';
+      Work.finish(w,'overdue',t,{trust:-1,prestige:-1});
+      Work.remember(w.who,'overdue_'+w.id,'你说过会来核实，最后没有来。',-1);
+    });
+  },
+  remember: function(id,key,t,v,topic){
+    Work.ensure(); if (!id || !P(id)) return;
+    var ms=G.memories[id] || (G.memories[id]=[]);
+    if (ms.some(function(x){return x.key===key;})) return;
+    ms.push({key:key,m:G.month,t:t,v:v||0,topic:topic||null});
+    if(ms.length > 12) ms.shift();
+  },
+  recall: function(id){
+    var ms=(G.memories || {})[id] || [];
+    var last=ms[ms.length-1]; if(!last) return '';
+    return pn(id)+'还记着'+ymText(last.m)+'的事：'+last.t;
+  },
+  voteMemory: function(id,topic){
+    return clamp(((G.memories || {})[id] || []).filter(function(x){return x.topic===topic;}).reduce(function(s,x){return s+x.v;},0),-4,4);
+  },
+  sceneMemory: function(sid,o){
+    var sc=SCENES[sid];
+    if (!sc || !o.fx || !o.fx.side) return;
+    Object.keys(o.fx.side).forEach(function(id){
+      if (!o.fx.side[id]) return;
+      Work.remember(id,'scene_'+sid,'那次'+sc.title+'，你选的是：'+fill(o.t)+'。',o.fx.side[id]>0 ? 1 : -1,sc.battle);
+    });
+  }
+};
 
 /* === js/60-month.js === */
 /* ── 60-month：一个月怎么走 ── */
@@ -3621,6 +3848,7 @@ function halfGain(fx){
 }
 var Month = {
   start: function(first){
+    Work.ensure();
     G.acts = G.school ? 0 : 3;
     G.props = []; G.lobby = {};
     G.sceneDone = false; G.sceneRes = null;
@@ -3641,6 +3869,7 @@ var Month = {
     if (nt){ G.topicNext = { id: nt, m: G.month + 1 }; G.scene3 = TOPIC_BY_ID[nt].rise || null; }
     /* 回响：过去的事落了地 */
     G.echoes = (G.echoes || []).filter(function(e){ if (e.m > G.month) return true; G.report.push(fill(e.t)); applyFx(e.fx); return false; });
+    Work.start();
     if (G.school){ G.sceneDone = true; G.scene2Done = true; G.scene3Done = true; }
   },
 
@@ -3671,7 +3900,7 @@ var Month = {
       if (G.seen[d.id]) return;
       if (G.month > d.win[1]){ G.seen[d.id] = -1; return; }
       if (G.month < d.win[0]) return;
-      if (d.after && !G.seen[d.after]) return;
+      if (d.after && (!(G.seen[d.after] > 0) || !G.chose || G.chose[d.after] == null)) return;
       if (d.after && G.seen[d.after] > 0 && G.month - G.seen[d.after] < 3) return;
       if (d.c && !d.c()) return;
       if (!best || d.win[1] < best.win[1]) best = d;
@@ -3710,6 +3939,7 @@ var Month = {
       G.scene3Done = true;
       G.scene3Res = { i: i, t: fill(o3.res), got: got3 };
       G.chose = G.chose || {}; G.chose[G.scene3] = i;
+      Work.sceneMemory(G.scene3, o3);
       return G.scene3Res;
     }
     if (slot === 2){
@@ -3721,6 +3951,7 @@ var Month = {
       G.scene2Done = true;
       G.scene2Res = { i: i, t: fill(o2.resFn ? o2.resFn() : o2.res), got: got2 };
       G.chose = G.chose || {}; G.chose[G.scene2] = i;
+      Work.sceneMemory(G.scene2, o2);
       return G.scene2Res;
     }
     var sc = SCENES[G.scene]; if (!sc || G.sceneDone) return null;
@@ -3732,6 +3963,7 @@ var Month = {
     var res = o.resFn ? o.resFn() : o.res;
     G.sceneRes = { i: i, t: fill(res), got: got };
     G.chose = G.chose || {}; G.chose[G.scene] = i;
+      Work.sceneMemory(G.scene, o);
     return G.sceneRes;
   },
 
@@ -3745,6 +3977,7 @@ var Month = {
   battleResult: function(bid, pass){
     var b = BATTLES[bid];
     G.battles[bid] = pass ? 'win' : 'lose';
+    Work.battle(bid, pass);
     if (bid === 'b8') return;
     var hard = G.hardNow; G.hardNow = false;
     var fx = pass ? b.win : b.lose;
@@ -3800,6 +4033,7 @@ var Month = {
     });
     if (G.ending) return Month.close();
 
+    Work.end();
     Month.drift();
     fuFeed();
     checkPromises();
@@ -4026,6 +4260,7 @@ var UI = {
     var h = '';
     h += '<div class="panel"><h3>这个月听到的</h3><div class="report">' +
       (G.report.length ? G.report.map(function(t){ return paras(t); }).join('<div class="sep"></div>') : '<p class="dim">—</p>') + '</div></div>';
+    h += UI.workBox();
     h += UI.sceneBox(1);
     h += UI.sceneBox(2);
     h += UI.sceneBox(3);
@@ -4062,6 +4297,24 @@ var UI = {
     if (Month.hrDue()){ var v = vacancies().length; due.push('月底调整会' + (v ? '，空着 ' + v + ' 个位子' : '')); }
     if (due.length) h += '<div class="due">' + due.join('<br>') + '</div>';
     return h;
+  },
+  workBox: function(){
+    var ws = (G.work || []).filter(function(w){ return (w.st === 'open' || w.st === 'waiting') && (w.ready <= G.month || w.stage === 1); });
+    var recent = (G.work || []).filter(function(w){ return w.closed === G.month; });
+    if (!ws.length && !recent.length) return '';
+    return '<div class="panel work"><h3>案头待办 <span class="cnt">沿用本月三次行动</span></h3>' + ws.map(function(w){
+      return '<div class="work-item"><div class="work-head"><b>' + esc(Work.title(w)) + '</b><span>' + (w.st === 'waiting' ? '下个月核验' : w.ready > G.month ? '下个月定办理意见' : ymText(w.due) + '月底前') + '</span></div>' + paras(Work.description(w)) +
+        (w.st === 'waiting' ? '' : '<div class="work-choices">' + Work.options(w).map(function(o){
+          return '<button class="btn ghost" data-work="' + esc(w.id) + '" data-choice="' + o.id + '"' + (Work.can(w,o) ? '' : ' disabled') + '>' + esc(o.n) + '</button>';
+        }).join('') + '</div><p class="work-note">每次办理占一件行动；核实后，下个月定意见，送出后再核验。' + (G.school ? '在党校期间暂不能办理。' : '') + '</p>') + '</div>';
+    }).join('') + recent.map(function(w){ return '<div class="work-item"><b>' + esc(Work.title(w)) + ' · ' + ({done:'已办结',overdue:'逾期归档',void:'离任归档'}[w.st] || '归档') + '</b>' + paras(w.t) + '</div>'; }).join('') + '</div>';
+  },
+  runWork: function(id, choice){
+    var r = Work.run(id, choice); if (!r) return;
+    var w = G.work.filter(function(x){return x.id === id;})[0];
+    G.actLog = G.actLog || [];
+    G.actLog.push({m:G.month,n:Work.title(w),t:r.t,got:r.got});
+    save(); UI.render();
   },
   propOk: function(k){
     if (k === 'talk') return Props.talkTargets().length > 0;
@@ -4205,6 +4458,8 @@ var UI = {
     var gl = Grip.level(id);
     if (gl && id !== 'mayor') h += '<div class="grip">手里：' + GRIP_TXT[gl] + (p.held ? '（捏着）' : '') + (p.turned ? '（换了边）' : '') + '</div>';
     if (id === 'mayor'){ var ml = Grip.mayorLv(); h += '<div class="grip">' + MAYOR_PARTS.map(function(x, i){ return esc(x.t) + '：' + (x.open() ? (GRIP_TXT[ml[i]] || '还没摸到') : '—'); }).join('<br>') + '</div>'; }
+    var ms = ((G.memories || {})[id] || []).slice(-3).reverse();
+    if (ms.length) h += '<div class="person-memory">' + ms.map(function(x){return '<p><i>' + ymText(x.m) + '</i> ' + esc(x.t) + '</p>';}).join('') + '</div>';
     return h + '</div>';
   },
 
@@ -4217,6 +4472,8 @@ var UI = {
     h += '<div class="panel"><h3>许过的话</h3><div class="flist">' + (G.promises.length ? G.promises.map(function(x){
       return '<div>' + esc(pn(x.who)) + '：' + esc(WANT_BY_ID[x.w].t) + '<span class="st">' + ({ open:'', kept:'　兑现了', broken:'　没兑现', void:'　人不在了' }[x.st]) + (x.self ? '　你替书记许的' : '') + '</span></div>';
     }).join('') : '<div class="dim">—</div>') + '</div></div>';
+    var works = (G.work || []).slice().reverse();
+    h += '<div class="panel"><h3>督办记录</h3><div class="flist">' + (works.length ? works.map(function(w){ return '<div><i>' + ymText(w.born) + '</i> ' + esc(Work.title(w)) + ' · ' + ({open:'待办',waiting:'待核验',done:'已办结',overdue:'逾期归档',void:'离任归档'}[w.st]) + paras(w.t || Work.description(w)) + '</div>'; }).join('') : '<div class="dim">—</div>') + '</div></div>';
     var pl = (G.propLog || []).slice(-10).reverse();
     h += '<div class="panel"><h3>呈批件</h3>' + (pl.length ? '<div class="cpjs">' + pl.map(UI.cpj).join('') + '</div>' : '<div class="flist"><div class="dim">—</div></div>') + '</div>';
     h += '<div class="panel"><h3>批示</h3><div class="flist remarks">' + (G.remarks.length ? G.remarks.slice(-12).reverse().map(function(r){ return '<div><i>' + ymText(r.m) + '</i> ' + esc(r.t) + '</div>'; }).join('') : '<div class="dim">—</div>') + '</div></div>';
@@ -4439,6 +4696,7 @@ var UI = {
     $$('[data-opt]').forEach(function(b){ b.onclick = function(){ Month.choose(+b.dataset.opt); save(); UI.render(); }; });
     $$('[data-opt2]').forEach(function(b){ b.onclick = function(){ Month.choose(+b.dataset.opt2, 2); save(); UI.render(); }; });
     $$('[data-opt3]').forEach(function(b){ b.onclick = function(){ Month.choose(+b.dataset.opt3, 3); save(); UI.render(); }; });
+    $$('[data-work]').forEach(function(b){ b.onclick = function(){ UI.runWork(b.dataset.work, b.dataset.choice); }; });
     $$('[data-act]').forEach(function(b){ b.onclick = function(){ UI.doAct(b.dataset.act); }; });
     $$('[data-op]').forEach(function(b){ b.onclick = function(){ var x = b.dataset.op.split(':'); UI.doOp(x[0], x[1]); }; });
     $$('[data-prop]').forEach(function(b){ b.onclick = function(){ UI.doProp(b.dataset.prop); }; });

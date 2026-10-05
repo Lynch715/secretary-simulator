@@ -14,8 +14,48 @@ var Mayor = {
     var s = shi();
     var n = s >= 50 ? 3 : (s >= 36 ? 2 : 1);
     if (G.flags.mayorWeak && G.month - G.flags.mayorWeak < 4) n = 1;
-    for (var i = 0; i < n; i++) Mayor.move(s);
+    var planned = Mayor.planTurn(s);
+    for (var i = planned ? 1 : 0; i < n; i++) Mayor.move(s);
     Mayor.nominate();
+  },
+  /* 三个月围绕一件事行动，第一月给迹象，后两月落子。占用原有行动额度。 */
+  planTurn: function(s){
+    if (G.month < 3) return false;
+    var plan = G.mayorPlan;
+    if (plan && (G.month - plan.start > 2 || (plan.target && (!P(plan.target) || P(plan.target).gone)))) plan = null;
+    if (!plan){
+      var swing = G.stand.filter(function(id){return !(PDEF[id] || {}).fixed && !P(id).gone && !P(id).held && P(id).side > -40 && P(id).side < 60;});
+      var mine = Object.keys(G.people).filter(function(id){var p=P(id);return p.by === 'boss' && p.post && !p.gone && p.side >= 20 && p.loyal < 45 && id !== 'gaoxin';});
+      var kind = mine.length ? 'turn' : swing.length && rnd() < 0.65 ? 'pull' : 'dig';
+      plan = {kind:kind,target:kind === 'turn' ? pick(mine) : kind === 'pull' ? pick(swing) : null,start:G.month};
+      G.mayorPlan = plan;
+    }
+    if (plan.last === G.month) return true;
+    plan.last = G.month;
+    var phase = G.month - plan.start, id=plan.target, p=id ? P(id) : null;
+    if (phase === 0){
+      report(plan.kind === 'pull' ? '陈市长请' + pn(id) + '看了一个项目，说下个月还要单独听他的意见。' : plan.kind === 'turn' ? pn(id) + '最近两次去市政府汇报，都没有先到市委这边来。你上次回访他的日期，已经很远了。' : '市政府办公室在调几份旧材料，连报表上的签字页也要复印。来取材料的人说，下个月还要。');
+      return false;
+    }
+    if (plan.kind === 'pull'){
+      var resisted=(G.lobby[id] || 0) > 0 || (G.contacts || {})[id] === G.month || p.held;
+      addSide(id,resisted ? -3 : -6);
+      report(resisted ? pn(id) + '两边都去坐过。这回他没有顺着陈市长的话表态。' : phase === 1 ? '陈市长又请' + pn(id) + '去了一次，说的是上个月那个项目。' : pn(id) + '在会上接了陈市长的话。前两个月的几次见面，现在有了下文。');
+    } else if(plan.kind === 'turn'){
+      if (p.by !== 'boss' || !p.post || p.side < 20){ report(pn(id) + '的去向已经变了，市政府那边没有再约他。'); G.mayorPlan=null; return true; }
+      var safe=p.loyal >= 45;
+      if (!safe && phase === 2 && rnd() < 0.35){ p.side=-40; p.show=Math.max(p.show,25); G.mlog.push({m:G.month,k:'turn',t:pn(id)}); report('市政府给' + pn(id) + '单独安排了一项工作。他给市委送来的月报，开始只写一句「按市里要求落实」。'); }
+      else report(safe ? pn(id) + '把市政府找他谈的事告诉了你，说书记交代的事会接着办。' : pn(id) + '又去了市政府，说是协调经费。你的回访安排还没有送到他手里。');
+      if (safe) return false;
+    } else {
+      var protectedNow=G.flags.hu === G.month || own('sw_fu') || own('xinfang') || own('gongan');
+      var pressure = own('xinfang') || own('gongan') ? 2 : 4;
+      if (own('sw_fu')) pressure--;
+      if (G.flags.hu === G.month) pressure=Math.max(1,pressure-1);
+      applyFx({heat:pressure,bossRisk:(s >= 55 ? 2.5 : 0.8) * (protectedNow ? 0.7 : 1)});
+      report(protectedNow ? '旧材料查到签字页时，你这边补齐了手续。市政府送来的问题清单，少了两项。' : phase === 1 ? '上个月调走的报表，又补要了附件。办公室问你，那几笔数有没有原始凭据。' : '一份按时间排好的问题清单送到了省里。前两个月被调走的材料，都列在后面。');
+    }
+    return true;
   },
   move: function(s){
     var opts = [];

@@ -220,7 +220,9 @@ d6c: { title:'等得起', img:'s_office', who:'boss', dark:1,
 /* ════ 那个孩子 ════ */
 d7a: { title:'一封信', img:'s_office', who:null, dark:1,
   textFn:function(){
-    var s = '市委信箱里有一封手写的信，寄信人地址是青川县的一个村，收信人写的是：书记的秘书。\n信是那个孩子的姨写的，就是每个月来信访局坐一天的那个人。她说孩子中考考了全县第十一名，进了县一中。她说她不来信访局了。';
+    var s = '市委信箱里有一封手写的信，寄信人地址是青川县的一个村，收信人写的是：书记的秘书。\n信是那个孩子的姨写的，就是每个月来信访局坐一天的那个人。她说孩子中考考了全县第十一名，进了县一中。';
+    var casework = (G.work || []).filter(function(w){ return w.kind === 'qingchuan'; })[0];
+    s += casework ? (casework.st === 'done' && casework.method === 'family' && casework.pass ? '她说认定书收到了，以后不来信访局了。' : '她说孩子的书读得下去，事故那件事，她还会按程序问下去。') : G.battles.b4 === 'win' ? '她说她不来信访局了。' : '她说孩子的书读得下去，事故那件事，她还会按程序问下去。';
     if (G.chose && G.chose.b4_rise === 2) s += '\n信的最后一句是：谢谢你那天下车来问我。';
     return s;
   },

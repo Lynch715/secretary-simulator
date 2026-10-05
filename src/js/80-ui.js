@@ -73,6 +73,7 @@ var UI = {
     var h = '';
     h += '<div class="panel"><h3>这个月听到的</h3><div class="report">' +
       (G.report.length ? G.report.map(function(t){ return paras(t); }).join('<div class="sep"></div>') : '<p class="dim">—</p>') + '</div></div>';
+    h += UI.workBox();
     h += UI.sceneBox(1);
     h += UI.sceneBox(2);
     h += UI.sceneBox(3);
@@ -109,6 +110,24 @@ var UI = {
     if (Month.hrDue()){ var v = vacancies().length; due.push('月底调整会' + (v ? '，空着 ' + v + ' 个位子' : '')); }
     if (due.length) h += '<div class="due">' + due.join('<br>') + '</div>';
     return h;
+  },
+  workBox: function(){
+    var ws = (G.work || []).filter(function(w){ return (w.st === 'open' || w.st === 'waiting') && (w.ready <= G.month || w.stage === 1); });
+    var recent = (G.work || []).filter(function(w){ return w.closed === G.month; });
+    if (!ws.length && !recent.length) return '';
+    return '<div class="panel work"><h3>案头待办 <span class="cnt">沿用本月三次行动</span></h3>' + ws.map(function(w){
+      return '<div class="work-item"><div class="work-head"><b>' + esc(Work.title(w)) + '</b><span>' + (w.st === 'waiting' ? '下个月核验' : w.ready > G.month ? '下个月定办理意见' : ymText(w.due) + '月底前') + '</span></div>' + paras(Work.description(w)) +
+        (w.st === 'waiting' ? '' : '<div class="work-choices">' + Work.options(w).map(function(o){
+          return '<button class="btn ghost" data-work="' + esc(w.id) + '" data-choice="' + o.id + '"' + (Work.can(w,o) ? '' : ' disabled') + '>' + esc(o.n) + '</button>';
+        }).join('') + '</div><p class="work-note">每次办理占一件行动；核实后，下个月定意见，送出后再核验。' + (G.school ? '在党校期间暂不能办理。' : '') + '</p>') + '</div>';
+    }).join('') + recent.map(function(w){ return '<div class="work-item"><b>' + esc(Work.title(w)) + ' · ' + ({done:'已办结',overdue:'逾期归档',void:'离任归档'}[w.st] || '归档') + '</b>' + paras(w.t) + '</div>'; }).join('') + '</div>';
+  },
+  runWork: function(id, choice){
+    var r = Work.run(id, choice); if (!r) return;
+    var w = G.work.filter(function(x){return x.id === id;})[0];
+    G.actLog = G.actLog || [];
+    G.actLog.push({m:G.month,n:Work.title(w),t:r.t,got:r.got});
+    save(); UI.render();
   },
   propOk: function(k){
     if (k === 'talk') return Props.talkTargets().length > 0;
@@ -252,6 +271,8 @@ var UI = {
     var gl = Grip.level(id);
     if (gl && id !== 'mayor') h += '<div class="grip">手里：' + GRIP_TXT[gl] + (p.held ? '（捏着）' : '') + (p.turned ? '（换了边）' : '') + '</div>';
     if (id === 'mayor'){ var ml = Grip.mayorLv(); h += '<div class="grip">' + MAYOR_PARTS.map(function(x, i){ return esc(x.t) + '：' + (x.open() ? (GRIP_TXT[ml[i]] || '还没摸到') : '—'); }).join('<br>') + '</div>'; }
+    var ms = ((G.memories || {})[id] || []).slice(-3).reverse();
+    if (ms.length) h += '<div class="person-memory">' + ms.map(function(x){return '<p><i>' + ymText(x.m) + '</i> ' + esc(x.t) + '</p>';}).join('') + '</div>';
     return h + '</div>';
   },
 
@@ -264,6 +285,8 @@ var UI = {
     h += '<div class="panel"><h3>许过的话</h3><div class="flist">' + (G.promises.length ? G.promises.map(function(x){
       return '<div>' + esc(pn(x.who)) + '：' + esc(WANT_BY_ID[x.w].t) + '<span class="st">' + ({ open:'', kept:'　兑现了', broken:'　没兑现', void:'　人不在了' }[x.st]) + (x.self ? '　你替书记许的' : '') + '</span></div>';
     }).join('') : '<div class="dim">—</div>') + '</div></div>';
+    var works = (G.work || []).slice().reverse();
+    h += '<div class="panel"><h3>督办记录</h3><div class="flist">' + (works.length ? works.map(function(w){ return '<div><i>' + ymText(w.born) + '</i> ' + esc(Work.title(w)) + ' · ' + ({open:'待办',waiting:'待核验',done:'已办结',overdue:'逾期归档',void:'离任归档'}[w.st]) + paras(w.t || Work.description(w)) + '</div>'; }).join('') : '<div class="dim">—</div>') + '</div></div>';
     var pl = (G.propLog || []).slice(-10).reverse();
     h += '<div class="panel"><h3>呈批件</h3>' + (pl.length ? '<div class="cpjs">' + pl.map(UI.cpj).join('') + '</div>' : '<div class="flist"><div class="dim">—</div></div>') + '</div>';
     h += '<div class="panel"><h3>批示</h3><div class="flist remarks">' + (G.remarks.length ? G.remarks.slice(-12).reverse().map(function(r){ return '<div><i>' + ymText(r.m) + '</i> ' + esc(r.t) + '</div>'; }).join('') : '<div class="dim">—</div>') + '</div></div>';
@@ -486,6 +509,7 @@ var UI = {
     $$('[data-opt]').forEach(function(b){ b.onclick = function(){ Month.choose(+b.dataset.opt); save(); UI.render(); }; });
     $$('[data-opt2]').forEach(function(b){ b.onclick = function(){ Month.choose(+b.dataset.opt2, 2); save(); UI.render(); }; });
     $$('[data-opt3]').forEach(function(b){ b.onclick = function(){ Month.choose(+b.dataset.opt3, 3); save(); UI.render(); }; });
+    $$('[data-work]').forEach(function(b){ b.onclick = function(){ UI.runWork(b.dataset.work, b.dataset.choice); }; });
     $$('[data-act]').forEach(function(b){ b.onclick = function(){ UI.doAct(b.dataset.act); }; });
     $$('[data-op]').forEach(function(b){ b.onclick = function(){ var x = b.dataset.op.split(':'); UI.doOp(x[0], x[1]); }; });
     $$('[data-prop]').forEach(function(b){ b.onclick = function(){ UI.doProp(b.dataset.prop); }; });

@@ -15,6 +15,7 @@ var Meeting = {
       else v = -30;
       if (p.held || p.turned) v += 20;
     } else if (p.held && v < 5) v = 5;
+    v += Work.voteMemory(id, b.id);
     v += (b.mods || {})[id] || 0;
     v += ((G.bmods[b.id] || {})[id]) || 0;
     v += (G.lobby[id] || 0) * 6;
@@ -119,6 +120,7 @@ var Meeting = {
 
   afterPlace: function(x, post, s){
     if (s !== 'boss') return;
+    Work.appoint(x, post);
     logIt(pn(x) + '任' + POST_BY_ID[post].n + '。');
     G.stand.forEach(function(sid){
       wantsOf(sid).forEach(function(w){
@@ -126,7 +128,7 @@ var Meeting = {
         var pr = G.promises.filter(function(q){ return q.w === w.id && q.st === 'open'; })[0];
         if (pr || !G.wd[w.id]){
           var g = pr ? w.gain - Math.ceil(w.gain / 2) : w.gain;
-          if (pr) pr.st = 'kept';
+          if (pr){ pr.st = 'kept'; Work.remember(sid, 'kept_' + w.id, '答应的人选到了任，你把任命文件亲手送给了他。', 2); }
           G.wd[w.id] = 1; G.wd[w.id + '_full'] = 1; G.wk[w.id] = 1; addSide(sid, g + 2);
           report(pn(sid) + '知道了' + pn(x) + '的事。那天常委会散会，' + pn(sid) + '等书记先走了，才起身。');
         }

@@ -27,7 +27,7 @@ function newGame(opt){
     G.people[d.id] = {
       id: d.id, n: d.n, p: d.p, lvl: d.lvl, side: d.side, show: d.side,
       cap: d.cap || 2, age: d.age || 50, dirt: d.dirt || 0, amb: d.amb || 1,
-      known: { side: d.cw ? 1 : 0, dirt: 0, amb: 0 }, met: FACES.indexOf(d.id) >= 0 || !!d.cw,
+      known: { side: d.cw ? 1 : 0, dirt: 0, amb: 0 }, met: INITIAL_MET.indexOf(d.id) >= 0 || !!d.cw,
       loyal: 0, by: null, grip: 0, held: 0, turned: 0, gone: 0, post: null,
       yrs: d.yrs != null ? d.yrs : 1 + ri(7)
     };
@@ -50,7 +50,17 @@ function newGame(opt){
 function P(id){ return G.people[id]; }
 function pn(id){ var p = G.people[id]; return p ? p.n : id; }
 function isStanding(id){ return G.stand.indexOf(id) >= 0; }
-function faceOf(id){ return FACES.indexOf(id) >= 0 ? id : null; }
+function faceOf(id){
+  if (FACES.indexOf(id) >= 0) return id;
+  /* 接任常委的 id 按局动态生成；按姓名匹配也兼容已有存档。 */
+  var p = G && G.people && G.people[id];
+  if (p && p.ns){
+    for (var i = 0; i < NEW_STANDING.length; i++){
+      if (NEW_STANDING[i].n === p.n) return NEW_STANDING[i].face;
+    }
+  }
+  return null;
+}
 
 /* 玩家眼里的倾向：常委看真值，干部看 show，查清了看真值 */
 function seenSide(id){

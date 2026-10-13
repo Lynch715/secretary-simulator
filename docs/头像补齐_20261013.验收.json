@@ -1,0 +1,461 @@
+{
+  "new_portraits": 41,
+  "fixed_people_covered": 65,
+  "dynamic_people_covered": 4,
+  "old_asset_files_preserved": 62,
+  "changed_existing_assets": [],
+  "total_new_webp_bytes": 736520,
+  "files": [
+    {
+      "id": "gx_qz",
+      "name": "陆一帆",
+      "path": "assets/p_gx_qz.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 15214,
+      "sha256": "182dff9ffd873c1e977f9718a80b55e5ad21af976ac37ba346c623ef4fa9e4f3"
+    },
+    {
+      "id": "gk_qz",
+      "name": "贾正",
+      "path": "assets/p_gk_qz.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 19746,
+      "sha256": "ff57a9816a5d0b02e22ef1aaf646e92108dd4ee23134bf4abebc9656c966c708"
+    },
+    {
+      "id": "ml_xz",
+      "name": "袁晓岚",
+      "path": "assets/p_ml_xz.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 16414,
+      "sha256": "a265dd52df5369866893cf961778076aa155718a7353d38df4b5e600dbdf7ca9"
+    },
+    {
+      "id": "fb_zr",
+      "name": "景国梁",
+      "path": "assets/p_fb_zr.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 15974,
+      "sha256": "171471be94b92775efcae9cd34bb3494b07bf1846e5231ff73778d77244dcd07"
+    },
+    {
+      "id": "sz_ms",
+      "name": "苏晓东",
+      "path": "assets/p_sz_ms.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 15008,
+      "sha256": "b47b9960e745f06cf62fe74ae55daf64a238d56eca8e2214302a2883f307bd34"
+    },
+    {
+      "id": "jcz",
+      "name": "石磊",
+      "path": "assets/p_jcz.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 16770,
+      "sha256": "07d0e73b5cf0bcd047cbe1fdc0e755bc20722f90e808cc83c3a90d838811490a"
+    },
+    {
+      "id": "jw_fu",
+      "name": "林默",
+      "path": "assets/p_jw_fu.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 16402,
+      "sha256": "fa086586229fe3c9d17d9323ed9e17a9a97a101d88c9bfacdf39e57dad67361b"
+    },
+    {
+      "id": "shenji",
+      "name": "许海峰",
+      "path": "assets/p_shenji.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 20302,
+      "sha256": "96b180a49aaf7b4fe1132810acf4e704d94a8b76923f1d340229c68ad9cfd7b2"
+    },
+    {
+      "id": "ziran",
+      "name": "孟广仁",
+      "path": "assets/p_ziran.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 20460,
+      "sha256": "f0d0b5899d9b8da49346e26ae0ef483e79395beefd17558b49d852a4b49fa26d"
+    },
+    {
+      "id": "jiaoyu",
+      "name": "杜秉文",
+      "path": "assets/p_jiaoyu.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 23580,
+      "sha256": "f6b2eb22849c1200ba93632a18d6ee88c40661fca660a77af5e6206f96e50021"
+    },
+    {
+      "id": "weijian",
+      "name": "冷秋实",
+      "path": "assets/p_weijian.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 16018,
+      "sha256": "2d66f10fc832a72f8b9b0ac5d178284e0647bd6a31f203ddc739cb517be411b8"
+    },
+    {
+      "id": "xinfang",
+      "name": "马春来",
+      "path": "assets/p_xinfang.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 18702,
+      "sha256": "03a784300012bdcdff7989df6a8c3792ee274dd1e5aa395831c90beb7d9073a5"
+    },
+    {
+      "id": "guozi",
+      "name": "尹立本",
+      "path": "assets/p_guozi.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 17706,
+      "sha256": "8da46f542b127205d36e95e393ca539c4118fd0914e46d0612da3ad172bb5b3a"
+    },
+    {
+      "id": "wanhz",
+      "name": "万海舟",
+      "path": "assets/p_wanhz.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 18484,
+      "sha256": "d91cd1677a32d063ee87b50adfaff7257f71e25459dc1446001baf141cd7f69a"
+    },
+    {
+      "id": "yanlw",
+      "name": "严立文",
+      "path": "assets/p_yanlw.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 23034,
+      "sha256": "b3e6f69697948fe878509cdc5d80807e06593e6632c7f6f3eb0f545d5770eae7"
+    },
+    {
+      "id": "zengf",
+      "name": "曾凡",
+      "path": "assets/p_zengf.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 19422,
+      "sha256": "5b30ba0ee2a5168dfe26e582fae74ab21836498c66f9d098e7559356f36bfc10"
+    },
+    {
+      "id": "zhouqm",
+      "name": "周启明",
+      "path": "assets/p_zhouqm.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 17122,
+      "sha256": "0e15f2b0e905c102350b99364f73f0a5fb76a143eb5899c6143a6fcf791a64e4"
+    },
+    {
+      "id": "guohs",
+      "name": "郭怀山",
+      "path": "assets/p_guohs.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 19092,
+      "sha256": "cee3029f897881f5304e1b55a39f184f1dca3c6da7f6f21ff983edb662bb7f88"
+    },
+    {
+      "id": "yanping",
+      "name": "晏平",
+      "path": "assets/p_yanping.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 18338,
+      "sha256": "c5ca8400aa5ee3a9ceab3690d025e663be20bfbdd23b3e1b1457b2637291e9e9"
+    },
+    {
+      "id": "guozc",
+      "name": "郭振川",
+      "path": "assets/p_guozc.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 19244,
+      "sha256": "d637ff73f03a98e2fbba76c96d16079e660f61764617e201d6dbe0b59b727cbd"
+    },
+    {
+      "id": "fangyu",
+      "name": "方宇",
+      "path": "assets/p_fangyu.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 21178,
+      "sha256": "a4926c199bb53733430936296fc7878f43f663ed54358f98e6c139520e1a2fbd"
+    },
+    {
+      "id": "tangjl",
+      "name": "唐建林",
+      "path": "assets/p_tangjl.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 16146,
+      "sha256": "51f829df9870f8510161fb910cddaf4d31bbd0c9aa5de8fd442ec33a444c70ac"
+    },
+    {
+      "id": "wuxy",
+      "name": "武晓燕",
+      "path": "assets/p_wuxy.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 15196,
+      "sha256": "c68bf57123c7a06103f64dae0eb7de9f6ac0356706f2f67634ce17e84a951f48"
+    },
+    {
+      "id": "lihb",
+      "name": "李海滨",
+      "path": "assets/p_lihb.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 21092,
+      "sha256": "3cfe0df5e3a40556c34bf79e14ecd2c8ccfd71f54090c1aac9cf3d0250d58cbb"
+    },
+    {
+      "id": "qianwj",
+      "name": "钱文杰",
+      "path": "assets/p_qianwj.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 21198,
+      "sha256": "74470e656a3632973cfe1c6a780277c933d8808b60ce0d810189ac769fa84b12"
+    },
+    {
+      "id": "zhangyn",
+      "name": "张以宁",
+      "path": "assets/p_zhangyn.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 16200,
+      "sha256": "f24561667a9c929145b10c1371fd60a2a6e13081bd110321a114e303fa2dca1f"
+    },
+    {
+      "id": "heqs",
+      "name": "何青松",
+      "path": "assets/p_heqs.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 17758,
+      "sha256": "f843c2ab4aebe6dc1f41bd249bd542fee6baf1cccebf724339de3c029b287338"
+    },
+    {
+      "id": "luoy",
+      "name": "罗岩",
+      "path": "assets/p_luoy.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 15454,
+      "sha256": "dfbfdde154741000da7d5c18579221736182f955ccb090542852b4e99df53dbf"
+    },
+    {
+      "id": "tansh",
+      "name": "谭少华",
+      "path": "assets/p_tansh.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 19298,
+      "sha256": "a17bd3f46e936a17f4e8e6022bead9341fd8637e99003e342c8d26f16b8917f3"
+    },
+    {
+      "id": "weiq",
+      "name": "韦青",
+      "path": "assets/p_weiq.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 16900,
+      "sha256": "88de940e606438d0b175c5835aad4642b19b531ccfaf0e8e1beca880b4c3fb51"
+    },
+    {
+      "id": "ouym",
+      "name": "欧阳明",
+      "path": "assets/p_ouym.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 19756,
+      "sha256": "6b76b72839e0415c99e69b9a47603db8e60fc163107ba36a31e9b5e14074f6d4"
+    },
+    {
+      "id": "songjy",
+      "name": "宋佳怡",
+      "path": "assets/p_songjy.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 14746,
+      "sha256": "fef7eb5152c2f4ba671a79f516aa266070d6be81ce14e81368dcc30b9d153ae6"
+    },
+    {
+      "id": "panlei",
+      "name": "潘磊",
+      "path": "assets/p_panlei.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 17124,
+      "sha256": "91319fe7841d5ece1fcccacb4a0f9ae2c88411d9e1243370d9f73d95bed0a3b3"
+    },
+    {
+      "id": "gaoyf",
+      "name": "高亚峰",
+      "path": "assets/p_gaoyf.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 15278,
+      "sha256": "19ec850f2920803b31a771344369974a3881569bc75ff64891132b61334de8ce"
+    },
+    {
+      "id": "shenlf",
+      "name": "沈立峰",
+      "path": "assets/p_shenlf.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 20772,
+      "sha256": "8e515a3fc541f0e36fce94a2482b1c1b07cd0ee83062ac54c5bb6b70a85910dd"
+    },
+    {
+      "id": "lvhq",
+      "name": "吕宏泉",
+      "path": "assets/p_lvhq.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 17924,
+      "sha256": "e87b4ec945bbff680278ae18f13f3bdc3c368bb6668eb0b47e916fe1bc2d81ac"
+    },
+    {
+      "id": "kongm",
+      "name": "孔敏",
+      "path": "assets/p_kongm.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 16216,
+      "sha256": "9fdd690476bae62d642a849858bd22f14d91b1d3399ce0d8922614fe1241fe4f"
+    },
+    {
+      "id": "ns_weichanghe",
+      "name": "魏长河",
+      "path": "assets/p_ns_weichanghe.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 15042,
+      "sha256": "ca90f108b5674f0d84539df2525a89406be158e94bf287ec7219bdf8cc613639"
+    },
+    {
+      "id": "ns_yanshuhua",
+      "name": "严书华",
+      "path": "assets/p_ns_yanshuhua.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 16996,
+      "sha256": "7dc7fd9189e764df1bd6ab39b7cdc2230c7772e9b7313119cbd311d66d4ace64"
+    },
+    {
+      "id": "ns_bozhengyang",
+      "name": "柏正阳",
+      "path": "assets/p_ns_bozhengyang.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 18884,
+      "sha256": "605831b2f34015183e5cb31c2f17ed472adf95884d6ec97eb500795df3cc65d8"
+    },
+    {
+      "id": "ns_qizhiyuan",
+      "name": "祁志远",
+      "path": "assets/p_ns_qizhiyuan.webp",
+      "size": [
+        256,
+        336
+      ],
+      "bytes": 16330,
+      "sha256": "8307cbf02fdbe927c2ef3f6a4214911170cc463ffd058120607d6c381ede4ad9"
+    }
+  ]
+}

@@ -194,14 +194,17 @@ var AREAS = [
 ];
 
 /* 开局就认识的：常委、区县一把手、市直一把手（在位子上的都认识，但不知道底） */
-var FACES = ['boss','mayor','vice1','depsec','jiwei','zuzhi','zhengfa','xuanchuan','mishuzhang','tongzhan','gaoxin',
+var INITIAL_MET = ['boss','mayor','vice1','depsec','jiwei','zuzhi','zhengfa','xuanchuan','mishuzhang','tongzhan','gaoxin',
   'chengguan','gangkou','qingchuan','baisha','meiling','cg_quzhang','qc_xianzhang','bs_fuxian','gk_fuquzhang',
   'fagai','zhujian','caizheng','gongan','guazhi','keshang','msz_mishu','fuzhuren','me','wife','sister'];
 
+/* 头像资源与认识状态分开，补图不解锁尚未接触的干部。 */
+var FACES = PEOPLE_DEF.map(function(p){ return p.id; }).concat(['me','wife','sister','dev_a']);
+
 /* 常委换人时从这里补。省里派下来的，底子不清楚 */
 var NEW_STANDING = [
-  { n:'魏长河', line:'52 岁。省直机关交流任职' },
-  { n:'严书华', line:'50 岁。省委政研室出身' },
-  { n:'柏正阳', line:'54 岁。从邻市调任' },
-  { n:'祁志远', line:'48 岁。省委组织部出身' }
+  { n:'魏长河', face:'ns_weichanghe', line:'52 岁。省直机关交流任职' },
+  { n:'严书华', face:'ns_yanshuhua', line:'50 岁。省委政研室出身' },
+  { n:'柏正阳', face:'ns_bozhengyang', line:'54 岁。从邻市调任' },
+  { n:'祁志远', face:'ns_qizhiyuan', line:'48 岁。省委组织部出身' }
 ];

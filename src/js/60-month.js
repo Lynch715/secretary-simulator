@@ -4,7 +4,7 @@ var ROT_KEEP = ['gangkou', 'chengguan', 'qingchuan', 'zhujian', 'sz_ms', 'fb_zr'
 /* 硬拍板拍下来的事，底下执行打对折 */
 function halfGain(fx){
   var o = {};
-  for (var k in fx){ var v = fx[k]; o[k] = (typeof v === 'number' && v > 0) ? Math.floor(v / 2) : v; }
+  for (var k in fx){ var v = fx[k]; o[k] = v && typeof v==='object' && !Array.isArray(v) ? halfGain(v) : (typeof v === 'number' && v > 0) ? Math.floor(v / 2) : v; }
   return o;
 }
 var Month = {
@@ -31,6 +31,8 @@ var Month = {
     /* 回响：过去的事落了地 */
     G.echoes = (G.echoes || []).filter(function(e){ if (e.m > G.month) return true; G.report.push(fill(e.t)); applyFx(e.fx); return false; });
     Work.start();
+    Delivery.turn();
+    Story.capture();
     if (G.school){ G.sceneDone = true; G.scene2Done = true; G.scene3Done = true; }
   },
 
@@ -80,8 +82,10 @@ var Month = {
   },
   topicDue: function(){ return G.topic && !G.topicDone ? G.topic : null; },
   topicResult: function(tid, pass){
+    if(G.topicDone || !TOPIC_BY_ID[tid]) return;
     var t = TOPIC_BY_ID[tid];
     G.topicDone = true;
+    G.topicHistory=G.topicHistory || {}; G.topicHistory[tid]={m:G.month,pass:!!pass};
     var hard = G.hardNow; G.hardNow = false;
     applyFx(hard ? halfGain(t.win) : (pass ? t.win : t.lose));
     if (t.echo){ var e = pass ? t.echo.win : t.echo.lose; G.echoes = G.echoes || []; G.echoes.push({ m: G.month + 2 + ri(2), t: e.t, fx: e.fx }); }
@@ -92,8 +96,9 @@ var Month = {
 
   choose: function(i, slot){
     if (slot === 3){
-      var s3 = SCENES[G.scene3]; if (!s3 || G.scene3Done) return null;
+      var s3 = Story.scene(G.scene3); if (!s3 || G.scene3Done) return null;
       var o3 = s3.opts[i];
+      if(!o3) return null;
       if (o3.req && !o3.req()) return null;
       var got3 = applyFx(o3.fx || {});
       if (o3.fn) o3.fn();
@@ -104,8 +109,9 @@ var Month = {
       return G.scene3Res;
     }
     if (slot === 2){
-      var s2 = SCENES[G.scene2]; if (!s2 || G.scene2Done) return null;
+      var s2 = Story.scene(G.scene2); if (!s2 || G.scene2Done) return null;
       var o2 = s2.opts[i];
+      if(!o2) return null;
       if (o2.req && !o2.req()) return null;
       var got2 = applyFx(o2.fx || {});
       if (o2.fn) o2.fn();
@@ -115,8 +121,9 @@ var Month = {
       Work.sceneMemory(G.scene2, o2);
       return G.scene2Res;
     }
-    var sc = SCENES[G.scene]; if (!sc || G.sceneDone) return null;
+    var sc = Story.scene(G.scene); if (!sc || G.sceneDone) return null;
     var o = sc.opts[i];
+    if(!o) return null;
     if (o.req && !o.req()) return null;
     var got = applyFx(o.fx || {});
     if (o.fn) o.fn();
@@ -130,19 +137,20 @@ var Month = {
 
   /* 这个月要开的会 */
   voteDue: function(){
-    for (var k in BATTLES){ var b = BATTLES[k]; if (b.mo === G.month && !b.kind && !G.battles[k]) return k; }
+    for (var k in BATTLES){ var b = BATTLES[k]; if (b.mo === G.month && !b.kind && !G.battles[k] && !(k==='b5' && G.flags.b5_lu)) return k; }
     return null;
   },
   hrDue: function(){ return HR_MONTHS.indexOf(G.month) >= 0 || G.flags.hrnow === G.month; },
 
   battleResult: function(bid, pass){
+    if(G.battles[bid] || !BATTLES[bid]) return;
     var b = BATTLES[bid];
     G.battles[bid] = pass ? 'win' : 'lose';
     Work.battle(bid, pass);
-    if (bid === 'b8') return;
+    if (bid === 'b8'){ G.hardNow=false; return; }
     var hard = G.hardNow; G.hardNow = false;
     var fx = pass ? b.win : b.lose;
-    if (bid === 'b1' && G.flags.b1_soft) fx = { prestige: 4, money: 1, trust: 2 };
+    if (bid === 'b1' && G.flags.b1_soft && pass) fx = { prestige: 4, money: 1, trust: 2 };
     if (bid === 'b3' && G.flags.b3_soft && pass) fx = { prestige: 5, trust: 2, side: { cg_quzhang: 10 } };
     if (bid === 'b3' && G.flags.b3_force && pass) fx = Object.assign({}, fx, { prestige: 11 });
     applyFx(hard ? halfGain(fx) : fx);
@@ -171,14 +179,21 @@ var Month = {
       var sc = Grip.level('qingchuan') * 2 + (P('jiwei').side >= 15 ? 2 : 0) + (G.flags.b4_song ? 1 : 0) + (G.flags.b4_open ? 1 : 0) + (G.flags.b4_pages ? 2 : 0) - (G.flags.b4_shut ? 2 : 0);
       var win = sc >= 5;
       Month.battleResult('b4', win);
-      if (win){ if (!P('qingchuan').gone) Grip.remove('qingchuan', 'jw'); if (!P('lvhq').gone) P('lvhq').gone = 'jw'; Grip.add('zhengfa', 2); }
+      if (win){ if (!P('qingchuan').gone) Grip.remove('qingchuan', 'jw'); if (!P('lvhq').gone) leaveOffice('lvhq','jw'); Grip.add('zhengfa', 2); }
     }
     /* 副市长：放卢志高上去那一手 */
     if (G.month === 20 && G.flags.b5_lu && !G.battles.b5){
-      G.battles.b5 = 'lu';
-      if (!P('zhujian').gone){ var zp = P('zhujian'); vacate('zhujian'); zp.gone = 'up'; zp.p = '副市长'; }
-      G.nextReport.push('卢志高当了副市长。住建局长的位子空了出来。陈立群那边报人报得很快，比你想的还快。');
-      logIt('卢志高升了副市长，住建局空了出来。');
+      G.battles.b5 = P('zhujian').gone ? 'void' : 'lu';
+      var from=null;
+      if (!P('zhujian').gone){ from=leaveOffice('zhujian','up'); P('zhujian').p='副市长'; }
+      var seat=from && POST_BY_ID[from] ? POST_BY_ID[from].n : null;
+      if(G.battles.b5==='void'){
+        G.nextReport.push('副市长的推荐材料退回来了。卢志高已经离任，原推荐不能照办，岗位也没有因此重复出缺。');
+        logIt('副市长原推荐人选已离任，材料退回。');
+      } else {
+        G.nextReport.push('卢志高当了副市长。'+(seat ? seat+'的位子空了出来。陈立群那边报人报得很快，比你想的还快。' : '住建局已经由别人接任，现任的任命没有重复变更。'));
+        logIt('卢志高升了副市长。'+(seat ? seat+'的位子空了出来。' : '住建局现任没有变化。'));
+      }
     }
 
     Mayor.turn();
@@ -198,7 +213,7 @@ var Month = {
     Month.drift();
     fuFeed();
     checkPromises();
-    RETIRE.forEach(function(r){ if (r.mo === G.month + 1){ var h = holder(r.post); if (h && h === POST_BY_ID[r.post].holder){ P(h).gone = 'retire'; vacate(r.post); G.nextReport.push(r.t); } } });
+    RETIRE.forEach(function(r){ if (r.mo === G.month + 1){ var h = holder(r.post); if (h && h === POST_BY_ID[r.post].holder){ leaveOffice(h,'retire'); G.nextReport.push(r.t); } } });
 
     if (calMonth(G.month) === 12) Month.yearRank();
     if (calMonth(G.month) === 12 && G.month < TERM) Month.budget();
@@ -215,8 +230,7 @@ var Month = {
     var post = rnd() < 0.6 ? c[0] : pick(c);
     var h = holder(post), p = P(h);
     var old = p.age >= 56;
-    p.gone = old ? 'retire' : 'moved';
-    vacate(post);
+    leaveOffice(h,old ? 'retire' : 'moved');
     G.nextReport.push(old ? p.n + '到龄，' + POST_BY_ID[post].n + '的位子空了出来。他说退下来也好，可以回老家种菜。' : p.n + '交流去了邻市。' + POST_BY_ID[post].n + '的位子空着，组织部说下一次调整会上定。');
   },
 
@@ -230,7 +244,7 @@ var Month = {
       if (w9){ Grip.add('mayor', 3); G.flags.mayorWeak = G.month; }
     }
     if (G.month === BATTLES.b11.mo && !G.battles.b11){
-      s = (G.battles.b3 === 'win' ? -2 : 2) + (f.b11_open ? 2 : 0) - (f.b11_shut ? 2 : 0) + (own('zhujian') ? 2 : 0) + (own('gongan') ? 1 : 0) + (f.b11_self ? 2 : 0) + (f.b11_log ? 2 : 0) + (Grip.level('zhujian') >= 2 ? 1 : 0) + ri(2);
+      s = (G.battles.b3 === 'win' ? -2 : 2) + (f.b11_open ? 2 : 0) - (f.b11_shut ? 2 : 0) + (own('zhujian') ? 2 : 0) + (own('gongan') ? 1 : 0) + (f.b11_self ? 2 : 0) + (f.b11_log ? 2 : 0) + (Grip.level('zhujian') >= 2 ? 1 : 0) + Delivery.city().score + ri(2);
       var w11 = s >= 4;
       Month.battleResult('b11', w11);
       if (w11){
@@ -257,7 +271,7 @@ var Month = {
     G.school = Math.max(0, G.school - (G.school ? 1 : 0));
     Object.keys(G.people).forEach(function(id){
       var p = P(id);
-      if (p.by === 'boss' && p.post && !p.gone && id !== 'gaoxin'){ p.loyal = Math.max(0, p.loyal - (G.school ? 8 : 4)); }
+      if (p.by === 'boss' && p.post && !p.gone && id !== 'gaoxin'){ p.loyal = Math.max(0, p.loyal - (G.school ? 8 : Delivery.reliable(id) ? (p.cap >= 3 ? 2 : 3) : 4)); }
       if (p.grudge && p.turned && shi() < 50 && rnd() < 0.06){
         p.turned = 0; p.side = -40; applyFx({ heat: 10 });
         G.nextReport.push(pn(id) + '在一次会上，把书记私下跟他说的一句话讲了出来。一字不差。');

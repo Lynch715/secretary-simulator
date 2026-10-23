@@ -108,6 +108,7 @@ function mayors(postId){ var h = holder(postId); return h && camp(h) === -1; }
 function vacant(postId){ return !G.posts[postId]; }
 function vacancies(){ return POSTS.filter(function(p){ return !G.posts[p.id]; }).map(function(p){ return p.id; }); }
 function placeIn(postId, id, by){
+  if (G.delivery && G.delivery.staff) delete G.delivery.staff[id];
   var old = G.posts[postId];
   if (old && P(old)) P(old).post = null;
   var p = P(id);
@@ -123,6 +124,16 @@ function vacate(postId){
   var h = G.posts[postId];
   if (h){ P(h).post = null; }
   G.posts[postId] = null;
+}
+/* 离任一律清实际岗位，不能按最早的职务误清接任者。 */
+function leaveOffice(id,reason){
+  var p=P(id); if(!p) return null;
+  var post=p.post; p.gone=reason;
+  if(post && holder(post)===id) vacate(post);else p.post=null;
+  return post;
+}
+function repairOffices(){
+  Object.keys(G.posts).forEach(function(post){var id=holder(post),p=id && P(id);if(p && p.gone){if(p.post===post) p.post=null;G.posts[post]=null;}});
 }
 function postCount(side){
   var n = 0;

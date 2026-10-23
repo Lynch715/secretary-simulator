@@ -124,10 +124,10 @@ var Grip = {
   remove: function(id, w){
     var p = P(id);
     var post = p.post;
-    p.gone = w;
-    if (post) vacate(post);
+    leaveOffice(id,w);
     G.removed.push({ id: id, w: w, m: G.month });
     propFin(function(r){ return r.kind === 'grip' && r.a === id && r.pull; }, { jw:'人拿下了', diao:'调走了', ji:'人出事了', prov:'调走了' }[w] || '走了');
+    propFin(function(r){return r.kind==='op' && r.t===id && (r.opId==='la' || r.opId==='lh') && r.ok;}, '核查已有结果：'+(w==='jw' ? '接受审查调查' : '已离任'));
     var t = FALL_TXT[w].replace(/\{N\}/g, p.n);
     report(t);
     logIt(p.n + '，' + { jw:'被带走', diao:'调走', ji:'出事', prov:'调走' }[w] + '。');

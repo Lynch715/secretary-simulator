@@ -1,5 +1,5 @@
 /* ── 00-core：随机、工具、存档 ── */
-var VER = '2.4.0';
+var VER = '2.6.0';
 var SAVE_KEY = 'dami_save_v21';
 var DEX_KEY = 'dami_dex_v2';
 var START_Y = 2027, TERM = 60;
@@ -57,13 +57,25 @@ function savePayload(){
 }
 function restoreGame(o){
   if (!o || !o.g || !o.g.people || !Number.isInteger(o.g.month) || o.g.month < 1 || o.g.month > TERM) return false;
-  G = o.g;
-  RNG = mulberry32(Number.isInteger(G.rngState) ? G.rngState : (G.seed || 1) + G.month * 7919);
-  Work.ensure();
-  G.ver = VER;
-  return true;
+  var previous=G, previousRng=RNG;
+  try {
+    var g=JSON.parse(JSON.stringify(o.g));
+    if(!g.people.boss || !g.people.mayor || !g.posts || !Array.isArray(g.stand) || g.stand.length!==11 || new Set(g.stand).size!==11) return false;
+    if(!g.stand.every(function(id){return !!g.people[id];}) || !Object.keys(g.posts).every(function(post){return !g.posts[post] || !!g.people[g.posts[post]];})) return false;
+    if(!['trust','prestige','money','heat','feud','bossRisk'].every(function(k){return typeof g[k]==='number' && Number.isFinite(g[k]);})) return false;
+    var arrays=['props','promises','pending','removed','report','log','remarks','moles','cwWins','rankYear','work'];
+    for(var i=0;i<arrays.length;i++){var k=arrays[i];if(g[k]==null) g[k]=[];if(!Array.isArray(g[k])) return false;}
+    var maps=['flags','seen','wk','wd','noms','mnoms','bmods','battles','lobby','memories','workSeen'];
+    for(var j=0;j<maps.length;j++){var key=maps[j];if(g[key]==null) g[key]={};if(typeof g[key]!=='object' || Array.isArray(g[key])) return false;}
+    G=g;
+    RNG=mulberry32(Number.isInteger(G.rngState) ? G.rngState : (G.seed || 1)+G.month*7919);
+    repairOffices();
+    Work.ensure(); G.ver=VER;
+    return true;
+  } catch(e){G=previous;RNG=previousRng;return false;}
 }
 function save(){
+  if(!G) return false;
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(savePayload())); return true; }
   catch (e){ return false; }
 }

@@ -51,6 +51,15 @@ var Props = {
   moneyCost: function(w){ return (w.cost || 1) + (mayors('fagai') ? 1 : 0); },
   canHr: function(){ return HR_MONTHS.indexOf(G.month) < 0 && G.prestige >= 10 && Object.keys(G.noms).length > 0; },
   canProv: function(){ return G.month - G.provAt >= 6; },
+  can: function(kind,a,b){
+    if(G.ending || Props.left()<=0) return false;
+    if(kind==='talk') return Props.talkTargets().indexOf(a)>=0;
+    if(kind==='nom') return !!POST_BY_ID[b] && vacant(b) && Props.nominees(b).indexOf(a)>=0 && G.noms[b]!==a && !Object.keys(G.noms).some(function(post){return post!==b && G.noms[post]===a;});
+    if(kind==='give') return Props.gives().some(function(w){return w.id===a && (w.kind!=='money' || G.money>=Props.moneyCost(w));});
+    if(kind==='grip') return !!P(a) && !P(a).gone && !Grip.busy() && Grip.ways(a).some(function(w){return w.w===b;});
+    if(kind==='hrnow') return Props.canHr();
+    return kind==='prov' && Props.canProv();
+  },
 
   /* 书记批不批：ok / alt / no */
   decide: function(kind, extra){
@@ -75,7 +84,7 @@ var Props = {
   },
 
   submit: function(kind, a, b){
-    if (Props.left() <= 0) return null;
+    if (!Props.can(kind,a,b)) return null;
     var extra = null;
     if (kind === 'nom') extra = Props.poGe(a, b) ? 'poge' : (!P(a).known.side ? 'unknown' : null);
     if (kind === 'grip') extra = b;
@@ -94,6 +103,7 @@ var Props = {
       rec.fin = { talk:'没谈', nom:'没报', give:'没许', grip:'没动手', hrnow:'按时开', prov:'没去' }[kind];
     } else {
       Props['_' + kind](rec, who);
+      if(kind==='talk') Agenda.talk(rec);
       applyFx({ trust: 1 });
     }
     G.props.push(rec);

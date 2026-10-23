@@ -10,7 +10,7 @@ var code = '';
 });
 var ctx = { console: console, Math: Math, JSON: JSON, Object: Object, Date: Date };
 vm.createContext(ctx);
-vm.runInContext(code + '\nthis.api={newGame:newGame,ACTS:ACTS,Month:Month,Act:Act,Props:Props,Grip:Grip,SCENES:SCENES,P:P,shi:shi,vacancies:vacancies,own:own,tierOf:tierOf,isStanding:isStanding,POST_BY_ID:POST_BY_ID,WANT_BY_ID:WANT_BY_ID,getG:function(){return G;},camp:camp,seenCamp:seenCamp,Meeting:Meeting,BATTLES:BATTLES};', ctx);
+vm.runInContext(code + '\nthis.api={scene:Story.scene,newGame:newGame,ACTS:ACTS,Month:Month,Act:Act,Props:Props,Grip:Grip,SCENES:SCENES,P:P,shi:shi,vacancies:vacancies,own:own,tierOf:tierOf,isStanding:isStanding,POST_BY_ID:POST_BY_ID,WANT_BY_ID:WANT_BY_ID,getG:function(){return G;},camp:camp,seenCamp:seenCamp,Meeting:Meeting,BATTLES:BATTLES};', ctx);
 var A = ctx.api;
 
 function rndOf(a){ return a[Math.floor(Math.random() * a.length)]; }
@@ -21,7 +21,7 @@ function play(style, seed){
   var guard = 0;
   while (!G.ending && guard++ < 60){
     /* 场景 */
-    var sc = A.SCENES[G.scene];
+    var sc = A.scene(G.scene);
     if (sc && !G.sceneDone){
       var ok = sc.opts.map(function(o, i){ return (!o.req || o.req()) ? i : -1; }).filter(function(i){ return i >= 0; });
       var pickI = ok[0];
@@ -30,7 +30,7 @@ function play(style, seed){
       if (style === 'smart'){ pickI = ok[Math.floor(Math.random() * ok.length)]; var g2 = ok.filter(function(i){ return !sc.opts[i].gray; }); if (g2.indexOf(pickI) < 0) pickI = g2[0]; }
       A.Month.choose(pickI);
     }
-    var s2 = A.SCENES[G.scene2];
+    var s2 = A.scene(G.scene2);
     if (s2 && !G.scene2Done){
       var ok2 = s2.opts.map(function(o, i){ return (!o.req || o.req()) ? i : -1; }).filter(function(i){ return i >= 0; });
       var p2 = style === 'dirty' ? (ok2.filter(function(i){ return s2.opts[i].gray; })[0]) : null;
@@ -38,7 +38,7 @@ function play(style, seed){
       if (p2 == null) p2 = ok2[0];
       A.Month.choose(p2, 2);
     }
-    var s3 = A.SCENES[G.scene3];
+    var s3 = A.scene(G.scene3);
     if (s3 && !G.scene3Done){ var ok3 = s3.opts.map(function(o, i){ return (!o.req || o.req()) ? i : -1; }).filter(function(i){ return i >= 0; }); A.Month.choose(rndOf(ok3), 3); }
     if (style !== 'idle') bot(style, G);
     A.Month.end();

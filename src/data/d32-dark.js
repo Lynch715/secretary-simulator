@@ -55,7 +55,7 @@ d1e: { title:'调令', img:'s_office', who:null, dark:1,
     if (G.flags.su_turn) return '苏晓东调走了，去省里一个厅当副处长，调令是省委组织部直接下的。\n他走之前没来告别，只给你发了条短信：阿姨很好。\n市长秘书的位子空了出来。';
     return '苏晓东提了正处，任市政府副秘书长。\n任命宣布那天，他在走廊上碰见你，点了点头，走过去了。';
   },
-  fn:function(){ if (G.flags.su_turn && holder('sz_ms') === 'sz_ms'){ P('sz_ms').gone = 'moved'; vacate('sz_ms'); Grip.add('mayor', 2); } },
+  fn:function(){ if (G.flags.su_turn && holder('sz_ms') === 'sz_ms'){ leaveOffice('sz_ms','moved'); Grip.add('mayor', 2); } },
   opts:[ { t:'知道了', fx:{}, resFn:function(){ return G.flags.su_turn ? '你把那条短信看了两遍，删了。' : '你站在走廊里，想起那年一起考进机关，体检排在一个队里。'; } } ] },
 
 /* ════ 市长的弟弟 ════ */

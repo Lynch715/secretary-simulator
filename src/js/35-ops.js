@@ -10,15 +10,20 @@ var Ops = {
     switch (op.tg){
       case 'area': return AREAS.filter(function(a){ return ['shizhi', 'shifu', 'shiwei'].indexOf(a.id) < 0; }).map(function(a){ return 'area:' + a.id; });
       case 'foe': return Object.keys(G.people).filter(function(id){ return P(id).met && !P(id).gone && seenCamp(id) < 0 && id !== 'mayor'; });
-      case 'any': return Object.keys(G.people).filter(function(id){ var p = P(id); return p.met && !p.gone && !isStanding(id) && p.dirt; });
-      case 'head': return Object.keys(G.people).filter(function(id){ var p = P(id); return p.met && !p.gone && p.dirt && seenCamp(id) <= 0 && /局长|区长|县长|区委书记|县委书记|主任/.test(p.p); });
-      case 'case': return Grip.list().filter(function(id){ return id !== 'mayor' && !isStanding(id) && Grip.level(id) >= 2; });
+      case 'any': return Object.keys(G.people).filter(function(id){ var p = P(id); return p.met && !p.gone && !isStanding(id) && (!p.known.dirt || p.dirt); });
+      case 'head': return Object.keys(G.people).filter(function(id){ var p = P(id); return p.met && !p.gone && (!p.known.dirt || p.dirt) && seenCamp(id) <= 0 && /局长|区长|县长|区委书记|县委书记|主任/.test(p.p); });
+      case 'case': return Grip.list().filter(function(id){ return id !== 'mayor' && !isStanding(id) && Grip.level(id) >= 2 && !G.pending.some(function(x){return x.k==='pull' && x.id===id;}); });
       case 'none': return ['_'];
     }
     return [];
   },
 
+  can: function(post,opId,t){
+    var op=(OPS[post] || []).filter(function(o){return o.id===opId;})[0];
+    return !!op && !G.ending && !G.school && own(post) && !Ops.cool(post) && Ops.targets(op).indexOf(t)>=0;
+  },
   run: function(post, opId, t){
+    if(!Ops.can(post,opId,t)) return null;
     var op = OPS[post].filter(function(o){ return o.id === opId; })[0];
     G.opCool = G.opCool || {}; G.opCool[post] = G.month;
     var area = (t || '').indexOf('area:') === 0 ? t.replace('area:', '') : null;
@@ -33,10 +38,10 @@ var Ops = {
       else { applyFx({ heat: 4, prestige: -2, side: { xuanchuan: -3 } }); r.t = OP_TXT.zx_none[0].replace(/\{A\}/g, an); }
     } else if (opId === 'dl'){
       applyFx({ heat: 6 });
-      if (P(who).dirt){ Grip.add(who, 2); r.t = pick(OP_TXT.dl).replace(/\{N\}/g, wn); r.got = wn + '的东西 +1'; }
-      else { P(who).clean = 1; P(who).known.dirt = 1; addSide(who, -6); applyFx({ heat: 4, feud: 4 }); r.t = OP_TXT.dl_clean.replace(/\{N\}/g, wn); r.bad = 1; }
+      if (P(who).dirt){ Grip.add(who, 2); r.t = pick(OP_TXT.dl).replace(/\{N\}/g, wn); r.got = '添了' + wn + '的两份材料'; }
+      else { P(who).clean = 1; P(who).known.dirt = 1; addSide(who, -6); applyFx({ heat: 4, feud: 4 }); r.t = pick(OP_TXT.dl_clean).replace(/\{N\}/g, wn); r.bad = 1; }
     } else if (opId === 'la' || opId === 'lh'){
-      G.pending.push({ k: 'pull', id: who, w: 'diao', mo: G.month + (opId === 'lh' ? 1 : 2) });
+      G.pending.push({ k: 'pull', id: who, w: 'jw', mo: G.month + (opId === 'lh' ? 1 : 2) });
       applyFx({ heat: opId === 'la' ? 6 : 5, feud: 4 });
       r.t = (opId === 'la' ? OP_TXT.la : OP_TXT.lh)[0].replace(/\{N\}/g, wn);
       r.got = '立案了，' + (opId === 'lh' ? '一个月' : '两个月') + '后有结果';
@@ -48,7 +53,7 @@ var Ops = {
     } else if (opId === 'sj'){
       applyFx({ heat: 3 });
       if (P(who).dirt){ Grip.add(who, 3); r.t = pick(OP_TXT.sj).replace(/\{N\}/g, wn); r.got = wn + '的账翻出来了'; }
-      else { addSide(who, -5); applyFx({ feud: 3 }); r.t = OP_TXT.sj_clean.replace(/\{N\}/g, wn); r.bad = 1; }
+      else { P(who).known.dirt=1; P(who).clean=1; addSide(who, -5); applyFx({ feud: 3 }); r.t = pick(OP_TXT.sj_clean).replace(/\{N\}/g, wn); r.bad = 1; }
     } else if (opId === 'zb'){
       var fs = Object.keys(G.people).filter(function(id){ var d = PDEF[id]; return d && d.area === area && seenCamp(id) < 0 && P(id).dirt && !P(id).gone; });
       if (fs.length){ var vv = pick(fs); Grip.add(vv, 1); r.t = pick(OP_TXT.zb).replace(/\{A\}/g, an).replace(/\{N\}/g, pn(vv)); r.got = '添了' + pn(vv) + '一笔'; }

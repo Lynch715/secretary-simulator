@@ -43,8 +43,8 @@ var UI = {
       if (nm.length < 2){ $('#nmh').textContent = '两到四个汉字'; return; }
       newGame({ name: nm }); save(); UI.render();
     });
-    on($('[data-go="cont"]'), 'click', function(){ if (load()) UI.render(); });
-    on($('#imp'), 'change', function(e){ var f = e.target.files[0]; if (f) importSave(f, function(ok){ if (ok) UI.render(); }); });
+    on($('[data-go="cont"]'), 'click', function(){ if (load()) UI.render(); else UI.toast('存档暂时无法读取，原文件仍保留。请保留原文件，尝试重新导入。'); });
+    on($('#imp'), 'change', function(e){ var f = e.target.files[0]; if (f) importSave(f, function(ok){ if (ok) UI.render(); else UI.toast('存档无法识别，当前进度没有被替换。'); }); });
   },
 
   /* ── 顶栏 ── */
@@ -97,7 +97,7 @@ var UI = {
         var cool = Ops.cool(post);
         h += '<div class="deptbox"><div class="deptn">' + esc(OP_DEPT_N[post]) + (cool ? '<i>（这两个月动过了）</i>' : '') + '</div><div class="tiles">' +
           OPS[post].map(function(op){
-            var ok = !cool && Ops.targets(op).length;
+            var ok = !G.school && !cool && Ops.targets(op).length && (!op.ask || Props.left() > 0);
             return '<button class="tile op' + (op.gray ? ' gray' : '') + '" data-op="' + post + ':' + op.id + '"' + (ok ? '' : ' disabled') + '><b>' + op.n + (op.ask ? '<em>呈</em>' : '') + '</b><span>' + op.d + '</span></button>';
           }).join('') + '</div></div>';
       });
@@ -119,7 +119,7 @@ var UI = {
       return '<div class="work-item"><div class="work-head"><b>' + esc(Work.title(w)) + '</b><span>' + (w.st === 'waiting' ? '下个月核验' : w.ready > G.month ? '下个月定办理意见' : ymText(w.due) + '月底前') + '</span></div>' + paras(Work.description(w)) +
         (w.st === 'waiting' ? '' : '<div class="work-choices">' + Work.options(w).map(function(o){
           return '<button class="btn ghost" data-work="' + esc(w.id) + '" data-choice="' + o.id + '"' + (Work.can(w,o) ? '' : ' disabled') + '>' + esc(o.n) + '</button>';
-        }).join('') + '</div><p class="work-note">每次办理占一件行动；核实后，下个月定意见，送出后再核验。' + (G.school ? '在党校期间暂不能办理。' : '') + '</p>') + '</div>';
+        }).join('') + '</div><p class="work-note">' + (w.rules === 2 && w.need === 'capacity' ? '协办占两件行动，其余办理各占一件；' : '每次办理占一件行动；') + '核实后，下个月定意见，送出后再核验。' + (G.school ? '在党校期间暂不能办理。' : '') + '</p>') + '</div>';
     }).join('') + recent.map(function(w){ return '<div class="work-item"><b>' + esc(Work.title(w)) + ' · ' + ({done:'已办结',overdue:'逾期归档',void:'离任归档'}[w.st] || '归档') + '</b>' + paras(w.t) + '</div>'; }).join('') + '</div>';
   },
   runWork: function(id, choice){
@@ -145,22 +145,24 @@ var UI = {
     if (t.boss) ls.push('书记：' + esc(t.boss));
     if (t.mayor) ls.push(esc(t.mayor));
     if (t.hid && G.flags['hid_' + bid]) ls.push('<b>' + esc(t.hid) + '</b>');
-    if (t.why) for (var k in t.why) if (G.stand.indexOf(k) >= 0) ls.push(esc(t.why[k]));
+    if (t.why) for (var k in t.why) if (G.stand.indexOf(k) >= 0 && !Agenda.knows(k,bid)) ls.push(esc(t.why[k]));
+    var intel=G.agendaIntel && G.agendaIntel[bid];
+    if(intel){G.stand.forEach(function(id){if(intel[id]) ls.push(esc(pn(id)+'：'+intel[id].t));});ls.push('口风是会前问来的，临到表决仍可能有变化。');}
     if (!ls.length) return '';
     var body = ls.map(function(x){ return '<p>' + x + '</p>'; }).join('');
     return fold ? '<details class="ctx"><summary>来龙去脉</summary>' + body + '</details>' : '<div class="tintro">' + body + '</div>';
   },
   sceneBox: function(slot){
     if (slot === 3){
-      var s3 = SCENES[G.scene3]; if (!s3 || G.school) return '';
+      var s3 = Story.scene(G.scene3); if (!s3 || G.school) return '';
       return UI.sceneCard(s3, G.scene3Done, G.scene3Res, 3, '下个月上会');
     }
     if (slot === 2){
-      var s2 = SCENES[G.scene2]; if (!s2 || G.school) return '';
+      var s2 = Story.scene(G.scene2); if (!s2 || G.school) return '';
       return UI.sceneCard(s2, G.scene2Done, G.scene2Res, 2, '另一件事');
     }
     if (G.school) return '<div class="panel doc"><div class="no">省委党校 · 中青班</div><p>这个月你在省城。每天上午上课，下午讨论，晚上在宿舍里看云州的新闻。</p></div>';
-    var sc = SCENES[G.scene]; if (!sc) return '';
+    var sc = Story.scene(G.scene); if (!sc) return '';
     return UI.sceneCard(sc, G.sceneDone, G.sceneRes, 1, sc.battle ? BATTLES[sc.battle].n : '这个月');
   },
   sceneCard: function(sc, done, res, slot, label){
@@ -192,11 +194,12 @@ var UI = {
     return '<div class="cpjs">' + G.props.map(UI.cpj).join('') + '</div>';
   },
   cpj: function(r){
-    var st = r.d === 'no' ? 'no' : (r.d === 'alt' ? 'alt' : 'ok');
-    var fin = r.fin || r.wait || '';
+    var decision=r.kind === 'op' ? (r.ok ? 'ok' : 'no') : r.d;
+    var st = decision === 'no' ? 'no' : (decision === 'alt' ? 'alt' : 'ok');
+    var fin = r.fin || r.wait || (st === 'no' ? '未获批准' : '');
     return '<div class="cpj ' + st + '"><div class="cpj-no">呈批件 · 云委办呈〔' + (START_Y + Math.floor((r.m - 1) / 12)) + '〕' + r.no + '号</div>' +
       '<div class="cpj-row"><i>事由</i><span>' + esc(UI.propName(r)) + '</span></div>' +
-      '<div class="cpj-row"><i>批示</i><span class="remark' + (r.d === 'no' ? ' no' : '') + '">' + esc(r.remark) + '</span></div>' +
+      '<div class="cpj-row"><i>批示</i><span class="remark' + (st === 'no' ? ' no' : '') + '">' + esc(r.remark) + '</span></div>' +
       (r.act ? '<div class="cpj-row"><i>办理</i><span class="cpj-act">' + paras(r.act) + '</span></div>' : '') +
       '<div class="cpj-row"><i>结果</i><span class="cpj-fin ' + st + '">' + esc(fin) + '</span></div></div>';
   },
@@ -271,6 +274,7 @@ var UI = {
     var gl = Grip.level(id);
     if (gl && id !== 'mayor') h += '<div class="grip">手里：' + GRIP_TXT[gl] + (p.held ? '（捏着）' : '') + (p.turned ? '（换了边）' : '') + '</div>';
     if (id === 'mayor'){ var ml = Grip.mayorLv(); h += '<div class="grip">' + MAYOR_PARTS.map(function(x, i){ return esc(x.t) + '：' + (x.open() ? (GRIP_TXT[ml[i]] || '还没摸到') : '—'); }).join('<br>') + '</div>'; }
+    var note=Agenda.notes(id); if(note) h += '<div class="want">' + esc(note) + '</div>';
     var ms = ((G.memories || {})[id] || []).slice(-3).reverse();
     if (ms.length) h += '<div class="person-memory">' + ms.map(function(x){return '<p><i>' + ymText(x.m) + '</i> ' + esc(x.t) + '</p>';}).join('') + '</div>';
     return h + '</div>';
@@ -370,14 +374,15 @@ var UI = {
   },
   runOp: function(post, opId, t, op){
     UI.close();
+    if(!Ops.can(post,opId,t)) return;
     if (op.ask){
       /* 走呈批件：书记批不批 */
       var ok = Props.left() > 0 && rnd() < ({ steady:0.55, strong:0.8, shrewd:0.68 }[G.bossType] + (G.trust - 55) / 90 - (op.gray ? 0.2 : 0));
       if (Props.left() <= 0){ UI.toast('这个月的拟办已经用完了'); return; }
-      G.props.push({ kind:'op', post: post, opId: opId, t: t, ok: ok, m: G.month, no: (G.propNo = (G.propNo || 0) + 1) });
+      G.props.push({ kind:'op', post: post, opId: opId, t: t, ok: ok, d:ok ? 'ok' : 'no', m: G.month, no: (G.propNo = (G.propNo || 0) + 1) });
       var rec = G.props[G.props.length - 1];
       G.propLog = G.propLog || []; G.propLog.push(rec);
-      if (!ok){ rec.remark = pick(REJ_OP[G.bossType]); G.remarks.push({ m: G.month, t: rec.remark }); save(); UI.render(); return; }
+      if (!ok){ rec.fin='未获批准'; rec.remark = pick(REJ_OP[G.bossType]); G.remarks.push({ m: G.month, t: rec.remark }); save(); UI.render(); return; }
       rec.remark = pick(OK_OP[G.bossType]);
       G.remarks.push({ m: G.month, t: rec.remark });
       var r = Ops.run(post, opId, t);
@@ -435,36 +440,46 @@ var UI = {
     if (vb) return UI.meeting(vb);
     var tp = Month.topicDue();
     if (tp) return UI.meeting(tp);
-    if (Month.hrDue() && !G.hrRes){ G.hrRes = Meeting.hrRun(); return UI.hrShow(); }
+    if (Month.hrDue() && !G.hrRes){ G.hrRes = Meeting.hrRun(); save(); return UI.hrShow(); }
     UI.finishMonth();
   },
   meeting: function(bid){
     var b = BATTLES[bid] || TOPIC_BY_ID[bid];
-    var pv = Meeting.preview();
+    var pv = Meeting.preview(bid), month=G.month;
     var h = '<div class="mhead">常委会</div><h3>' + esc(b.topic) + '</h3>' + UI.ctx(bid, true) + '<div class="mgrid">' + pv.map(function(x){
-      return '<div class="mv ' + TIER_CLS[x.tier] + '" data-v="' + x.id + '">' + face(x.id, 'sm') + '<b>' + esc(pn(x.id)) + '</b><i>' + (x.id === 'boss' ? '书记' : (x.id === 'mayor' ? '市长' : TIER_TXT[x.tier])) + '</i></div>';
+      return '<div class="mv ' + TIER_CLS[x.tier] + '" data-v="' + x.id + '">' + face(x.id, 'sm') + '<b>' + esc(pn(x.id)) + '</b><i>' + (x.id === 'boss' ? '书记' : (x.id === 'mayor' ? '市长' : esc(x.word))) + '</i></div>';
     }).join('') + '</div><div class="mres"></div><div class="mfoot"><button class="btn red" data-vote="1">表决</button></div>';
-    var m = UI.modal(h, 'meet');
-    m.classList.add('lock');
-    $('[data-vote]', m).onclick = function(){
-      var r = Meeting.vote(bid);
-      r.rows.forEach(function(row, i){
-        setTimeout(function(){ var el = $('[data-v="' + row.id + '"]', m); if (el){ el.classList.add(row.yes ? 'yes' : 'no'); $('i', el).textContent = row.yes ? '同意' : '不同意'; } }, 120 * i);
+    var m=UI.modal(h,'meet');m.classList.add('lock');
+    function present(r,animate){
+      r.rows.forEach(function(row,i){
+        var paint=function(){var el=$('[data-v="'+row.id+'"]',m);if(el){el.classList.add(row.yes?'yes':'no');$('i',el).textContent=row.yes?'同意':'不同意';}};
+        if(animate) setTimeout(paint,120*i);else paint();
       });
-      setTimeout(function(){
-        $('.mres', m).innerHTML = '<div class="vcount">' + r.yes + ' 比 ' + (11 - r.yes) + '，' + (r.pass ? '通过' : '没过') + '</div>';
-        var f = $('.mfoot', m);
-        f.innerHTML = (!r.pass && Meeting.canHard(r.yes) ? '<button class="btn" data-hard="1">书记不散会</button>' : '') + '<button class="btn red" data-ok="1">散会</button>';
-        var hb = $('[data-hard]', m);
-        if (hb) hb.onclick = function(){
-          var hc = Meeting.hard(r);
-          $('.mres', m).innerHTML = '<div class="vcount">' + (11 - hc.no) + ' 比 ' + hc.no + '，书记拍板</div><div class="prose hardt">' + paras('票数念完，书记没有宣布散会。他把茶杯往前推了推。\n「大家的意见，我都听到了。这件事市委担着，先干起来。出了问题，我向省委检讨。」\n会议室里没人说话。投反对的' + (hc.no > 6 ? '那几个人' : '人') + '，散会的时候一个接一个出了门，没有一个跟书记打招呼。') +
-            '<div class="got bad">威信 −' + hc.cost + '　投反对的人，这件事记下了</div><div class="got bad">这件事底下执行起来，要打折扣</div></div>';
-          hb.remove();
+      function result(){
+        if(!m.isConnected || G.month!==month) return;
+        $('.mres',m).innerHTML='<div class="vcount">'+r.yes+' 比 '+(11-r.yes)+'，'+(r.hard?'书记拍板':r.pass?'通过':'没过')+'</div>';
+        $('.mfoot',m).innerHTML=(!r.pass && Meeting.canHard(r.yes)?'<button class="btn" data-hard="1">书记不散会</button>':'')+'<button class="btn red" data-ok="1">散会</button>';
+        if(r.hard) $('.mres',m).innerHTML+='<div class="prose hardt">'+paras('票数念完，书记没有宣布散会。他把茶杯往前推了推。\n「大家的意见，我都听到了。这件事市委担着，先干起来。出了问题，我向省委检讨。」\n会议室里没人说话。投反对的人，散会的时候一个接一个出了门，没有一个跟书记打招呼。')+'<div class="got bad">威信 −'+r.hardCost+'　投反对的人，这件事记下了</div><div class="got bad">这件事底下执行起来，要打折扣</div></div>';
+        var hb=$('[data-hard]',m);
+        if(hb) hb.onclick=function(){
+          if(G.month!==month) return;
+          var hc=Meeting.hard(r);if(!hc) return;save();result();
         };
-        $('[data-ok]', m).onclick = function(){ if (BATTLES[bid]) Month.battleResult(bid, r.pass); else Month.topicResult(bid, r.pass); UI.close(); UI.endMonth(); };
-      }, 120 * r.rows.length + 300);
+        $('[data-ok]',m).onclick=function(){
+          if(G.month!==month) return;
+          this.onclick=null;this.disabled=true;
+          if(BATTLES[bid]) Month.battleResult(bid,r.pass);else Month.topicResult(bid,r.pass);
+          save();UI.close();UI.endMonth();
+        };
+      }
+      if(animate) setTimeout(result,120*r.rows.length+300);else result();
+    }
+    var voteButton=$('[data-vote]',m);
+    voteButton.onclick=function(){
+      this.onclick=null;this.disabled=true;
+      var r=Meeting.vote(bid);save();present(r,true);
     };
+    if(G.meet && G.meet.bid===bid) present(G.meet,false);
   },
   hrShow: function(){
     var rows = G.hrRes || [];
@@ -491,11 +506,11 @@ var UI = {
     UI.root.innerHTML = '<div class="endpage"><div class="letterhead"><h1>云州市委办公室</h1><div class="rule"></div><div class="rule2"></div></div>' +
       (e.img ? '<div class="endimg"><img src="assets/' + e.img + '.webp" alt="" onerror="this.parentNode.remove()"></div>' : '') +
       '<div class="docno">云委办〔' + (START_Y + Math.floor((G.month - 1) / 12)) + '〕结字</div><h2>' + esc(e.n) + '</h2>' +
-      '<div class="prose">' + paras(e.t) + (coda ? '<p>' + esc(coda) + '</p>' : '') + '<p class="after">' + esc(fill(e.after)) + '</p></div>' +
-      '<div class="panel"><h3>这三年</h3><div class="flist">' +
+      '<div class="prose">' + paras(e.t) + (coda ? '<p>' + esc(coda) + '</p>' : '') + '<p class="after">' + esc(fill(e.after)) + '</p>' + Story.later().map(function(t){return '<p>' + esc(t) + '</p>';}).join('') + '</div>' +
+      '<div class="panel"><h3>任内记事</h3><div class="flist">' +
       '<div>第 ' + G.month + ' 个月　赢了 ' + G.won + ' 仗，输了 ' + G.lost + ' 仗</div>' +
       '<div>拿掉的人：' + (removed.length ? removed.map(function(r){ return esc(pn(r.id)); }).join('、') : '—') + '</div>' +
-      '<div>你放上去的人：' + (Object.keys(G.people).filter(function(id){ return P(id).by === 'boss' && id !== 'gaoxin' && id !== 'gx_qz'; }).map(function(id){ var p = P(id); return esc(p.n) + (p.gone ? '（出事了）' : (p.side < 20 ? '（后来换了边）' : '')); }).join('、') || '—') + '</div>' +
+      '<div>你放上去的人：' + (Object.keys(G.people).filter(function(id){ return P(id).by === 'boss' && id !== 'gaoxin' && id !== 'gx_qz'; }).map(function(id){ var p = P(id); return esc(p.n) + (p.gone ? '（' + Story.goneWord(p.gone) + '）' : (p.side < 20 ? '（后来换了边）' : '')); }).join('、') || '—') + '</div>' +
       '<div>暗桩：' + G.moles.map(function(id){ return esc(pn(id)) + (P(id).known.side ? '（你认出来了）' : '（你没认出来）'); }).join('、') + '</div>' +
       '<div>伸过的手：' + ((G.flags.gray || 0) + (G.flags.took_bag ? 1 : 0)) + ' 次</div>' +
       '</div></div>' +
@@ -515,7 +530,7 @@ var UI = {
     $$('[data-prop]').forEach(function(b){ b.onclick = function(){ UI.doProp(b.dataset.prop); }; });
     $$('[data-who]').forEach(function(b){ b.onclick = function(){ UI.showPerson(b.dataset.who); }; });
     $$('[data-post]').forEach(function(b){ b.onclick = function(){ UI.showPost(b.dataset.post); }; });
-    var e = $('[data-end]'); if (e) e.onclick = function(){ UI.endMonth(); };
+    var e = $('[data-end]'), boundMonth=G.month; if (e) e.onclick = function(){ if(G.month===boundMonth) UI.endMonth(); };
     $$('[data-sv]').forEach(function(b){ b.onclick = function(){
       var k = b.dataset.sv;
       if (k === 'exp') exportSave();

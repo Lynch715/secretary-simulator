@@ -4,13 +4,14 @@ var Work = {
     G.work = G.work || [];
     G.workSeen = G.workSeen || {};
     G.memories = G.memories || {};
+    Delivery.ensure();
   },
   add: function(id, kind, who, post, pass){
     Work.ensure();
     if (G.workSeen[id]) return;
     G.workSeen[id] = 1;
     G.work.push({ id:id, kind:kind, who:who, post:post || null, pass:!!pass,
-      born:G.month, ready:G.month + 1, due:G.month + 4, stage:0, st:'open', method:null, t:'' });
+      born:G.month, ready:G.month + 1, due:G.month + 4, stage:0, st:'open', method:null, t:'', rules:2 });
     G.nextReport.push(kind === 'appoint' ? pn(who) + '的任命文件发下去了。书记让你过一个月去看看，不只听汇报。' :
       kind === 'oldcity' ? '城关旧改的表决结束了。书记把材料退给你：「会开完了，底下的事还得有人盯。」' :
       '青川的通报到了。书记把信访登记放在通报旁边：「这两份东西，还得对上。」');
@@ -39,11 +40,16 @@ var Work = {
     }
     if (w.kind === 'oldcity') return [ {id:'fund',n:'补一笔钱，修正补偿（盘子 −1）',cost:1}, {id:'revise',n:'逐户复核，缩小争议范围'}, {id:'press',n:'催进度，先按现有表推进（反扑会加重）'} ];
     if (w.kind === 'qingchuan') return [ {id:'review',n:'把核实材料送纪委复核'}, {id:'family',n:'把书面答复送到家属手里'}, {id:'shelve',n:'按现有结论归档（家属仍会来）'} ];
-    return [ {id:'support',n:'协调一笔启动经费（盘子 −1）',cost:1}, {id:'correct',n:'定下整改期限，下个月核验'}, {id:'trust',n:'按他的汇报结案'} ];
+    var opts = [ {id:'support',n:'协调一笔启动经费（盘子 −1）',cost:1}, {id:'correct',n:'定下整改期限，下个月核验'}, {id:'trust',n:'按他的汇报结案'} ];
+    if (w.rules === 2){
+      opts[2].n = '按核实的进度和他的汇报结案';
+      if (w.need === 'capacity') opts.push({id:'assist',n:'安排业务骨干协办（本月行动 −2）',acts:2});
+    }
+    return opts;
   },
   cityWho: function(){ return holder('cg_qz') || holder('cg_sj') || 'cg_quzhang'; },
   can: function(w, o){
-    if (!w || w.st !== 'open' || w.ready > G.month || G.school || G.acts <= 0 || w.touched === G.month) return false;
+    if (!w || w.st !== 'open' || w.ready > G.month || G.school || G.acts < (o.acts || 1) || w.touched === G.month) return false;
     return o.a ? Act.targets(o.a).indexOf(o.t) >= 0 : G.money >= (o.cost || 0);
   },
   run: function(id, choice){
@@ -52,11 +58,11 @@ var Work = {
     var o = Work.options(w).filter(function(x){ return x.id === choice; })[0];
     if (!o || !Work.can(w,o)) return null;
     if (o.a) return Act.run(o.a,o.t);
-    G.acts--; G.money -= o.cost || 0; w.touched = G.month; w.method = choice; w.st = 'waiting'; w.resolve = G.month + 1;
+    G.acts -= o.acts || 1; G.money -= o.cost || 0; w.touched = G.month; w.method = choice; w.st = 'waiting'; w.resolve = G.month + 1;
     w.plan = o.n.replace(/（.*）/, '');
     w.t = '办理意见：' + w.plan + '。已经送出，下个月核验结果。';
     logIt(Work.title(w) + '：' + o.n.replace(/（.*）/, '') + '。');
-    return {t:'你把办理意见写在材料最后一页，注明了核验的月份。',got:'下个月有结果；本月行动 −1'};
+    return {t:'你把办理意见写在材料最后一页，注明了核验的月份。',got:'下个月有结果；本月行动 −' + (o.acts || 1)};
   },
   afterAction: function(a,t){
     var hit = Work.active().filter(function(w){
@@ -77,6 +83,7 @@ var Work = {
       hit.evidence = a === 'kao' || p.known.dirt;
       hit.t = p.side < 20 && p.known.side ? '回访核实后，他已经换了边。经费和结案意见都不能只凭他的汇报，需要独立核验。' : p.dirt && hit.evidence ? '核实中发现，他把一笔费用放在了往来账里。需要整改，不能只拨钱。' : p.cap >= 2 ? '有两件事确实动了，另有一件卡在经费和部门协调上。' : '材料写得很满，现场进度落后。经费之外，还缺一个肯盯落实的人。';
     }
+    if (hit.rules === 2) Delivery.inspect(hit);
     logIt(Work.title(hit) + '：已经核实，下个月定办理意见。');
     return '待办有了进展：' + hit.t;
   },
@@ -90,26 +97,51 @@ var Work = {
     });
   },
   resolve: function(w){
+    if (w.st !== 'waiting') return;
     var fx = {}, t, influence = 0;
     if (w.kind === 'oldcity'){
       var owner = Work.cityWho(); w.who = owner;
       if (w.method === 'fund') { fx = {prestige:3,trust:1}; t = '补偿表重新核了一遍。十七户补了差额，老教师在签字前又问了一遍搬迁日期。'; influence = 2; }
       if (w.method === 'revise') { var ok = w.evidence || own('zhujian') || own('cg_qz'); fx = ok ? {prestige:3,feud:-2} : {prestige:1}; t = ok ? '逐户复核表盖了章。争议缩到了三户，原定的施工日期往后推了半个月。' : '复核表只交来半份。施工没有强推，三户的争议记在督办单上，月底仍要反馈。'; influence = ok ? 2 : 0; }
       if (w.method === 'press') { fx={prestige:1,heat:5,feud:3}; t='工期赶上了。老教师家那一户没有签字，信访局的新登记本上又出现了他的名字。'; influence=-2; }
-      if (!w.pass) t = '常委会没过的原方案没有开工。' + t + '修订后的补偿材料留给下一次议事，不能拿这份督办单当开工批文。';
+      if (w.rules === 2){
+        Delivery.cityResult(w);
+        if (w.method === 'fund') t='补偿表重新核了一遍。十七户补了差额，老教师把补款收据折好，问了一遍搬迁日期。配套工程的手续另交住建核验，没有拿补偿回执代替验收。';
+        if (w.method === 'revise' && w.evidence){
+          fx={prestige:2,feud:-2};
+          t='逐户复核表盖了章，配套工程的检查和交接记录也列进了督办附件。施工日期往后推了半个月。'+(w.need === 'funding' ? '面积改清了，补偿差额仍缺一笔钱，未签字的三户另列了清单。' : '原来协调的补偿款按更正表发下去，老教师在回执上签了字。');
+        }
+        if (w.method === 'press'){ fx={prestige:3,heat:5,feud:3}; t+='催进度的意见随工期表一起归档，未补齐的检查手续留在附件里。'; }
+      }
+      if (!w.pass){
+        if (w.rules === 2) t=w.method === 'fund' ? '补偿差额和预留经费核清了，资金意见附在修订材料后，没有按原方案搬迁付款。' : w.method === 'revise' ? '面积、争议和需要补齐的配套手续分别列了表。住户签的是材料核对单，搬迁日期没有定。' : '承办人催着报了进度，办公室退回材料，要求先写清原方案未获通过。';
+        t = '常委会没过的原方案没有开工。' + t + '修订后的补偿材料留给下一次议事，不能拿这份督办单当开工批文。';
+      }
     } else if (w.kind === 'qingchuan'){
       if (w.method === 'review') { var strong = w.evidence || own('jw_fu'); fx = strong ? {prestige:3,trust:2,heat:2} : {heat:2}; t = strong ? '宋自强收了补充材料，按程序补做核查。家属拿到了书面收件回执，旧报告的疑点列进了核查清单。' : '纪委退回一张补证清单。李海滨的口述记进了卷宗，原结论没有因此改变。'; influence = strong ? 2 : 0; }
       if (w.method === 'family') { fx = w.pass ? {trust:2,prestige:2} : {trust:1}; t = w.pass ? '更正后的认定书送到了家属手里。她逐字看完，折好，放进装旧房产证的塑料袋。' : '你把现有结论和复核途径写清，亲手交给家属。她收下了，问下个月还能不能来。你说能。'; influence=2; }
       if (w.method === 'shelve') { fx={prestige:-2}; t='卷宗按现有结论归档。下个月初，家属照样来了，登记的人换了一个，批转意见还是那一句。'; influence=-2; }
     } else {
+      if (w.rules === 2 && w.need){
+        var result=Delivery.appointmentResult(w);
+        fx=result.fx; t=result.t; influence=result.influence;
+      } else {
       var p=P(w.who), bad=(p.dirt && (w.evidence || p.known.dirt)) || (p.side < 20 && p.known.side), turned=p.side < 20 && p.known.side;
       if (w.method === 'support') { fx=bad ? {heat:3,bossRisk:2} : {prestige:p.cap >= 2 ? 3 : 1}; t=bad ? pn(w.who)+(turned ? '收了经费，却把落实工作交给市政府那边协调。你签过的经费意见留在了卷宗里。' : '收了经费，往来账仍没有解释清。你的协调意见也附进了材料。') : pn(w.who)+'报来了第一件办成的事。'+(p.cap >= 2 ? '经费之外，他把另一个部门也拉到了现场。' : '进度慢了一点，总算有一件能对上。'); influence=bad ? -1 : 2; }
       if (w.method === 'correct') { fx={prestige:2,heat:bad ? -2 : 0}; t=pn(w.who)+(turned ? '交来一份落实表。你没有只听他的汇报，另请办公室核实，把未落实的两项列进整改清单。' : bad ? '补交了费用说明，往来账转给纪检核验。你没替他把问题压下去。' : '按期补交了整改表。你让办公室去现场对了一遍，才在督办单上签字。'); influence=1; }
       if (w.method === 'trust') { fx=bad ? {prestige:-3,heat:4,bossRisk:2} : p.cap >= 2 ? {prestige:2} : {prestige:-2}; t=bad ? pn(w.who)+(turned ? '按市政府那边的安排办了。你签过的结案意见和现场情况对不上，也被调出来复核。' : '的那笔费用后来被问到了。你签过的结案意见也被调了出来。') : p.cap >= 2 ? pn(w.who)+'把事办成了，汇报里的数字和现场对得上。' : '核验的人回来，说'+pn(w.who)+'报的进度，现场只做了一半。'; influence=bad ? -2 : p.cap >= 2 ? 2 : -1; }
       p.loyal=clamp(p.loyal+(influence > 0 ? 8 : -8),0,100);
+      }
     }
     Work.finish(w,'done',t,fx);
-    Work.remember(w.who,'work_'+w.id,t,influence,w.kind === 'oldcity' ? 'b3' : w.kind === 'qingchuan' ? 'b4' : null);
+    Work.remember(w.who,'work_'+w.id+(w.reopened ? '_repair' : ''),t,influence,w.kind === 'oldcity' ? 'b3' : w.kind === 'qingchuan' ? 'b4' : null);
+    var unfinished=w.rules === 2 && w.outcome && (w.kind === 'appoint' ? !w.outcome.handled : w.kind === 'oldcity' && w.pass && w.method === 'revise' && !w.outcome.settled);
+    if (unfinished && !w.reopened){
+      if (w.kind === 'appoint') w.need=w.outcome.need;
+      w.reopened=true; w.st='open'; w.ready=G.month+1; w.due=G.month+3; delete w.closed;
+      w.t+='核验没有通过，未落实项退回。下个月可以补办，原有核实材料保留。';
+      report(Work.title(w)+'：核验未通过，退回补办。');
+    }
   },
   finish: function(w,st,t,fx){
     w.st=st; w.closed=G.month; w.t=t; applyFx(fx);

@@ -26,26 +26,31 @@ var Meeting = {
   hasPromise: function(k){ return G.promises.some(function(x){ return x.key === k && x.st === 'open'; }); },
 
   /* 票面预览：玩家看见的是每个人的档位，不是结果 */
-  preview: function(){
-    return G.stand.map(function(id){ return { id: id, tier: tierOf(P(id).side) }; });
+  preview: function(bid){
+    return G.stand.map(function(id){ return { id: id, tier: tierOf(P(id).side), word:bid ? Agenda.word(id,bid) : TIER_TXT[tierOf(P(id).side)] }; });
   },
 
   vote: function(bid){
+    if(G.meet && G.meet.bid===bid) return G.meet;
+    if(!BATTLES[bid] && !TOPIC_BY_ID[bid]) return null;
     var b = Object.assign({ id: bid }, BATTLES[bid] || TOPIC_BY_ID[bid]);
     b.noise = {};
     G.stand.forEach(function(id){ b.noise[id] = Meeting.noise(); });
     var rows = G.stand.map(function(id){ return { id: id, yes: Meeting.score(id, b) > 0 }; });
     var yes = rows.filter(function(r){ return r.yes; }).length;
     applyFx({ feud: 3 });
-    return { bid: bid, topic: b.topic, rows: rows, yes: yes, pass: yes >= 6 };
+    G.meet={ bid: bid, topic: b.topic, rows: rows, yes: yes, pass: yes >= 6 };
+    return G.meet;
   },
 
   /* 硬拍板：票输了，书记不认这个结果。差的票越多，代价越大 */
   hardCost: function(yes){ return 6 + 3 * (6 - yes); },
   canHard: function(yes){ return G.prestige >= Meeting.hardCost(yes) + 8; },
   hard: function(res){
+    if(!res || res.pass || res.hard || !Meeting.canHard(res.yes)) return null;
     var need = 6 - res.yes, cost = Meeting.hardCost(res.yes);
     res.pass = true; res.hard = true;
+    res.hardCost=cost;
     G.hard = (G.hard || 0) + 1; G.hardNow = true;
     applyFx({ prestige: -cost, feud: 6 + 2 * need, bossRisk: (G.hard >= 3 ? 8 : 2) + 2 * need });
     res.rows.forEach(function(r){ if (!r.yes && r.id !== 'mayor') addSide(r.id, -6); });
@@ -76,6 +81,7 @@ var Meeting = {
   },
 
   hrRun: function(){
+    if(G.hrRes) return G.hrRes;
     var rows = [], tried = [];   /* 这次会上被否掉的人，组织部不会转手再安排 */
     var open0 = vacancies();      /* 会上才空出来的位子，留到下一次调整会 */
     POSTS.forEach(function(po){
@@ -84,14 +90,14 @@ var Meeting = {
       if (!vacant(post) && !G.noms[post]) return;
       if (!vacant(post)){ delete G.noms[post]; return; }
       var bN = G.noms[post], mN = G.mnoms[post];
-      if (bN && (P(bN).gone || (P(bN).post && P(bN).post !== post && !vacant(P(bN).post) && false))) bN = null;
+      if (bN && (!P(bN) || P(bN).gone)) bN = null;
       var done = false;
       /* 两边报的是同一个人：只上一次会，谁那边都算 */
       var both = bN && bN === mN;
       var pairs = both ? [[bN, 'both']] : [[bN, 'boss'], [mN, 'mayor']];
       pairs.forEach(function(pair){
         var x = pair[0], s = pair[1];
-        if (done || !x || P(x).gone || P(x).post === post) return;
+        if (done || !x || !P(x) || P(x).gone || P(x).post === post || rows.some(function(r){return r.x===x && r.pass;})) return;
         if (s !== 'both') tried.push(x);
         var votes = G.stand.map(function(id){ return { id: id, yes: s === 'both' ? (Meeting.support(id, x, 'boss', post) > 0 || Meeting.support(id, x, 'mayor', post) > 0) : Meeting.support(id, x, s, post) > 0 }; });
         var yes = votes.filter(function(v){ return v.yes; }).length;
@@ -115,6 +121,7 @@ var Meeting = {
       delete G.noms[post]; delete G.mnoms[post]; delete G.flags['poge_' + post];
     });
     applyFx({ feud: rows.some(function(r){ return r.s !== 'zuzhi'; }) ? 2 : 0 });
+    G.hrRes=rows;
     return rows;
   },
 

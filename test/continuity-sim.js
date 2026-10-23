@@ -9,7 +9,10 @@ bot=function(style,G){
     var options=ctx.Work.options(w).filter(function(o){return ctx.Work.can(w,o);});
     if(!options.length) return;
     var o=options[0];
-    if(w.stage===1){ var preferred=w.kind==='oldcity'?'revise':w.kind==='qingchuan'?'family':'correct';o=options.filter(function(x){return x.id===preferred;})[0]||o; }
+    if(w.stage===1){
+      var preferred=w.kind==='oldcity'?(w.need==='funding'?'fund':'revise'):w.kind==='qingchuan'?'family':w.need==='funding'?'support':w.need==='capacity'?'assist':w.need==='ready'?'trust':'correct';
+      o=options.filter(function(x){return x.id===preferred;})[0]||o;
+    }
     ctx.Work.run(w.id,o.id);
   });
   priorBot(style,G);

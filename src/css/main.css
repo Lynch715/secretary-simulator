@@ -318,3 +318,10 @@ button{font-family:inherit;font-size:inherit;color:inherit}
 .person-memory{border-top:1px solid var(--line2);margin-top:8px;padding-top:5px;font-size:12px;color:var(--ink2);overflow-wrap:anywhere}
 .person-memory p{margin:5px 0}.person-memory i{font-style:normal;color:var(--ink3)}
 @media(max-width:600px){.work-choices{display:grid;grid-template-columns:1fr}.work-head span{width:100%}.work h3{flex-wrap:wrap}}
+
+/* 验收修复：保留原有色板、线条和字体，避免文字贴框、禁用态混淆。 */
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.work>.work-item{padding:12px}
+.post .pn,.post .ph,.pitem .pt,.cpj-row>span,.hrrows .hr>span{min-width:0;overflow-wrap:anywhere}
+.mfoot{flex-wrap:wrap}
+.modal{overscroll-behavior:contain}

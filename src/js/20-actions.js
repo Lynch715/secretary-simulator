@@ -31,8 +31,10 @@ var Act = {
     G.acts--;
     if (a === 'modi' || a === 'dihua'){ G.contacts = G.contacts || {}; G.contacts[t] = G.month; }
     var r = Act['_' + a](t, opt || {});
+    if (a === 'modi'){ var intel=Agenda.inquire(t); if(intel) r.t+='\n'+intel; }
     var follow = Work.afterAction(a, t);
     if (follow) r.t += '\n' + follow;
+    if (a === 'hui'){ var delivery=Delivery.contact(t); if (delivery) r.t += '\n' + delivery; }
     if ((a === 'modi' || a === 'hui') && P(t)){ var memory = Work.recall(t); if (memory) r.t += '\n' + memory; }
     G.done = G.done || [];
     return r;

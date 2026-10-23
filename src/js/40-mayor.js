@@ -84,7 +84,7 @@ var Mayor = {
       var h = pick(dirty);
       if (rnd() < 0.3 + (own('gongan') ? -0.15 : 0.1)){
         report(ML_TXT.hit[0].replace('{N}', pn(h)));
-        var post = P(h).post; P(h).gone = 'hit'; vacate(post);
+        leaveOffice(h,'hit');
         applyFx({ prestige: -4, trust: -2 });
         logIt(pn(h) + '出事了。');
       }
@@ -123,7 +123,7 @@ var Mayor = {
     var list = [
       function(){ if (own('xinfang')){ report('一封告书记的信到了市信访局。马春来的位子上现在是你们的人，信在他抽屉里压了三天，然后按程序转给了纪委，只转了复印件。'); applyFx({ bossRisk: 2 }); }
         else { report('一封告书记的信到了省里。信里说云州的招商数字有水分，附了高新区的三张报表。'); applyFx({ bossRisk: 6, prestige: -3 }); } },
-      function(){ report('城关区一百多户拆迁户坐到了市政府门口。陈立群亲自下楼接待，站在台阶上讲了半个钟头。第二天本地报纸头版是他的照片。'); applyFx({ prestige: -3, feud: 4 }); },
+      function(){ Delivery.cityAmbush(); },
       function(){ report('省报登了一篇稿子，写云州「个别领导急于求成」。没点名，配图是高新区一片推平的空地。'); applyFx({ prestige: -3 }); addSide('xuanchuan', -5); },
       function(){ var sw = G.stand.filter(function(id){ return !(PDEF[id] || {}).fixed && P(id).side > -20 && P(id).side < 40; }); if (!sw.length) return;
         var t = pick(sw); addSide(t, -8); report('常委会前一天晚上，陈立群请' + pn(t) + '吃了顿饭。第二天会上，' + pn(t) + '说话的调子变了。'); }

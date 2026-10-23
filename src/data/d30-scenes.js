@@ -45,7 +45,7 @@ b1_fight: { title:'发言提纲', img:'s_night', who:'boss', battle:'b1',
 
 /* ════ 第二仗：公安局长 ════ */
 b2_rise: { title:'公安局长', img:'s_mishu', who:'zhengfa', battle:'b2',
-  fn:function(){ var h = holder('gongan'); if (h && h === 'gongan'){ P('gongan').gone = 'up'; vacate('gongan'); } G.mnoms.gongan = 'guozc'; P('guozc').met = true; },
+  fn:function(){ var h = holder('gongan'); if (h && h === 'gongan'){ leaveOffice('gongan','up'); } G.mnoms.gongan = 'guozc'; P('guozc').met = true; },
   text:'童大勇调省公安厅，任命文件还没到，韩树声已经在走廊里跟人握手了。\n「老童走了，公安这一摊得有人接。」他在楼梯口拦住你，嗓门大得半层楼都听得见，「振川跟了我十五年，破案子是一把好手。小{SUR}，你跟周书记说一声，这事就跟抓人一样，得快。」\n郭振川这个名字，你在书记桌上的材料里见过一次。那是一份信访件，被人用铅笔划掉了。',
   opts:[
     { t:'「韩书记的意思，我一定带到。」', fx:{ side:{ zhengfa:4 } },
@@ -214,7 +214,7 @@ b7_fight2: { title:'灯', img:'s_mishu', who:'mishuzhang', battle:'b7',
 b8_rise: { title:'考察组', img:'s_hotel', who:null, battle:'b8',
   text:'省委组织部的考察组是周一到的，领队是干部三处的洪启年，四十八岁，戴一副没有框的眼镜。\n他们住在市委招待所三楼，一共十一个人，每个人要谈八十个人。名单上你排第四十一。\n考察组进驻那天晚上，陈立群在招待所一楼的餐厅吃饭，一个人，点了一碗面。',
   opts:[
-    { t:'去三楼，给洪启年送一份云州这三年的材料', fx:{ flag:'b8_mat', bmod:{ b8:{ depsec:4, zuzhi:4 } } },
+    { t:'去三楼，给洪启年送一份云州任内的材料', fx:{ flag:'b8_mat', bmod:{ b8:{ depsec:4, zuzhi:4 } } },
       res:'洪启年接过材料，翻都没翻：「放这儿吧，我们自己会看。」\n你出门的时候，看见下一个来送材料的是苏晓东。' },
     { t:'去一楼，陪陈立群吃那碗面', fx:{ heat:-6, feud:-5, flag:'b8_noodle' },
       res:'他看见你，没意外，让服务员再下一碗。\n吃到一半他说：「小{SUR}，我在云州干了十四年。」\n吃完他付的账。两碗面，十六块。' },
@@ -240,7 +240,7 @@ b8_fight2: { title:'十九页', img:'s_night', who:'boss', battle:'b8',
   opts:[
     { t:'「那套房子的事，我去说清楚。」', fx:{ bossRisk:-12, heat:4, trust:3 },
       res:'你开了四个钟头的车去书记老家，找到了房产证，还有一张十一年前的购房发票。\n回来的路上下起了雨。' },
-    { t:'去找宋自强，把你这三年经手的事全摊开', fx:{ trust:2 }, fn:function(){ applyFx({ heat: G.flags.took_bag || (G.flags.gray || 0) >= 2 ? 6 : -15 }); },
+    { t:'去找宋自强，把你任内经手的事全摊开', fx:{ trust:2 }, fn:function(){ applyFx({ heat: G.flags.took_bag || (G.flags.gray || 0) >= 2 ? 6 : -15 }); },
       res:'宋自强听了两个钟头，中间只问了三次时间。最后他说：「回去吧。有事我叫你。」\n这句话，你后来想了很多遍。' },
     { t:'查是谁寄的', req:function(){ return own('gongan') || own('xinfang'); }, no:'公安和信访那边，你一个人也叫不动',
       fx:{ heat:4 }, fn:function(){ Grip.add('mayor', 2); addSide('depsec', 5); },

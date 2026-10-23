@@ -12,6 +12,7 @@ var Agenda = {
   concern: function(id,bid){
     var b=BATTLES[bid] || TOPIC_BY_ID[bid], d=PDEF[id] || {}, tags=b.tags || [], lines=[];
     if(b.why && b.why[id]) lines.push(b.why[id]);
+    var policy=Policy.note(bid);if(policy) lines.push(policy);
     if(d.bottom && tags.indexOf(d.bottom)>=0) lines.push(BOTTOM_TXT[d.bottom]+'。');
     var broken=G.promises.filter(function(p){return p.who===id && p.st==='broken';})[0];
     var open=G.promises.filter(function(p){return p.who===id && p.st==='open';})[0];
@@ -113,7 +114,10 @@ var Story = {
     var delivered=Object.keys((G.delivery || {}).staff || {}).filter(function(id){return G.delivery.staff[id].last && P(id);}).slice(0,2);
     delivered.forEach(function(id){var p=P(id);lines.push('后来翻任内的月报，还能找到'+p.n+'独立办结日常工作的记录。'+(p.gone ? p.n+'后来'+Story.goneWord(p.gone)+'，那几份回执仍在原来的卷宗里。' : p.side<20 ? '人后来换了边，原先实际办过的事仍照实留着。' : '表后附着验收与经办签字，没有另附一份向你催问的请示。'));});
     var river=(G.topicHistory || {}).t_river;
-    if(river) lines.push(river.pass ? '后来青川河治理按通过的方案推进，园区搬迁的经费仍要逐年安排。白沙水厂把每次取水记录留了下来。' : '后来白沙水厂仍在记录停水日期。青川河治理的方案没有通过，督察意见还挂在整改台账上。');
+    var retry=river && river.reconsider;
+    if(retry && retry.pass) lines.push(retry.scope==='pilot' ? '后来青川河先完成了一条超标生产线的停产治理试点。全流域方案仍未获批准，未解决事项继续留在台账上。' : '后来青川河的首轮失利仍记在纪要里。补证后的再议通过了完整方案，搬迁按修订意见推进，后续经费仍要逐年安排。');
+    else if(river) lines.push(river.pass ? '后来青川河治理按通过的方案推进，园区搬迁的经费仍要逐年安排。白沙水厂把每次取水记录留了下来。' : '后来白沙水厂仍在记录停水日期。青川河治理的方案没有通过，督察意见还挂在整改台账上。');
+    var trajectory=Strategy.epilogue();if(trajectory) lines.push('后来整理交接卷宗，还能看到那一页：'+trajectory);
     return lines;
   }
 };

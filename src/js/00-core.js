@@ -1,5 +1,5 @@
 /* ── 00-core：随机、工具、存档 ── */
-var VER = '2.6.0';
+var VER = '2.7.0';
 var SAVE_KEY = 'dami_save_v21';
 var DEX_KEY = 'dami_dex_v2';
 var START_Y = 2027, TERM = 60;
@@ -67,6 +67,7 @@ function restoreGame(o){
     for(var i=0;i<arrays.length;i++){var k=arrays[i];if(g[k]==null) g[k]=[];if(!Array.isArray(g[k])) return false;}
     var maps=['flags','seen','wk','wd','noms','mnoms','bmods','battles','lobby','memories','workSeen'];
     for(var j=0;j<maps.length;j++){var key=maps[j];if(g[key]==null) g[key]={};if(typeof g[key]!=='object' || Array.isArray(g[key])) return false;}
+    if(!validDecisionSave(g)) return false;
     G=g;
     RNG=mulberry32(Number.isInteger(G.rngState) ? G.rngState : (G.seed || 1)+G.month*7919);
     repairOffices();

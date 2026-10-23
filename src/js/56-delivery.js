@@ -32,7 +32,9 @@ var Delivery = {
     }
   },
   appointmentResult: function(w){
+    var special=Talent.result(w);if(special) return special;
     var p=P(w.who), need=w.need, method=w.method, fx={}, quality=false, influence=0, t='';
+    if(w.talentV && w.fit<0 && method==='trust' && need==='ready') need='capacity';
     /* 送出意见后换边或出现费用问题，核验仍按真实现状处理。 */
     if (p.side < 20 || p.dirt) need='procedure';
     if (method === 'support'){
@@ -53,9 +55,14 @@ var Delivery = {
       else { fx={prestige:-1}; influence=-1; t=need === 'funding' ? '交了结案报告，现场却还在等那笔钱。报告里的「完成」，比实际早了一步。' : '交了结案报告。现场核验的人回来，说只做了一半。'; }
     }
     p.loyal=clamp(p.loyal+(influence > 0 ? (influence === 3 ? 10 : 8) : influence < 0 ? -8 : 0),0,100);
+    if(quality && w.talentV && w.fit<0 && method!=='assist'){
+      quality=false;need='capacity';influence=0;fx.prestige=1;
+      t='的经费和手续已经落实，但岗位所需的现场工作仍碰上他的短处。这一步只记进展，尚不能结案，须配互补骨干协办核验。';
+    }
     w.outcome={complete:quality,handled:quality || (method === 'correct' && need === 'procedure'),need:need};
     if (quality && !p.dirt && p.side >= 20){
       p.known.dirt=1; Delivery.verify(w.who);
+      if(w.talentV) G.delivery.staff[w.who].fit=w.fit;
       if (p.cap >= 2) t+='往后的日常落实，先由他自己盯，另有困难再报。';
     }
     return {fx:fx,t:pn(w.who)+t,influence:influence};
@@ -117,7 +124,7 @@ var Delivery = {
     candidates.sort(function(a,b){return d.staff[a].next-d.staff[b].next || a.localeCompare(b);});
     if (!candidates.length) return;
     var id=candidates[0], p=P(id), s=d.staff[id];
-    s.next=G.month+6; s.last=G.month; d.lastReport=G.month;
+    s.next=G.month+(s.fit>0 ? 4 : s.fit<0 ? 8 : 6); s.last=G.month; d.lastReport=G.month;
     var target=Grip.channelTarget(p.post), t;
     if (target && Grip.pts(target) < 8){
       Grip.add(target,1);

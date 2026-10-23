@@ -62,9 +62,10 @@ var Props = {
   },
 
   /* 书记批不批：ok / alt / no */
-  decide: function(kind, extra){
+  decide: function(kind, extra, bonus){
     var t = G.bossType;
     var base = { steady:0.62, strong:0.82, shrewd:0.7 }[t] + (G.trust - 55) / 90;
+    base+=bonus || 0;
     if (kind === 'talk') base += 0.18;
     if (kind === 'give') base += 0.1;
     if (kind === 'prov') base += 0.2;
@@ -89,13 +90,14 @@ var Props = {
     if (kind === 'nom') extra = Props.poGe(a, b) ? 'poge' : (!P(a).known.side ? 'unknown' : null);
     if (kind === 'grip') extra = b;
     if (kind === 'give'){ var w0 = WANT_BY_ID[a]; extra = w0.kind === 'money' ? 'money' : 'promise'; }
-    var d = Props.decide(kind, extra);
+    var d = Props.decide(kind, extra, Brief.bonus(kind,a,b));
     /* 寄信改办法：够两档就改成调走，够不上就只能不批 */
     if (d === 'alt' && kind === 'grip' && extra === 'ji' && Grip.level(a) < 2) d = 'no';
     var rec = { kind: kind, a: a, b: b, d: d, m: G.month, no: (G.propNo = (G.propNo || 0) + 1) };
     var who = kind === 'give' ? pn(WANT_BY_ID[a].who) : (a && P(a) ? pn(a) : '');
     if (d === 'no' && kind === 'grip' && b === 'ji') rec.remark = Props.line('grip', 'ji_no');
     else rec.remark = Props.line(kind, (kind === 'give' && extra === 'promise' && d === 'ok') ? 'okp' : d, who);
+    if(d==='no') Brief.attach(rec);
     G.remarks.push({ m: G.month, t: rec.remark });
 
     if (d === 'no'){
@@ -200,6 +202,7 @@ var Props = {
 
   _prov: function(rec){
     G.provAt = G.month;
+    if(G.strategyV) G.strategyShield=G.month+2;
     applyFx({ prestige: 3, feud: -12, bossRisk: -5 });
     var r = '书记去了一趟省城，当天来回。';
     if (shi() >= 76 && G.streak >= 3 && G.month >= 38 && !P('mayor').gone && !G.pending.some(function(x){ return x.k === 'mayor' || x.k === 'move'; })){

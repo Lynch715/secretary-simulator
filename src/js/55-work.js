@@ -12,6 +12,7 @@ var Work = {
     G.workSeen[id] = 1;
     G.work.push({ id:id, kind:kind, who:who, post:post || null, pass:!!pass,
       born:G.month, ready:G.month + 1, due:G.month + 4, stage:0, st:'open', method:null, t:'', rules:2 });
+    if(kind==='appoint') Talent.appointment(G.work[G.work.length-1]);
     G.nextReport.push(kind === 'appoint' ? pn(who) + '的任命文件发下去了。书记让你过一个月去看看，不只听汇报。' :
       kind === 'oldcity' ? '城关旧改的表决结束了。书记把材料退给你：「会开完了，底下的事还得有人盯。」' :
       '青川的通报到了。书记把信访登记放在通报旁边：「这两份东西，还得对上。」');
@@ -43,9 +44,9 @@ var Work = {
     var opts = [ {id:'support',n:'协调一笔启动经费（盘子 −1）',cost:1}, {id:'correct',n:'定下整改期限，下个月核验'}, {id:'trust',n:'按他的汇报结案'} ];
     if (w.rules === 2){
       opts[2].n = '按核实的进度和他的汇报结案';
-      if (w.need === 'capacity') opts.push({id:'assist',n:'安排业务骨干协办（本月行动 −2）',acts:2});
+      if (w.need === 'capacity' && !(w.talentV && w.fit<0)) opts.push({id:'assist',n:'安排业务骨干协办（本月行动 −2）',acts:2});
     }
-    return opts;
+    return opts.concat(Talent.options(w));
   },
   cityWho: function(){ return holder('cg_qz') || holder('cg_sj') || 'cg_quzhang'; },
   can: function(w, o){
@@ -84,6 +85,7 @@ var Work = {
       hit.t = p.side < 20 && p.known.side ? '回访核实后，他已经换了边。经费和结案意见都不能只凭他的汇报，需要独立核验。' : p.dirt && hit.evidence ? '核实中发现，他把一笔费用放在了往来账里。需要整改，不能只拨钱。' : p.cap >= 2 ? '有两件事确实动了，另有一件卡在经费和部门协调上。' : '材料写得很满，现场进度落后。经费之外，还缺一个肯盯落实的人。';
     }
     if (hit.rules === 2) Delivery.inspect(hit);
+    if(hit.kind==='appoint') Talent.inspect(hit);
     logIt(Work.title(hit) + '：已经核实，下个月定办理意见。');
     return '待办有了进展：' + hit.t;
   },
@@ -145,6 +147,7 @@ var Work = {
   },
   finish: function(w,st,t,fx){
     w.st=st; w.closed=G.month; w.t=t; applyFx(fx);
+    if(st==='done' && w.kind==='oldcity' && w.pass && w.outcome && w.outcome.settled) Strategy.record('city','oldcity',true);
     report(Work.title(w)+'：'+t); logIt(Work.title(w)+'：'+t);
   },
   end: function(){

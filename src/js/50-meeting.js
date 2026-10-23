@@ -16,6 +16,7 @@ var Meeting = {
       if (p.held || p.turned) v += 20;
     } else if (p.held && v < 5) v = 5;
     v += Work.voteMemory(id, b.id);
+    v += Policy.score(b.id,id);
     v += (b.mods || {})[id] || 0;
     v += ((G.bmods[b.id] || {})[id]) || 0;
     v += (G.lobby[id] || 0) * 6;
@@ -63,7 +64,7 @@ var Meeting = {
   },
 
   /* ── 调整会 ── */
-  support: function(mid, x, s, post){
+  support: function(mid, x, s, post, quiet){
     if (mid === 'boss') return s === 'boss' ? 99 : -99;
     if (mid === 'mayor') return s === 'mayor' ? 99 : -99;
     var p = P(mid);
@@ -77,7 +78,7 @@ var Meeting = {
     if (s === 'boss' && G.flags['poge_' + post]) v -= 12;
     if (s === 'boss') v += (G.lobby[mid] || 0) * 6;
     if (p.held && s === 'boss' && v < 5) v = 5;
-    return v + Meeting.noise();
+    return v + (quiet ? 0 : Meeting.noise());
   },
 
   hrRun: function(){
@@ -127,6 +128,7 @@ var Meeting = {
 
   afterPlace: function(x, post, s){
     if (s !== 'boss') return;
+    Strategy.record('seat',post,true);
     Work.appoint(x, post);
     logIt(pn(x) + '任' + POST_BY_ID[post].n + '。');
     G.stand.forEach(function(sid){

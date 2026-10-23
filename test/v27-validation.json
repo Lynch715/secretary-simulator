@@ -1,0 +1,37 @@
+{
+  "version": "2.7.0",
+  "regressions": {
+    "continuity": 35,
+    "delivery": 35,
+    "story": 54,
+    "decisions": 53,
+    "strategy": 54
+  },
+  "regressionTotal": 231,
+  "fullSimulations": 1000,
+  "simulationEvidence": {
+    "original-sim": "\n[idle] 赢 0%  平均月 16.0  势 9  拿掉 0.1  胜仗 0.1  弃子 0.00  报错 0\n  boss_out 100%\n\n[random] 赢 0%  平均月 23.5  势 34  拿掉 2.8  胜仗 1.9  弃子 0.11  报错 0\n  boss_out 9%  you_dropped 1%  you_fall 90%\n\n[smart] 赢 93%  平均月 43.0  势 82  拿掉 4.9  胜仗 6.6  弃子 0.01  报错 0\n  boss_out 5%  deadlock 2%  mayor_fall 63%  mayor_gone 13%  mayor_moved 12%  mayor_out 5%\n\n[dirty] 赢 18%  平均月 29.6  势 61  拿掉 4.7  胜仗 3.9  弃子 0.08  报错 0\n  boss_fall 9%  boss_out 1%  both_out 14%  mayor_fall 7%  mayor_moved 11%  you_fall 58%\n",
+    "task-sim": "PASS 120 full runs with task decisions; 839 completed / 0 overdue / 884 tasks; no invalid resources or state.\n",
+    "ops-sim": "PASS 80 full games / 2765 months / 2236 actual department actions; per-month resources and post ownership stayed valid.\n",
+    "decisions-sim": "PASS {\"games\":200,\"months\":7120,\"amendments\":494,\"retryPlans\":104,\"retryVotes\":102,\"specialty\":104,\"partner\":142}; monthly resources, offices, retry limits and original failed votes valid.\n",
+    "strategy-sim": "PASS {\"games\":200,\"briefPreps\":233,\"budgetPlans\":835,\"personnelPlans\":917,\"pending\":34,\"handover\":112,\"delivery\":0,\"lateCompleted\":120}; plus {\"games\":0,\"months\":7074,\"amendments\":502,\"retryPlans\":108,\"retryVotes\":106,\"specialty\":243,\"partner\":147}; 200 full games exercised all integrated systems without invalid resources or save structures.\n"
+  },
+  "sceneCount": 117,
+  "choiceLabels": 324,
+  "layoutCombinations": 64,
+  "physicalDeviceTested": false,
+  "cssUnchanged": true,
+  "cssSha256": "81da861cbfd4e6a8e5223ff1dbc4498ef54ca268ff1275cf7342d78e36fa2505",
+  "unchangedArtIconFiles": 118,
+  "indexSha256": "ff38bef1a6c93750efbdc898ce3cfd46a7b110ef624a8f8f876f91e99ff1d36c",
+  "storageKeys": [
+    "dami_save_v21",
+    "dami_dex_v2"
+  ],
+  "compatibility": [
+    "v2.4 unchanged gameplay fields",
+    "v2.6 unchanged pending task, exact original engine settlement"
+  ],
+  "browser": "Codex In-app Browser",
+  "liveSaveWriteActionsPerformed": false
+}

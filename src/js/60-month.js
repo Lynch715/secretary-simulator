@@ -10,6 +10,7 @@ function halfGain(fx){
 var Month = {
   start: function(first){
     Work.ensure();
+    Strategy.startMonth();
     G.acts = G.school ? 0 : 3;
     G.props = []; G.lobby = {};
     G.sceneDone = false; G.sceneRes = null;
@@ -28,6 +29,7 @@ var Month = {
     G.topicNext = null; G.scene3 = null; G.scene3Done = false; G.scene3Res = null;
     var nt = Month.pickTopic(G.month + 1);
     if (nt){ G.topicNext = { id: nt, m: G.month + 1 }; G.scene3 = TOPIC_BY_ID[nt].rise || null; }
+    Policy.start();
     /* 回响：过去的事落了地 */
     G.echoes = (G.echoes || []).filter(function(e){ if (e.m > G.month) return true; G.report.push(fill(e.t)); applyFx(e.fx); return false; });
     Work.start();
@@ -44,6 +46,8 @@ var Month = {
     if (hs.length && !SCHEDULE[G.month]){ var h = 'h' + hs[0]; G.seen[h] = G.month; return h; }
     if (hs.length && hs[0] >= 70){ var h2 = 'h' + hs[0]; G.seen[h2] = G.month; return h2; }
     if (SCHEDULE[G.month]){ G.seen[SCHEDULE[G.month]] = G.month; return SCHEDULE[G.month]; }
+    var late=Strategy.scene();
+    if(late){G.seen[late]=G.month;return late;}
     var c = FILLERS.filter(function(f){
       if (f.once && G.seen[f.id]) return false;
       if (f.cd && G.seen[f.id] && G.month - G.seen[f.id] < f.cd) return false;
@@ -85,13 +89,19 @@ var Month = {
     if(G.topicDone || !TOPIC_BY_ID[tid]) return;
     var t = TOPIC_BY_ID[tid];
     G.topicDone = true;
+    if(G.topicRetry===tid){var retryHard=G.hardNow;G.hardNow=false;Policy.retryResult(tid,pass,retryHard);return;}
     G.topicHistory=G.topicHistory || {}; G.topicHistory[tid]={m:G.month,pass:!!pass};
+    if((G.policyDrafts || {})[tid] && G.meet && G.meet.bid===tid) G.topicHistory[tid].vote={yes:G.meet.yes,rows:JSON.parse(JSON.stringify(G.meet.rows)),hard:!!G.meet.hard};
     var hard = G.hardNow; G.hardNow = false;
-    applyFx(hard ? halfGain(t.win) : (pass ? t.win : t.lose));
-    if (t.echo){ var e = pass ? t.echo.win : t.echo.lose; G.echoes = G.echoes || []; G.echoes.push({ m: G.month + 2 + ri(2), t: e.t, fx: e.fx }); }
+    var policy=Policy.result(tid,pass);
+    if(Policy.option(tid)) G.topicHistory[tid].amendment=G.policyDrafts[tid].choice;
+    applyFx(hard ? halfGain(policy.fx) : policy.fx);
+    if (policy.echo){ var e=policy.echo; G.echoes=G.echoes || [];G.echoes.push({m:G.month+2+ri(2),t:e.t,fx:e.fx}); }
+    if(!pass) Policy.failed(tid);
     if (pass) G.tWin = (G.tWin || 0) + 1; else G.tLose = (G.tLose || 0) + 1;
     logIt('常委会·' + t.topic + '：' + (pass ? '过了' : '没过') + '。');
-    G.nextReport.push(pass ? t.winT : t.loseT);
+    G.nextReport.push(policy.text);
+    Strategy.record('policy',tid,pass);
   },
 
   choose: function(i, slot){

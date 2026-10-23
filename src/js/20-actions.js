@@ -17,7 +17,7 @@ var Act = {
       case 'modi': return all.filter(function(id){ return P(id).met && id !== 'mayor'; });
       case 'dihua': return all.filter(function(id){ return P(id).met && seenCamp(id) <= 0 && id !== 'mayor'; });
       case 'xia': return AREAS.map(function(a){ return 'area:' + a.id; });
-      case 'kao': return all.filter(function(id){ var p = P(id); return p.met && !isStanding(id) && (!p.known.side || !p.known.dirt || !p.known.amb); });
+      case 'kao': return all.filter(function(id){ var p = P(id); return p.met && !isStanding(id) && (!p.known.side || !p.known.dirt || !p.known.amb || Talent.unknown(id)); });
       case 'hui': return all.filter(function(id){ return P(id).by === 'boss' && P(id).post; });
       case 'wa': return all.filter(function(id){ var p = P(id); return p.met && seenCamp(id) <= 0 && !p.clean && Grip.level(id) < Grip.cap(id); });
       case 'hu': return ['self'];
@@ -35,6 +35,7 @@ var Act = {
     var follow = Work.afterAction(a, t);
     if (follow) r.t += '\n' + follow;
     if (a === 'hui'){ var delivery=Delivery.contact(t); if (delivery) r.t += '\n' + delivery; }
+    var skill=Talent.afterAction(a,t);if(skill) r.t+='\n'+skill;
     if ((a === 'modi' || a === 'hui') && P(t)){ var memory = Work.recall(t); if (memory) r.t += '\n' + memory; }
     G.done = G.done || [];
     return r;
@@ -100,6 +101,7 @@ var Act = {
       p.known.dirt = 1;
       return { t: p.dirt ? '有人跟你提了一句' + p.n + '前两年的一件事，提完又说，都过去了。' : p.n + '那边查不出什么。他连单位的车都很少用。', got: p.n + '：' + (p.dirt ? '身上不干净' : '干净') };
     }
+    if(p.known.amb) return {t:p.n+'原单位的人又谈了两件经办的事。履历里的工作分工和实际做法，这回放在一起核对。'};
     p.known.amb = 1;
     return { t: p.n + '的老领导说：这个人啊，你给他什么，他就是什么。', got: p.n + '想要的：' + AMB_TXT[p.amb] };
   },

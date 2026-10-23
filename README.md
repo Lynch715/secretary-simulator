@@ -13,6 +13,8 @@
 
 结局跨局记在图鉴里。
 
+学校布局、环保整改和河流治理可以根据打听来的顾虑修订方案，失利后各有一次有限再议。干部的擅长与短处通过实际考察显现；退件可以按真实缺项补证，市长会回应公开布局，后半任也会遇到不同的执行、积案或交接难题。
+
 ## 玩
 
 - 线上：<https://lynch715.github.io/secretary-simulator/>（推上去之后就是这个地址）
@@ -38,6 +40,10 @@ test/sim.js        无头跑局
 ```bash
 python3 build.py        # 重新拼 index.html
 node test/continuity.js # 跨月、暗线、人物记事与存档回归
+node test/decisions.js  # 修订、有限再议、适岗与 v2.4/v2.6 旧档
+node test/strategy.js   # 退件补证、公开布局应对、后半程支线
+node test/decisions-sim.js # 200 局实际使用前三项玩法
+node test/strategy-sim.js # 200 局使用全部六项玩法
 node test/story-audit.js # 议题口风、条件剧情、结局和缺陷回归
 node test/ops-sim.js     # 部门参与的完整局与逐月岗位一致性
 node test/delivery.js   # 办理方式、长期后果、干部实绩与旧档兼容
@@ -54,6 +60,7 @@ node test/sim.js 200    # 四种打法各 200 局，看结局分布和报错
 
 ## 文档
 
+- `docs/更新_v2.7与验收_20261022.md`　六项玩法、旧档保护和完整验收
 - `docs/更新_v2.4.md`　持续待办、人物记事与验收说明
 - `docs/更新_v2.6与审计_20261022.md`　议题口风、条件剧情、结局回响与缺陷审计
 - `docs/更新_v2.5.md`　旧改长期后果、办理权衡、可靠干部与旧档兼容

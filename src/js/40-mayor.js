@@ -26,21 +26,30 @@ var Mayor = {
     if (!plan){
       var swing = G.stand.filter(function(id){return !(PDEF[id] || {}).fixed && !P(id).gone && !P(id).held && P(id).side > -40 && P(id).side < 60;});
       var mine = Object.keys(G.people).filter(function(id){var p=P(id);return p.by === 'boss' && p.post && !p.gone && p.side >= 20 && p.loyal < 45 && id !== 'gaoxin';});
-      var kind = mine.length ? 'turn' : swing.length && rnd() < 0.65 ? 'pull' : 'dig';
-      plan = {kind:kind,target:kind === 'turn' ? pick(mine) : kind === 'pull' ? pick(swing) : null,start:G.month};
+      plan=Strategy.plan(swing);
+      if(!plan){
+        var kind = mine.length ? 'turn' : swing.length && rnd() < 0.65 ? 'pull' : 'dig';
+        plan = {kind:kind,target:kind === 'turn' ? pick(mine) : kind === 'pull' ? pick(swing) : null,start:G.month};
+      }
       G.mayorPlan = plan;
     }
     if (plan.last === G.month) return true;
     plan.last = G.month;
     var phase = G.month - plan.start, id=plan.target, p=id ? P(id) : null;
     if (phase === 0){
+      if(plan.kind==='budget'){report('市委最近通过的项目开始落地。陈市长召集财政和区县核年度支出，安排在'+ymText(G.month+1)+'核对次序，'+ymText(G.month+2)+'决定机动份额。经费清单还没有定，可提前协调财政或请书记向省里说明。');return false;}
+      if(plan.goal==='seats'){report('市委连续公布了几项干部任命。陈市长约'+pn(id)+'谈后面的干部调整，约在'+ymText(G.month+1)+'再听他的意见。');return false;}
       report(plan.kind === 'pull' ? '陈市长请' + pn(id) + '看了一个项目，说下个月还要单独听他的意见。' : plan.kind === 'turn' ? pn(id) + '最近两次去市政府汇报，都没有先到市委这边来。你上次回访他的日期，已经很远了。' : '市政府办公室在调几份旧材料，连报表上的签字页也要复印。来取材料的人说，下个月还要。');
       return false;
     }
     if (plan.kind === 'pull'){
       var resisted=(G.lobby[id] || 0) > 0 || (G.contacts || {})[id] === G.month || p.held;
       addSide(id,resisted ? -3 : -6);
-      report(resisted ? pn(id) + '两边都去坐过。这回他没有顺着陈市长的话表态。' : phase === 1 ? '陈市长又请' + pn(id) + '去了一次，说的是上个月那个项目。' : pn(id) + '在会上接了陈市长的话。前两个月的几次见面，现在有了下文。');
+      report(plan.goal==='seats' ? resisted ? pn(id)+'两边都去坐过。说到下一轮干部调整，他没有照市政府那边的口径表态。' : phase===1 ? '陈市长又约'+pn(id)+'谈下一轮干部调整，续谈前次的人事安排。' : pn(id)+'在人事安排上的措辞比前两个月谨慎，没有把支持说满。' : resisted ? pn(id) + '两边都去坐过。这回他没有顺着陈市长的话表态。' : phase === 1 ? '陈市长又请' + pn(id) + '去了一次，说的是上个月那个项目。' : pn(id) + '在会上接了陈市长的话。前两个月的几次见面，现在有了下文。');
+    } else if(plan.kind==='budget'){
+      var protectedBudget=own('caizheng') || (G.strategyShield || 0)>=G.month;
+      if(phase===1){report('财政的项目先后清单送来了，市政府提出把下一笔机动经费先留给别的项目。最终调整安排在'+ymText(plan.start+2)+'；当前已批准的方案没有因此撤销。');applyFx({feud:1});}
+      else {var moved=protectedBudget || G.money<1 ? 0 : 1;applyFx({money:-moved,feud:1});report(protectedBudget ? (own('caizheng') ? '经费调整送上来时，财政核过已批准事项的依据，机动份额保住了。原有搬迁和验收仍按程序走。' : '书记向省里说明后，经费调整按已批准事项核过，机动份额保住了。原有搬迁和验收仍按程序走。') : moved ? '市政府排定了年度先后次序，一份机动盘子转给了别的项目。原批准仍有效，后续推进要重新协调经费。' : '经费调整清单定了。当前已没有可再挪走的机动份额，原事项仍需按实际经费推进。');}
     } else if(plan.kind === 'turn'){
       if (p.by !== 'boss' || !p.post || p.side < 20){ report(pn(id) + '的去向已经变了，市政府那边没有再约他。'); G.mayorPlan=null; return true; }
       var safe=p.loyal >= 45;

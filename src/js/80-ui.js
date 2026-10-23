@@ -77,6 +77,7 @@ var UI = {
     h += UI.sceneBox(1);
     h += UI.sceneBox(2);
     h += UI.sceneBox(3);
+    h += UI.policyBox();
     /* 呈书记 */
     h += '<div class="panel boss"><h3><span class="ttl">' + face('boss', 'sm') + '呈书记</span><span class="cnt">本月还能报 ' + Props.left() + ' 件</span></h3>' +
       '<div class="tiles t6">' + PROP_KINDS.map(function(k){
@@ -111,15 +112,35 @@ var UI = {
     if (due.length) h += '<div class="due">' + due.join('<br>') + '</div>';
     return h;
   },
+  policyBox: function(){
+    var drafts=Object.keys(G.policyDrafts || {}).filter(function(id){return Policy.active(id) && G.topicRetry!==id;});
+    var retries=Object.keys(G.reconsider || {}).filter(function(id){var r=G.reconsider[id];return r.st==='open' || r.st==='waiting';});
+    if(!drafts.length && !retries.length) return '';
+    return '<div class="panel work"><h3>议题拟办 <span class="cnt">沿用本月三次行动</span></h3>'+drafts.map(function(id){
+      var o=Policy.option(id);
+      return '<div class="work-item"><b>'+esc(TOPIC_BY_ID[id].topic)+'</b>'+(o ? paras('已送修订稿：'+o.n+'。'+o.note+'未获表决通过前不能执行。') :
+        paras('可以保留原方案，不额外消耗行动。打听一位相关常委的口风后，可以择一修订；送出后不能叠加。')+
+        (POLICY_OPTIONS[id] || []).map(function(x){return '<p>'+esc(x.note)+'</p><div class="work-choices"><button class="btn ghost" data-policy="'+id+'" data-plan="'+x.id+'"'+(Policy.can(id,x.id) ? '' : ' disabled')+'>'+esc(x.n)+'</button></div>';}).join(''))+'</div>';
+    }).join('')+retries.map(function(id){
+      var r=G.reconsider[id];
+      var text=r.st==='waiting' ? (r.choice==='pilot' ? '仅报试点；全市原方案未获批准。' : '补齐材料，保留完整方案范围。')+ymText(r.mo)+'再议，仍须表决。' : (r.ready>G.month ? '下个月可整理材料。' : '')+ymText(r.due)+'底前决定是否再报；限一次，原损失不退回。';
+      return '<div class="work-item"><b>'+esc(TOPIC_BY_ID[id].topic)+' · 再议</b>'+paras(text)+(r.st==='open' ? Policy.retryOptions().map(function(x){return '<p>'+esc(x.note)+'</p><div class="work-choices"><button class="btn ghost" data-retry="'+id+'" data-plan="'+x.id+'"'+(Policy.canRetry(id,x.id) ? '' : ' disabled')+'>'+esc(x.n)+'</button></div>';}).join('') : '')+'</div>';
+    }).join('')+'</div>';
+  },
+  runPolicy: function(id,choice,retry){
+    var r=retry ? Policy.retry(id,choice) : Policy.amend(id,choice);if(!r) return;
+    G.actLog=G.actLog || [];G.actLog.push({m:G.month,n:retry ? '议题再议' : '方案修订',t:r.t});
+    save();UI.render();
+  },
   workBox: function(){
     var ws = (G.work || []).filter(function(w){ return (w.st === 'open' || w.st === 'waiting') && (w.ready <= G.month || w.stage === 1); });
     var recent = (G.work || []).filter(function(w){ return w.closed === G.month; });
     if (!ws.length && !recent.length) return '';
     return '<div class="panel work"><h3>案头待办 <span class="cnt">沿用本月三次行动</span></h3>' + ws.map(function(w){
-      return '<div class="work-item"><div class="work-head"><b>' + esc(Work.title(w)) + '</b><span>' + (w.st === 'waiting' ? '下个月核验' : w.ready > G.month ? '下个月定办理意见' : ymText(w.due) + '月底前') + '</span></div>' + paras(Work.description(w)) +
+      return '<div class="work-item"><div class="work-head"><b>' + esc(Work.title(w)) + '</b><span>' + (w.st === 'waiting' ? '下个月核验' : w.ready > G.month ? '下个月定办理意见' : ymText(w.due) + '底前') + '</span></div>' + paras(Work.description(w)) +
         (w.st === 'waiting' ? '' : '<div class="work-choices">' + Work.options(w).map(function(o){
           return '<button class="btn ghost" data-work="' + esc(w.id) + '" data-choice="' + o.id + '"' + (Work.can(w,o) ? '' : ' disabled') + '>' + esc(o.n) + '</button>';
-        }).join('') + '</div><p class="work-note">' + (w.rules === 2 && w.need === 'capacity' ? '协办占两件行动，其余办理各占一件；' : '每次办理占一件行动；') + '核实后，下个月定意见，送出后再核验。' + (G.school ? '在党校期间暂不能办理。' : '') + '</p>') + '</div>';
+        }).join('') + '</div><p class="work-note">' + (w.rules === 2 && (w.need === 'capacity' || (w.talentV && w.fit<0)) ? '协办占两件行动，其余办理各占一件；' : '每次办理占一件行动；') + '核实后，下个月定意见，送出后再核验。' + (G.school ? '在党校期间暂不能办理。' : '') + '</p>') + '</div>';
     }).join('') + recent.map(function(w){ return '<div class="work-item"><b>' + esc(Work.title(w)) + ' · ' + ({done:'已办结',overdue:'逾期归档',void:'离任归档'}[w.st] || '归档') + '</b>' + paras(w.t) + '</div>'; }).join('') + '</div>';
   },
   runWork: function(id, choice){
@@ -148,6 +169,7 @@ var UI = {
     if (t.why) for (var k in t.why) if (G.stand.indexOf(k) >= 0 && !Agenda.knows(k,bid)) ls.push(esc(t.why[k]));
     var intel=G.agendaIntel && G.agendaIntel[bid];
     if(intel){G.stand.forEach(function(id){if(intel[id]) ls.push(esc(pn(id)+'：'+intel[id].t));});ls.push('口风是会前问来的，临到表决仍可能有变化。');}
+    var policy=Policy.note(bid);if(policy) ls.push(esc(policy));
     if (!ls.length) return '';
     var body = ls.map(function(x){ return '<p>' + x + '</p>'; }).join('');
     return fold ? '<details class="ctx"><summary>来龙去脉</summary>' + body + '</details>' : '<div class="tintro">' + body + '</div>';
@@ -201,7 +223,25 @@ var UI = {
       '<div class="cpj-row"><i>事由</i><span>' + esc(UI.propName(r)) + '</span></div>' +
       '<div class="cpj-row"><i>批示</i><span class="remark' + (st === 'no' ? ' no' : '') + '">' + esc(r.remark) + '</span></div>' +
       (r.act ? '<div class="cpj-row"><i>办理</i><span class="cpj-act">' + paras(r.act) + '</span></div>' : '') +
-      '<div class="cpj-row"><i>结果</i><span class="cpj-fin ' + st + '">' + esc(fin) + '</span></div></div>';
+      '<div class="cpj-row"><i>结果</i><span class="cpj-fin ' + st + '">' + esc(fin) + '</span></div>' + UI.briefBox(r) + '</div>';
+  },
+  briefBox: function(r){
+    if(!r.brief || r.d!=='no') return '';
+    if(Brief.resubmitted(r)) return '<div class="cpj-row"><i>补证</i><span>补齐后已经另行呈报，原退件记录保留。</span></div>';
+    if(!Brief.valid(r)) return '<div class="cpj-row"><i>补证</i><span>原退件记录保留；人选、岗位或办理时限已变化，须按现状重新考虑。</span></div>';
+    var gap=Brief.gap(r.kind,r.a,r.b);
+    if(!gap) return '<div class="cpj-row"><i>补证</i><span>现有缺项已补齐。可重新呈报，仍占呈报机会，书记仍可能不批。</span></div>';
+    return '<div class="cpj-row"><i>补证</i><span>'+esc(gap.n)+(gap.action ? '。沿用本月一件行动，本件本月只补一次，原退件不撤回。'+(r.brief.touched===G.month ? '本月已补过，余缺可另作正常考察或下月继续。' : '') : '。补写材料不能替代实际任职能力。')+'</span></div>'+(gap.action ? '<div class="work-choices"><button class="btn ghost" data-brief="'+r.no+'"'+(Brief.can(r.no) ? '' : ' disabled')+'>'+esc(gap.n)+'</button></div>' : '');
+  },
+  prepareBrief: function(no){
+    var r=Brief.receipt(no);if(!r || !Brief.can(no)) return;
+    var gap=Brief.gap(r.kind,r.a,r.b);
+    if(gap.action==='poll') return UI.pickList('本次人选：先问谁的态度',Brief.candidates().map(function(id){return {v:id,n:pn(id),face:id,s:'问'+pn(r.a)+'任'+POST_BY_ID[r.b].n+'的具体意见，口风不保证票数'};}),function(it){UI.runBrief(no,it.v);});
+    UI.runBrief(no);
+  },
+  runBrief: function(no,who){
+    var r=Brief.prepare(no,who);UI.close();if(!r) return;
+    G.actLog=G.actLog || [];G.actLog.push({m:G.month,n:'退件补证',t:r.t});save();UI.render();
   },
   propName: function(r){
     if (r.kind === 'op'){ var op = OPS[r.post].filter(function(o){ return o.id === r.opId; })[0]; return OP_DEPT_N[r.post] + '·' + op.n + (r.t && r.t !== '_' && r.t.indexOf('area:') < 0 ? '：' + pn(r.t) : (r.t && r.t.indexOf('area:') === 0 ? '：' + AREAS.filter(function(a){ return 'area:' + a.id === r.t; })[0].n : '')); }
@@ -275,6 +315,7 @@ var UI = {
     if (gl && id !== 'mayor') h += '<div class="grip">手里：' + GRIP_TXT[gl] + (p.held ? '（捏着）' : '') + (p.turned ? '（换了边）' : '') + '</div>';
     if (id === 'mayor'){ var ml = Grip.mayorLv(); h += '<div class="grip">' + MAYOR_PARTS.map(function(x, i){ return esc(x.t) + '：' + (x.open() ? (GRIP_TXT[ml[i]] || '还没摸到') : '—'); }).join('<br>') + '</div>'; }
     var note=Agenda.notes(id); if(note) h += '<div class="want">' + esc(note) + '</div>';
+    var skill=Talent.notes(id);if(skill) h+='<div class="l">'+esc(skill)+'</div>';
     var ms = ((G.memories || {})[id] || []).slice(-3).reverse();
     if (ms.length) h += '<div class="person-memory">' + ms.map(function(x){return '<p><i>' + ymText(x.m) + '</i> ' + esc(x.t) + '</p>';}).join('') + '</div>';
     return h + '</div>';
@@ -282,7 +323,14 @@ var UI = {
 
   /* ── 档案 ── */
   tab_file: function(){
-    var h = '<div class="panel"><h3>手里的东西</h3><div class="flist">';
+    var policies=Object.keys(G.policyDrafts || {}).filter(function(id){return Policy.option(id);});
+    var retries=Object.keys(G.reconsider || {});
+    var h='';
+    if(policies.length || retries.length) h='<div class="panel"><h3>议题办理记录</h3><div class="flist">'+policies.map(function(id){return '<div>'+esc(TOPIC_BY_ID[id].topic+'：'+Policy.option(id).n)+'（修订稿）</div>';}).join('')+retries.map(function(id){
+      var r=G.reconsider[id],history=(G.topicHistory || {})[id] || {},a=history.vote,b=history.reconsider && history.reconsider.vote;
+      return '<div>'+esc(TOPIC_BY_ID[id].topic+'：首轮未通过'+(a ? '（'+a.yes+' 比 '+(11-a.yes)+'）' : '')+'；再议'+(b ? '（'+b.yes+' 比 '+(11-b.yes)+'）' : '')+'：'+(r.text || ({open:'待拟办',waiting:ymText(r.mo)+'上会',archived:'暂不再报',expired:'期限已过'}[r.st] || '已归档')))+'</div>';
+    }).join('')+'</div></div>';
+    h += '<div class="panel"><h3>手里的东西</h3><div class="flist">';
     var gl = Grip.list();
     h += gl.length ? gl.map(function(id){ return '<div>' + esc(pn(id)) + '　' + (id === 'mayor' ? Grip.mayorLv().map(function(l){ return GRIP_TXT[l] || '—'; }).join(' / ') : GRIP_TXT[Grip.level(id)]) + '</div>'; }).join('') : '<div class="dim">—</div>';
     h += '</div></div>';
@@ -446,7 +494,7 @@ var UI = {
   meeting: function(bid){
     var b = BATTLES[bid] || TOPIC_BY_ID[bid];
     var pv = Meeting.preview(bid), month=G.month;
-    var h = '<div class="mhead">常委会</div><h3>' + esc(b.topic) + '</h3>' + UI.ctx(bid, true) + '<div class="mgrid">' + pv.map(function(x){
+    var h = '<div class="mhead">常委会</div><h3>' + esc(b.topic) + (G.topicRetry===bid ? ' · 再议' : '') + '</h3>' + UI.ctx(bid, true) + '<div class="mgrid">' + pv.map(function(x){
       return '<div class="mv ' + TIER_CLS[x.tier] + '" data-v="' + x.id + '">' + face(x.id, 'sm') + '<b>' + esc(pn(x.id)) + '</b><i>' + (x.id === 'boss' ? '书记' : (x.id === 'mayor' ? '市长' : esc(x.word))) + '</i></div>';
     }).join('') + '</div><div class="mres"></div><div class="mfoot"><button class="btn red" data-vote="1">表决</button></div>';
     var m=UI.modal(h,'meet');m.classList.add('lock');
@@ -525,6 +573,9 @@ var UI = {
     $$('[data-opt2]').forEach(function(b){ b.onclick = function(){ Month.choose(+b.dataset.opt2, 2); save(); UI.render(); }; });
     $$('[data-opt3]').forEach(function(b){ b.onclick = function(){ Month.choose(+b.dataset.opt3, 3); save(); UI.render(); }; });
     $$('[data-work]').forEach(function(b){ b.onclick = function(){ UI.runWork(b.dataset.work, b.dataset.choice); }; });
+    $$('[data-policy]').forEach(function(b){b.onclick=function(){UI.runPolicy(b.dataset.policy,b.dataset.plan,false);};});
+    $$('[data-retry]').forEach(function(b){b.onclick=function(){UI.runPolicy(b.dataset.retry,b.dataset.plan,true);};});
+    $$('[data-brief]').forEach(function(b){b.onclick=function(){UI.prepareBrief(+b.dataset.brief);};});
     $$('[data-act]').forEach(function(b){ b.onclick = function(){ UI.doAct(b.dataset.act); }; });
     $$('[data-op]').forEach(function(b){ b.onclick = function(){ var x = b.dataset.op.split(':'); UI.doOp(x[0], x[1]); }; });
     $$('[data-prop]').forEach(function(b){ b.onclick = function(){ UI.doProp(b.dataset.prop); }; });
